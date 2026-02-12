@@ -73,7 +73,11 @@ export function EventsExplorer() {
 
   const handleProceed = useCallback(() => {
     if (!canProceed) return;
-    openApp("register", { tier: selectedPass, events: selectedEvents });
+    // Defer so the register window opens after the events window's
+    // mousedown → focusWindow handler finishes, keeping it on top.
+    setTimeout(() => {
+      openApp("register", { tier: selectedPass, events: selectedEvents });
+    }, 0);
   }, [canProceed, selectedPass, selectedEvents, openApp]);
 
   return (
@@ -117,17 +121,19 @@ export function EventsExplorer() {
           </button>
         </div>
 
-        {/* Inline validation hint */}
-        {!canProceed && selectedPass && selectedEvents.length === 0 && (
-          <p className="text-[11px] text-amber-400 mt-1">
-            ⚠ Select at least 1 event to proceed
-          </p>
-        )}
-        {!selectedPass && (
-          <p className="text-[11px] text-[var(--text-muted)] mt-1">
-            Select a tier and at least 1 event to proceed
-          </p>
-        )}
+        <div className="flex justify-end items-center">
+          {/* Inline validation hint */}
+          {!canProceed && selectedPass && selectedEvents.length === 0 && (
+            <p className="text-[11px] text-amber-400 mt-1">
+              ⚠ Select at least 1 event to proceed
+            </p>
+          )}
+          {/* {!selectedPass && (
+            <p className="text-[11px] text-[var(--text-muted)] mt-1">
+              Select a tier and at least 1 event to proceed
+            </p>
+          )} */}
+        </div>
       </div>
 
       {/* Pass Selector */}

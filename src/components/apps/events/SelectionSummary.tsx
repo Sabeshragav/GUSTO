@@ -27,14 +27,12 @@ export function SelectionSummary({
         </div>
 
         <div className="flex items-center gap-3">
-          {!pass.nonTechOnly && (
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-400" />
-              <span className="text-[11px] font-mono text-[var(--text-secondary)]">
-                Tech: {counts.tech}/{counts.maxTech}
-              </span>
-            </div>
-          )}
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-blue-400" />
+            <span className="text-[11px] font-mono text-[var(--text-secondary)]">
+              Tech: {counts.tech}/{counts.maxTech}
+            </span>
+          </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-purple-400" />
             <span className="text-[11px] font-mono text-[var(--text-secondary)]">
