@@ -220,9 +220,9 @@ type DesktopAction =
   | { type: "MAXIMIZE_WINDOW"; payload: string }
   | { type: "MOVE_WINDOW"; payload: { id: string; x: number; y: number } }
   | {
-      type: "RESIZE_WINDOW";
-      payload: { id: string; width: number; height: number };
-    }
+    type: "RESIZE_WINDOW";
+    payload: { id: string; width: number; height: number };
+  }
   | { type: "UPDATE_WINDOW_DATA"; payload: { id: string; data: unknown } }
   | { type: "SELECT_DESKTOP_ITEM"; payload: string }
   | { type: "DESELECT_ALL" }
@@ -235,9 +235,9 @@ type DesktopAction =
   | { type: "SET_SCREENSAVER"; payload: ScreensaverSettings }
   | { type: "SET_THEME"; payload: { theme: Theme; wallpaper?: Wallpaper } }
   | {
-      type: "OPEN_CONTEXT_MENU";
-      payload: { x: number; y: number; items: ContextMenuItem[] };
-    }
+    type: "OPEN_CONTEXT_MENU";
+    payload: { x: number; y: number; items: ContextMenuItem[] };
+  }
   | { type: "CLOSE_CONTEXT_MENU" };
 
 export const protectedTrashFiles: Record<string, string> = {
@@ -374,10 +374,10 @@ function desktopReducer(
         windows: state.windows.map((w) =>
           w.id === action.payload.id
             ? {
-                ...w,
-                width: action.payload.width,
-                height: action.payload.height,
-              }
+              ...w,
+              width: action.payload.width,
+              height: action.payload.height,
+            }
             : w,
         ),
       };
@@ -584,68 +584,6 @@ export function DesktopProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const openFile = useCallback(
-    (file: FileNode) => {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-
-      if (file.type === "folder") {
-        openWindow({
-          id: `finder-${file.id}`,
-          appId: "finder",
-          title: file.name,
-          x: centerX - 400,
-          y: centerY - 275,
-          width: 800,
-          height: 550,
-          isMinimized: false,
-          isMaximized: false,
-          data: { currentFolder: file },
-        });
-      } else if (file.type === "text" || file.type === "markdown") {
-        openWindow({
-          id: `viewer-${file.id}`,
-          appId: "textViewer",
-          title: file.name,
-          x: centerX - 300,
-          y: centerY - 250,
-          width: 600,
-          height: 500,
-          isMinimized: false,
-          isMaximized: false,
-          data: { file },
-        });
-      } else if (file.type === "pdf") {
-        openWindow({
-          id: "pdf-viewer",
-          appId: "pdfViewer",
-          title: "CV.pdf",
-          x: centerX - 350,
-          y: centerY - 300,
-          width: 700,
-          height: 600,
-          isMinimized: false,
-          isMaximized: false,
-          data: { file },
-        });
-      } else if (file.type === "image") {
-        openWindow({
-          id: `image-${file.id}`,
-          appId: "imageViewer",
-          title: file.name,
-          x: centerX - 350,
-          y: centerY - 250,
-          width: 700,
-          height: 500,
-          isMinimized: false,
-          isMaximized: false,
-          data: { file },
-        });
-      }
-    },
-    [openWindow],
-  );
-
   const openApp = useCallback(
     (appId: string, data?: unknown) => {
       const centerX = window.innerWidth / 2;
@@ -762,6 +700,73 @@ export function DesktopProvider({ children }: { children: ReactNode }) {
       }
     },
     [openWindow],
+  );
+
+  const openFile = useCallback(
+    (file: FileNode) => {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+
+      if (file.type === "app") {
+        openApp(file.name.toLowerCase());
+        return;
+      }
+
+      if (file.type === "folder") {
+        openWindow({
+          id: `finder-${file.id}`,
+          appId: "finder",
+          title: file.name,
+          x: centerX - 400,
+          y: centerY - 275,
+          width: 800,
+          height: 550,
+          isMinimized: false,
+          isMaximized: false,
+          data: { currentFolder: file },
+        });
+      } else if (file.type === "text" || file.type === "markdown") {
+        openWindow({
+          id: `viewer-${file.id}`,
+          appId: "textViewer",
+          title: file.name,
+          x: centerX - 300,
+          y: centerY - 250,
+          width: 600,
+          height: 500,
+          isMinimized: false,
+          isMaximized: false,
+          data: { file },
+        });
+      } else if (file.type === "pdf") {
+        openWindow({
+          id: "pdf-viewer",
+          appId: "pdfViewer",
+          title: "CV.pdf",
+          x: centerX - 350,
+          y: centerY - 300,
+          width: 700,
+          height: 600,
+          isMinimized: false,
+          isMaximized: false,
+          data: { file },
+        });
+      } else if (file.type === "image") {
+        openWindow({
+          id: `image-${file.id}`,
+          appId: "imageViewer",
+          title: file.name,
+          x: centerX - 350,
+          y: centerY - 250,
+          width: 700,
+          height: 500,
+          isMinimized: false,
+          isMaximized: false,
+          data: { file },
+        });
+      }
+    },
+    [openWindow, openApp],
   );
 
   const getActiveWindow = useCallback(() => {

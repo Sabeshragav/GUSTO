@@ -18,7 +18,7 @@ import { EventsExplorer } from "../apps/EventsExplorer";
 import { RulesSection } from "../apps/RulesSection";
 import { ContactSection } from "../apps/ContactSection";
 import { TransportInfo } from "../apps/TransportInfo";
-import { RegistrationForm } from "../apps/RegistrationForm";
+import { RegisterPage } from "../apps/register/RegisterPage";
 
 export function WindowManager() {
   const { state } = useDesktop();
@@ -60,7 +60,7 @@ export function WindowManager() {
       case "transport":
         return <TransportInfo />;
       case "register":
-        return <RegistrationForm data={windowState.data} />;
+        return <RegisterPage data={windowState.data} />;
       default:
         return (
           <div className="p-4 text-[var(--text-muted)]">

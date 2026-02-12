@@ -35,16 +35,8 @@ export function DesktopIcon({ item, isMobile = false }: DesktopIconProps) {
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const now = Date.now();
-    const timeSinceLastClick = now - lastClickTime.current;
-
-    if (timeSinceLastClick < 300) {
-      handleDoubleClick();
-    } else {
-      selectDesktopItem(item.id);
-    }
-
-    lastClickTime.current = now;
+    // Open immediately on single click as requested
+    handleDoubleClick();
   };
 
   const handleDoubleClick = () => {
@@ -110,9 +102,8 @@ export function DesktopIcon({ item, isMobile = false }: DesktopIconProps) {
   return (
     <motion.div
       ref={ref}
-      className={`desktop-icon flex flex-col items-center justify-center p-2 cursor-pointer ${
-        isMobile ? "w-full" : "w-24"
-      } ${isSelected ? "bg-black/5 border border-[var(--border-color)]" : ""} ${isJiggling ? "animate-icon-jiggle" : ""}`}
+      className={`desktop-icon flex flex-col items-center justify-center p-2 cursor-pointer ${isMobile ? "w-full" : "w-24"
+        } ${isSelected ? "bg-black/5 border border-[var(--border-color)]" : ""} ${isJiggling ? "animate-icon-jiggle" : ""}`}
       style={{
         ...positionStyle,
         borderRadius: "4px",

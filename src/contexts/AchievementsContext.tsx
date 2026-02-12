@@ -21,6 +21,8 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'clean-board', name: 'Clean Board', description: 'Won a game of Minesweeper' },
   { id: 'just-one-more', name: 'Just One More', description: 'Played the same game twice' },
   { id: 'gamer', name: 'Gamer', description: 'Played both Snake and Minesweeper' },
+  { id: 'registered-for-gusto-26', name: 'Registered for GUSTO \'26', description: 'Successfully registered for the symposium' },
+  { id: 'contact-explorer', name: 'Contact Explorer', description: 'Explored the contact list' },
 ];
 
 const STORAGE_KEY = ' Gusto-2026-achievements';
@@ -136,7 +138,7 @@ export function AchievementsProvider({ children, openAchievementsWindow }: Achie
     if (state.soundEnabled && notificationSound) {
       notificationSound.volume = 0.3;
       notificationSound.currentTime = 0;
-      notificationSound.play().catch(() => {});
+      notificationSound.play().catch(() => { });
     }
   }, [state.soundEnabled]);
 
@@ -154,7 +156,7 @@ export function AchievementsProvider({ children, openAchievementsWindow }: Achie
         if (prev.soundEnabled && notificationSound) {
           notificationSound.volume = 0.3;
           notificationSound.currentTime = 0;
-          notificationSound.play().catch(() => {});
+          notificationSound.play().catch(() => { });
         }
       }
 
@@ -173,6 +175,18 @@ export function AchievementsProvider({ children, openAchievementsWindow }: Achie
       return () => clearTimeout(timer);
     }
   }, [state.unlockedAchievements, unlockAchievement]);
+
+  // Listen for custom achievement events from RegisterPage
+  useEffect(() => {
+    const handleAchievementEvent = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.id) {
+        unlockAchievement(detail.id);
+      }
+    };
+    window.addEventListener('gusto-achievement', handleAchievementEvent);
+    return () => window.removeEventListener('gusto-achievement', handleAchievementEvent);
+  }, [unlockAchievement]);
 
   const markFolderVisited = useCallback((folderId: string) => {
     setState(prev => {

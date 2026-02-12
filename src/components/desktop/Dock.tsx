@@ -20,6 +20,7 @@ const dockItems: DockItem[] = [
   { id: "finder", name: "Finder", iconName: "folder", appId: "finder" },
   { id: "calendar", name: "Calendar", iconName: "calendar", appId: "calendar" },
   { id: "events", name: "Events", iconName: "calendar", appId: "events" },
+  { id: "rules", name: "Rules", iconName: "clipboard", appId: "rules" },
   {
     id: "settings",
     name: "Settings",
@@ -212,9 +213,8 @@ function DockIcon({
 
       {/* Active Indicator */}
       <div
-        className={`w-1 h-1 rounded-full bg-[var(--text-primary)] transition-opacity ${
-          isOpen ? "opacity-100" : "opacity-0"
-        }`}
+        className={`w-1 h-1 rounded-full bg-[var(--text-primary)] transition-opacity ${isOpen ? "opacity-100" : "opacity-0"
+          }`}
       />
     </div>
   );

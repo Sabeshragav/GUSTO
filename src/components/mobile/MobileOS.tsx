@@ -24,7 +24,7 @@ import { Minesweeper } from "../apps/Minesweeper";
 import { SystemPreferences } from "../apps/SystemPreferences";
 import { Achievements } from "../apps/Achievements";
 import { Spotify } from "../apps/Spotify";
-import { RegistrationForm } from "../apps/RegistrationForm";
+import { RegisterPage } from "../apps/register/RegisterPage";
 
 // Countdown constants
 const TARGET_DATE = new Date("2026-03-06T09:00:00+05:30");
@@ -95,7 +95,7 @@ function renderApp(appId: string, data?: unknown) {
     case "spotify":
       return <Spotify />;
     case "register":
-      return <RegistrationForm data={data} />;
+      return <RegisterPage data={data} />;
     default:
       return null;
   }
@@ -128,9 +128,9 @@ export function MobileOS() {
     try {
       const el = document.documentElement;
       if (!document.fullscreenElement && el.requestFullscreen) {
-        el.requestFullscreen().catch(() => {});
+        el.requestFullscreen().catch(() => { });
       }
-    } catch {}
+    } catch { }
   }, []);
 
   const openApp = useCallback((appId: string, data?: unknown) => {

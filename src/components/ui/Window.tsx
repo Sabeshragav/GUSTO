@@ -55,16 +55,34 @@ export function Window({
   });
   const windowRef = useRef<HTMLDivElement>(null);
 
+  // Track latest window state to avoid effect re-runs
+  const winState = useRef(win);
+  useEffect(() => {
+    winState.current = win;
+  });
+
   useEffect(() => {
     if (!isDragging) return;
 
+    let rafId: number | null = null;
+
     const handleMouseMove = (e: MouseEvent) => {
-      const newX = e.clientX - dragOffset.current.x;
-      const newY = Math.max(28, e.clientY - dragOffset.current.y);
-      moveWindow(win.id, newX, newY);
+      if (rafId) cancelAnimationFrame(rafId);
+
+      rafId = requestAnimationFrame(() => {
+        const newX = e.clientX - dragOffset.current.x;
+        const newY = Math.max(28, e.clientY - dragOffset.current.y);
+
+        // Only dispatch if changed significantly or at all
+        // (Avoiding sub-pixel thrashing if necessary, but strict equality is fine usually)
+        if (newX !== winState.current.x || newY !== winState.current.y) {
+          moveWindow(winState.current.id, newX, newY);
+        }
+      });
     };
 
     const handleMouseUp = () => {
+      if (rafId) cancelAnimationFrame(rafId);
       setIsDragging(false);
     };
 
@@ -72,53 +90,72 @@ export function Window({
     document.addEventListener("mouseup", handleMouseUp);
 
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isDragging, moveWindow, win.id]);
+  }, [isDragging, moveWindow]);
 
   useEffect(() => {
     if (!isResizing) return;
 
+    let rafId: number | null = null;
+
     const handleMouseMove = (e: MouseEvent) => {
-      const deltaX = e.clientX - resizeStart.current.x;
-      const deltaY = e.clientY - resizeStart.current.y;
+      if (rafId) cancelAnimationFrame(rafId);
 
-      let newWidth = resizeStart.current.width;
-      let newHeight = resizeStart.current.height;
-      let newX = resizeStart.current.windowX;
-      let newY = resizeStart.current.windowY;
+      rafId = requestAnimationFrame(() => {
+        const deltaX = e.clientX - resizeStart.current.x;
+        const deltaY = e.clientY - resizeStart.current.y;
 
-      if (isResizing.includes("e")) {
-        newWidth = Math.max(minWidth, resizeStart.current.width + deltaX);
-      }
-      if (isResizing.includes("w")) {
-        const widthDelta = Math.min(
-          deltaX,
-          resizeStart.current.width - minWidth,
-        );
-        newWidth = resizeStart.current.width - widthDelta;
-        newX = resizeStart.current.windowX + widthDelta;
-      }
-      if (isResizing.includes("s")) {
-        newHeight = Math.max(minHeight, resizeStart.current.height + deltaY);
-      }
-      if (isResizing.includes("n")) {
-        const heightDelta = Math.min(
-          deltaY,
-          resizeStart.current.height - minHeight,
-        );
-        newHeight = resizeStart.current.height - heightDelta;
-        newY = Math.max(28, resizeStart.current.windowY + heightDelta);
-      }
+        let newWidth = resizeStart.current.width;
+        let newHeight = resizeStart.current.height;
+        let newX = resizeStart.current.windowX;
+        let newY = resizeStart.current.windowY;
 
-      resizeWindow(win.id, newWidth, newHeight);
-      if (newX !== win.x || newY !== win.y) {
-        moveWindow(win.id, newX, newY);
-      }
+        if (isResizing.includes("e")) {
+          newWidth = Math.max(minWidth, resizeStart.current.width + deltaX);
+        }
+        if (isResizing.includes("w")) {
+          const widthDelta = Math.min(
+            deltaX,
+            resizeStart.current.width - minWidth
+          );
+          newWidth = resizeStart.current.width - widthDelta;
+          newX = resizeStart.current.windowX + widthDelta;
+        }
+        if (isResizing.includes("s")) {
+          newHeight = Math.max(minHeight, resizeStart.current.height + deltaY);
+        }
+        if (isResizing.includes("n")) {
+          const heightDelta = Math.min(
+            deltaY,
+            resizeStart.current.height - minHeight
+          );
+          newHeight = resizeStart.current.height - heightDelta;
+          newY = Math.max(28, resizeStart.current.windowY + heightDelta);
+        }
+
+        // Batch updates or check if needed
+        const hasSizeChange =
+          newWidth !== winState.current.width ||
+          newHeight !== winState.current.height;
+
+        const hasPosChange =
+          newX !== winState.current.x ||
+          newY !== winState.current.y;
+
+        if (hasSizeChange) {
+          resizeWindow(winState.current.id, newWidth, newHeight);
+        }
+        if (hasPosChange) {
+          moveWindow(winState.current.id, newX, newY);
+        }
+      });
     };
 
     const handleMouseUp = () => {
+      if (rafId) cancelAnimationFrame(rafId);
       setIsResizing(null);
     };
 
@@ -126,19 +163,11 @@ export function Window({
     document.addEventListener("mouseup", handleMouseUp);
 
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [
-    isResizing,
-    minWidth,
-    minHeight,
-    resizeWindow,
-    moveWindow,
-    win.id,
-    win.x,
-    win.y,
-  ]);
+  }, [isResizing, minWidth, minHeight, resizeWindow, moveWindow]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest(".traffic-light")) return;
@@ -186,19 +215,19 @@ export function Window({
     ? mobileWindowStyle
     : win.isMaximized
       ? {
-          top: 28,
-          left: 0,
-          width: "100vw",
-          height: "calc(100vh - 28px - 80px)",
-          zIndex: win.zIndex,
-        }
+        top: 28,
+        left: 0,
+        width: "100vw",
+        height: "calc(100vh - 28px - 80px)",
+        zIndex: win.zIndex,
+      }
       : {
-          top: win.y,
-          left: win.x,
-          width: win.width,
-          height: win.height,
-          zIndex: win.zIndex,
-        };
+        top: win.y,
+        left: win.x,
+        width: win.width,
+        height: win.height,
+        zIndex: win.zIndex,
+      };
 
   const resizeHandleClass =
     "absolute bg-transparent hover:bg-warm-500/10 transition-colors";
@@ -211,9 +240,8 @@ export function Window({
   const windowContent = (
     <div
       ref={windowRef}
-      className={`fixed flex flex-col overflow-hidden ${
-        isClosing ? "animate-window-close" : "animate-window-open"
-      }`}
+      className={`fixed flex flex-col overflow-hidden ${isClosing ? "animate-window-close" : "animate-window-open"
+        }`}
       style={{
         ...windowStyle,
         borderRadius: "var(--window-radius)",
@@ -225,9 +253,8 @@ export function Window({
     >
       {/* Window Header */}
       <div
-        className={`window-header relative flex items-center justify-center cursor-grab active:cursor-grabbing flex-shrink-0 select-none ${
-          isMobile ? "h-10 px-2" : "h-10 px-2"
-        }`}
+        className={`window-header relative flex items-center justify-center cursor-grab active:cursor-grabbing flex-shrink-0 select-none ${isMobile ? "h-10 px-2" : "h-10 px-2"
+          }`}
         style={{
           backgroundColor: "var(--surface-primary)",
           borderBottom: "2px solid var(--border-color)",

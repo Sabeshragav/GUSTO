@@ -37,12 +37,12 @@ export const emails: Email[] = [
     id: 'email-1',
     from: 'Gusto \'25 Team',
     fromEmail: 'gustoreg25gcee@gmail.com',
-    subject: 'Registration Confirmed: Welcome to Gusto \'25!',
+    subject: 'Registration Confirmed: Welcome to Gusto \'26!',
     body: `Hi [Name],
 
-Thank you for registering for Gusto '25! We are thrilled to have you join us at the Government College of Engineering, Erode on April 23rd, 2025.
+Thank you for registering for Gusto '26! We are thrilled to have you join us at the Government College of Engineering, Erode on March 6th, 2026.
 
-Your registration ID is: GST-2025-8X92
+Your registration ID is: GST-2026-8X92
 
 Event Schedule:
 - 09:00 AM: Check-in & Breakfast
@@ -55,7 +55,7 @@ Please carry a valid college ID card for entry.
 
 See you there!
 The Gusto Team`,
-    date: '2025-04-10',
+    date: '2026-03-02',
     isRead: false,
     isStarred: true,
   },
@@ -77,7 +77,7 @@ Next Steps:
 
 Good luck!
 Gusto Technical Team`,
-    date: '2025-04-21',
+    date: '2026-03-05',
     isRead: true,
     isStarred: true,
   },
@@ -98,7 +98,7 @@ Time: 11:00 AM
 
 Sharpen your skills!
 Coordinator`,
-    date: '2025-04-22',
+    date: '2026-03-05',
     isRead: false,
     isStarred: false,
   },
@@ -120,7 +120,7 @@ Submit your entries here or reply to this email.
 
 Best,
 Gusto Photography Club`,
-    date: '2025-04-20',
+    date: '2026-03-04',
     isRead: true,
     isStarred: false,
   },

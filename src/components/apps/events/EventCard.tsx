@@ -1,27 +1,18 @@
 "use client";
 
 import type { Event } from "../../../data/events";
-import type { ValidationResult } from "../../../data/eventValidation";
 
 interface EventCardProps {
   event: Event;
-  isSelected: boolean;
   isExpanded: boolean;
   onToggleExpand: () => void;
-  onToggleSelect: () => void;
-  validation: ValidationResult;
-  passSelected: boolean;
   isMobile: boolean;
 }
 
 export function EventCard({
   event,
-  isSelected,
   isExpanded,
   onToggleExpand,
-  onToggleSelect,
-  validation,
-  passSelected,
   isMobile,
 }: EventCardProps) {
   const techBadge =
@@ -32,16 +23,10 @@ export function EventCard({
   const trackBadge =
     "bg-[var(--surface-secondary)] text-[var(--text-muted)] border border-[var(--border-color)]";
 
-  const canSelect = !isSelected && validation.isValid;
-  const showWarning = !isSelected && !validation.isValid && passSelected;
-
   return (
     <div
-      className={`border-2 bg-[var(--surface-primary)] transition-all duration-200 ${
-        isSelected
-          ? "border-[#F54E00] shadow-[0_0_0_1px_rgba(245,78,0,0.3)]"
-          : "border-[var(--border-color)]"
-      } ${!isMobile ? "hover:scale-[1.01] hover:shadow-md" : "active:scale-[0.99]"}`}
+      className={`border-2 border-[var(--border-color)] bg-[var(--surface-primary)] transition-all duration-200 ${!isMobile ? "hover:scale-[1.01] hover:shadow-md" : "active:scale-[0.99]"
+        }`}
       style={{ borderRadius: "6px" }}
     >
       {/* Card Header */}
@@ -51,21 +36,6 @@ export function EventCard({
           <h3 className="text-base font-bold text-[var(--text-primary)] leading-tight">
             {event.title}
           </h3>
-          {isSelected && (
-            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#F54E00] flex items-center justify-center">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-3 h-3"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </span>
-          )}
         </div>
 
         {/* Badges row */}
@@ -87,7 +57,8 @@ export function EventCard({
 
         {/* Description — full when expanded, truncated otherwise */}
         <p
-          className={`text-sm text-[var(--text-secondary)] leading-relaxed mb-3 ${isExpanded ? "" : "line-clamp-2"}`}
+          className={`text-sm text-[var(--text-secondary)] leading-relaxed mb-3 ${isExpanded ? "" : "line-clamp-2"
+            }`}
         >
           {event.description}
         </p>
@@ -95,34 +66,13 @@ export function EventCard({
         {/* Actions */}
         <div className="flex gap-2">
           <button
-            onClick={onToggleSelect}
-            disabled={!passSelected || (!canSelect && !isSelected)}
-            className={`flex-1 px-3 py-2 text-xs font-bold border-2 transition-all duration-200 active:translate-y-[1px] disabled:opacity-40 disabled:cursor-not-allowed ${
-              isSelected
-                ? "bg-[#F54E00] text-white border-[#F54E00] hover:bg-[#D64000]"
-                : canSelect
-                  ? "bg-[var(--surface-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[#F54E00] hover:text-[#F54E00]"
-                  : "bg-[var(--surface-secondary)] text-[var(--text-muted)] border-[var(--border-color)]"
-            }`}
-            style={{ borderRadius: "4px" }}
-          >
-            {isSelected ? "✓ Selected" : "Select"}
-          </button>
-          <button
             onClick={onToggleExpand}
-            className="px-3 py-2 text-xs font-bold bg-[var(--surface-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-color)] hover:border-[var(--text-muted)] transition-colors active:translate-y-[1px]"
+            className="w-full px-3 py-2 text-xs font-bold bg-[var(--surface-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-color)] hover:border-[var(--text-muted)] transition-colors active:translate-y-[1px]"
             style={{ borderRadius: "4px" }}
           >
-            {isExpanded ? "Hide" : "Details"}
+            {isExpanded ? "Hide Details" : "View Details"}
           </button>
         </div>
-
-        {/* Inline warning */}
-        {showWarning && validation.message && (
-          <div className="mt-2 px-2.5 py-1.5 text-[11px] text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded">
-            ⚠ {validation.message}
-          </div>
-        )}
       </div>
 
       {/* Expanded Details */}
