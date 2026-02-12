@@ -2,39 +2,17 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  Folder,
-  FileText,
-  File,
-  Terminal,
-  Mail,
-  Trash2,
-  Image,
-  Bomb,
-} from "lucide-react";
 import { useDesktop } from "../../contexts/DesktopContext";
 import type { DesktopItem } from "../../types";
 import { findFileById } from "../../data/filesystem";
 import { MacFolder } from "../ui/icons/MacFolder";
+import { ThemedIcon } from "../ui/ThemedIcon";
 import { getAppColor } from "../../data/appColors";
 
 interface DesktopIconProps {
   item: DesktopItem;
   isMobile?: boolean;
 }
-
-const iconMap: Record<string, typeof Folder> = {
-  folder: Folder,
-  file: FileText,
-  text: FileText,
-  markdown: File,
-  pdf: FileText,
-  image: Image,
-  terminal: Terminal,
-  mail: Mail,
-  trash: Trash2,
-  minesweeper: Bomb,
-};
 
 import { FilePreview } from "../ui/FilePreview";
 
@@ -101,8 +79,6 @@ export function DesktopIcon({ item, isMobile = false }: DesktopIconProps) {
     setIsJiggling(true);
     setTimeout(() => setIsJiggling(false), 300);
   };
-
-  const IconComponent = iconMap[item.icon] || iconMap[item.type] || Folder;
 
   const getIconColor = () => {
     if (item.appId) {
@@ -177,7 +153,11 @@ export function DesktopIcon({ item, isMobile = false }: DesktopIconProps) {
         {isFolder ? (
           <MacFolder size={isMobile ? 40 : 48} />
         ) : isApp ? (
-          <IconComponent size={isMobile ? 40 : 48} strokeWidth={1.5} />
+          <ThemedIcon
+            name={item.icon}
+            size={isMobile ? 40 : 48}
+            style={{ color: getIconColor() }}
+          />
         ) : (
           <div className="scale-125 origin-bottom">
             <FilePreview type={item.type} name={item.name} />

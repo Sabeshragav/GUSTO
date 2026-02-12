@@ -205,7 +205,7 @@ export function Desktop() {
       <MenuBar />
 
       <div
-        className={`absolute inset-0 pt-10 pb-20 px-4 pointer-events-none ${isMobile ? "mobile-icons-container" : ""}`}
+        className={`absolute inset-0 pt-16 pb-20 px-4 pointer-events-none ${isMobile ? "mobile-icons-container" : ""}`}
       >
         <div
           className={`pointer-events-auto ${isMobile ? "mobile-icons-grid" : ""}`}
