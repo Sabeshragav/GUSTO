@@ -43,6 +43,11 @@ export function EventsExplorer() {
     setSelectedEvents([]); // Reset selections when changing pass
   }, []);
 
+  const handleClearPass = useCallback(() => {
+    setSelectedPass(null);
+    setSelectedEvents([]);
+  }, []);
+
   const handleToggleSelect = useCallback(
     (event: Event) => {
       setSelectedEvents((prev) => {
@@ -87,23 +92,32 @@ export function EventsExplorer() {
         <div className="flex items-center justify-between gap-2 mb-2">
           {/* Category Filter Tabs */}
           <div className="flex gap-2 flex-wrap">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => {
-                  setActiveCategory(cat);
-                  setExpandedId(null);
-                }}
-                className={`px-3 py-1.5 text-xs font-bold border-2 transition-colors active:translate-y-[1px] min-h-[36px] ${
-                  activeCategory === cat
-                    ? "bg-[#6C63FF] text-white border-[#6C63FF]"
-                    : "bg-[var(--surface-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[#6C63FF]"
-                }`}
-                style={{ borderRadius: "4px" }}
-              >
-                {cat}
-              </button>
-            ))}
+            {CATEGORIES.map((cat) => {
+              const label = isMobile
+                ? cat === "Technical"
+                  ? "Tech"
+                  : cat === "Non-Technical"
+                    ? "Non-Tech"
+                    : cat
+                : cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => {
+                    setActiveCategory(cat);
+                    setExpandedId(null);
+                  }}
+                  className={`px-3 py-1.5 text-xs font-bold border-2 transition-colors active:translate-y-[1px] min-h-[36px] ${
+                    activeCategory === cat
+                      ? "bg-[#6C63FF] text-white border-[#6C63FF]"
+                      : "bg-[var(--surface-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[#6C63FF]"
+                  }`}
+                  style={{ borderRadius: "4px" }}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Proceed Button */}
@@ -121,25 +135,24 @@ export function EventsExplorer() {
           </button>
         </div>
 
-        <div className="flex justify-end items-center">
-          {/* Inline validation hint */}
-          {!canProceed && selectedPass && selectedEvents.length === 0 && (
-            <p className="text-[11px] text-amber-400 mt-1">
-              ⚠ Select at least 1 event to proceed
-            </p>
-          )}
-          {/* {!selectedPass && (
+        {/* Inline validation hint */}
+        {!canProceed && selectedPass && selectedEvents.length === 0 && (
+          <p className="text-[11px] text-amber-400 mt-1">
+            ⚠ Select at least 1 event to proceed
+          </p>
+        )}
+        {/* {!selectedPass && (
             <p className="text-[11px] text-[var(--text-muted)] mt-1">
               Select a tier and at least 1 event to proceed
             </p>
           )} */}
-        </div>
       </div>
 
       {/* Pass Selector */}
       <PassSelector
         selectedPassId={selectedPass?.id ?? null}
         onSelectPass={handleSelectPass}
+        onClearPass={handleClearPass}
         isMobile={isMobile}
       />
 
@@ -148,39 +161,46 @@ export function EventsExplorer() {
         <SelectionSummary selectedEvents={selectedEvents} pass={selectedPass} />
       )}
 
-      {/* Events Grid */}
+      {/* Events Grid — only shown after a pass is selected */}
       <div className="flex-1 overflow-y-auto p-4">
-        {!selectedPass && (
-          <div className="text-center py-8 text-[var(--text-muted)] text-sm">
-            <div className="text-3xl mb-2">🎟️</div>
-            Select a pass above to start choosing events
+        {!selectedPass ? (
+          <div className="flex flex-col items-center justify-center h-full text-center text-[var(--text-muted)]">
+            <div className="text-5xl mb-3">🎟️</div>
+            <p className="text-base font-semibold mb-1">
+              Select a pass to get started
+            </p>
+            <p className="text-xs">
+              Choose a tier above, then pick your events
+            </p>
           </div>
-        )}
+        ) : (
+          <>
+            <div
+              className={`grid gap-4 ${
+                isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"
+              }`}
+            >
+              {filteredEvents.map((event) => (
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  isSelected={selectedEvents.some((e) => e.id === event.id)}
+                  isExpanded={expandedId === event.id}
+                  onToggleExpand={() => handleToggleExpand(event.id)}
+                  onToggleSelect={() => handleToggleSelect(event)}
+                  validation={getValidation(event)}
+                  passSelected={!!selectedPass}
+                  isMobile={isMobile}
+                />
+              ))}
+            </div>
 
-        <div
-          className={`grid gap-4 ${
-            isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"
-          }`}
-        >
-          {filteredEvents.map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              isSelected={selectedEvents.some((e) => e.id === event.id)}
-              isExpanded={expandedId === event.id}
-              onToggleExpand={() => handleToggleExpand(event.id)}
-              onToggleSelect={() => handleToggleSelect(event)}
-              validation={getValidation(event)}
-              passSelected={!!selectedPass}
-              isMobile={isMobile}
-            />
-          ))}
-        </div>
-
-        {filteredEvents.length === 0 && (
-          <div className="text-center py-12 text-[var(--text-muted)]">
-            No events in this category.
-          </div>
+            {filteredEvents.length === 0 && (
+              <div className="text-center py-12 text-[var(--text-muted)]">
+                No events in this category.
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

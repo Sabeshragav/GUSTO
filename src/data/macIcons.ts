@@ -11,6 +11,7 @@ const macIconMap: Record<string, string> = {
     rules: "Notes.svg",
     contact: "Contacts.svg",
     transport: "Maps.svg",
+    register: "Freeform.svg",
 
     // ── Utilities ──
     finder: "Finder.svg",

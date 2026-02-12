@@ -36,6 +36,12 @@ const dockItems: DockItem[] = [
   },
   { id: "snake", name: "Snake", iconName: "gamepad", appId: "snake" },
   { id: "spotify", name: "Spotify", iconName: "music", appId: "spotify" },
+  {
+    id: "register",
+    name: "Register",
+    iconName: "clipboard",
+    appId: "register",
+  },
 ];
 
 export function Dock() {

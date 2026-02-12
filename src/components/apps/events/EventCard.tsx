@@ -85,8 +85,10 @@ export function EventCard({
           </span>
         </div>
 
-        {/* Description */}
-        <p className="text-sm text-[var(--text-secondary)] leading-relaxed line-clamp-2 mb-3">
+        {/* Description — full when expanded, truncated otherwise */}
+        <p
+          className={`text-sm text-[var(--text-secondary)] leading-relaxed mb-3 ${isExpanded ? "" : "line-clamp-2"}`}
+        >
           {event.description}
         </p>
 

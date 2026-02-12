@@ -113,6 +113,15 @@ export function RegistrationForm({ data }: { data?: unknown }) {
         setScreenshotPreview(ev.target?.result as string);
       };
       reader.readAsDataURL(file);
+
+      // Re-request fullscreen after file picker closes (browsers exit
+      // fullscreen when a file dialog opens — this is a security policy).
+      setTimeout(() => {
+        const el = document.documentElement;
+        if (!document.fullscreenElement && el.requestFullscreen) {
+          el.requestFullscreen().catch(() => {});
+        }
+      }, 100);
     },
     [],
   );
