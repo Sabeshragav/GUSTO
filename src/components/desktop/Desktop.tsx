@@ -185,7 +185,20 @@ export function Desktop() {
       onContextMenu={handleContextMenu}
     >
       <AnimatePresence>
-        {isBooting && <BootScreen onComplete={() => setIsBooting(false)} />}
+        {isBooting && (
+          <BootScreen
+            onComplete={() => {
+              setIsBooting(false);
+              // Request fullscreen after boot animation
+              try {
+                const el = document.documentElement;
+                if (!document.fullscreenElement && el.requestFullscreen) {
+                  el.requestFullscreen().catch(() => {});
+                }
+              } catch {}
+            }}
+          />
+        )}
       </AnimatePresence>
 
       <DesktopWidgets />
