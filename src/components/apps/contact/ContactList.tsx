@@ -23,23 +23,28 @@ export function ContactList({ contacts, onSelect }: ContactListProps) {
         return acc;
     }, {} as Record<string, Contact[]>);
 
-    // Order of categories
-    const order = [
-        'Faculty Coordinator',
-        'Student Coordinator',
-        'Technical Head',
-        'Non-Technical Head'
-    ];
+    // Derive categories dynamically
+    const categories = Object.keys(grouped).sort((a, b) => {
+        const priority = ['overall', 'registration', 'Faculty Coordinator', 'Student Coordinator'];
+        const indexA = priority.indexOf(a);
+        const indexB = priority.indexOf(b);
+
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+
+        return a.localeCompare(b);
+    });
 
     return (
         <div className="space-y-6 pb-20">
-            {order.map(category => {
+            {categories.map(category => {
                 const group = grouped[category];
                 if (!group || group.length === 0) return null;
 
                 return (
                     <div key={category}>
-                        <div className="sticky top-[72px] z-10 bg-[var(--surface-bg)]/95 backdrop-blur-sm py-2 px-1 mb-1 border-b border-[var(--border-color)]/50">
+                        <div className="sticky top-0 z-10 bg-[var(--surface-bg)]/95 backdrop-blur-sm py-2 px-1 mb-1 border-b border-[var(--border-color)]/50">
                             <h3 className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest pl-2 border-l-2 border-[var(--accent-color)]">
                                 {category}
                             </h3>

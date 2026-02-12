@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search } from "lucide-react";
+import { Search, Mail, Instagram, Youtube } from "lucide-react";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useContactSearch } from "../../hooks/useContactSearch";
 import { CONTACTS, type Contact } from "../../data/contacts";
 import { ContactList } from "./contact/ContactList";
 import { ContactModal } from "./contact/ContactModal";
 import { useAchievements } from "../../contexts/AchievementsContext";
+import { gustoMail, instagram, youtube } from "../../data/details/fullData";
 
 export function ContactSection() {
   const { isMobile } = useIsMobile();
@@ -58,6 +59,25 @@ export function ContactSection() {
             contacts={sortedContacts}
             onSelect={setSelectedContact}
           />
+
+          {/* General Info Footer */}
+          <div className="mt-8 mb-8 border-t border-[var(--border-color)] pt-6 text-center pb-8">
+            <h3 className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">Connect With Us</h3>
+            <div className="flex justify-center gap-8">
+              <a href={instagram} target="_blank" rel="noreferrer" className="p-2 rounded-full bg-[var(--surface-secondary)] text-[var(--text-secondary)] hover:text-[#E1306C] hover:bg-[#E1306C]/10 transition-colors">
+                <Instagram size={18} />
+              </a>
+              <a href={youtube} target="_blank" rel="noreferrer" className="p-2 rounded-full bg-[var(--surface-secondary)] text-[var(--text-secondary)] hover:text-[#FF0000] hover:bg-[#FF0000]/10 transition-colors">
+                <Youtube size={18} />
+              </a>
+              <a href={`mailto:${gustoMail}`} className="p-2 rounded-full bg-[var(--surface-secondary)] text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color)]/10 transition-colors">
+                <Mail size={18} />
+              </a>
+            </div>
+            <p className="text-[10px] text-[var(--text-muted)] mt-4 opacity-60">
+              Gusto '26 — Government College of Engineering, Erode
+            </p>
+          </div>
         </div>
       </div>
 

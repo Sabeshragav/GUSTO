@@ -36,12 +36,12 @@ export function MobileRecentApps({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-md"
+          className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-md flex flex-col"
           onClick={onClose}
         >
           {/* Content area */}
           <div
-            className="absolute inset-x-0 top-10 bottom-12 flex flex-col"
+            className="flex-1 flex flex-col justify-center overflow-hidden py-10"
             onClick={(e) => e.stopPropagation()}
           >
             {apps.length === 0 ? (
@@ -53,80 +53,89 @@ export function MobileRecentApps({
               </div>
             ) : (
               <>
-                {/* Scrollable stacked cards */}
-                <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4 flex flex-col items-center gap-4">
+                {/* Horizontal Scrollable Stack */}
+                <div className="flex-1 w-full overflow-x-auto overflow-y-hidden flex items-center px-8 gap-4 snap-x snap-mandatory scrollbar-none">
+                  {/* Padding to center first item */}
+                  <div className="w-4 shrink-0" />
+
                   {apps.map((app, index) => (
                     <motion.div
                       key={app.id}
-                      initial={{ opacity: 0, y: 40, scale: 0.92 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, x: -200 }}
+                      initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.8, y: 50 }}
                       transition={{
                         duration: 0.3,
-                        delay: index * 0.06,
-                        ease: "easeOut",
+                        delay: index * 0.05,
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30
                       }}
-                      className="w-full max-w-[320px] shrink-0"
+                      className="w-[70vw] max-w-[280px] aspect-[9/16] shrink-0 snap-center relative flex flex-col"
                     >
-                      <div className="relative bg-[#1a1a2e]/90 rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-                        {/* Dismiss button */}
-                        <button
-                          onClick={() => onRemoveRecent(app.id)}
-                          className="absolute top-2.5 right-2.5 z-10 w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/50 active:text-white active:bg-white/20 transition-colors"
-                        >
-                          <X size={12} />
-                        </button>
+                      <div className="relative flex-1 bg-[#1a1a2e] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl flex flex-col">
+                        {/* Header Bar */}
+                        <div className="px-4 py-3 flex items-center justify-between border-b border-white/5 bg-white/5">
+                          <div className="flex items-center gap-2">
+                            <ThemedIcon name={app.icon} className="w-5 h-5 text-white/80" />
+                            <span className="text-xs font-bold text-white/90">{app.name}</span>
+                          </div>
+                          {/* Close Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onRemoveRecent(app.id);
+                            }}
+                            className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:bg-white/20 active:scale-90 transition-all"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
 
-                        {/* Card preview — tap to reopen */}
+                        {/* App Preview Body (Click to Open) */}
                         <button
                           onClick={() => {
                             onAppOpen(app.id);
                             onClose();
                           }}
-                          className="w-full active:bg-white/5 transition-colors"
+                          className="flex-1 w-full bg-[var(--surface-bg)]/80 flex flex-col items-center justify-center hover:bg-[var(--surface-bg)] transition-colors group"
                         >
-                          {/* Fake app content preview area */}
-                          <div className="h-36 bg-[var(--surface-bg)]/40 flex items-center justify-center border-b border-white/5">
+                          <motion.div
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="w-20 h-20 rounded-2xl bg-gradient-to-br from-white/10 to-transparent flex items-center justify-center mb-4 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-shadow duration-500"
+                          >
                             <ThemedIcon
                               name={app.icon}
-                              className="w-12 h-12 text-[var(--ph-orange)]/40"
+                              className="w-10 h-10 text-[var(--accent-color)] opacity-80"
                             />
-                          </div>
-
-                          {/* App label */}
-                          <div className="flex items-center gap-3 px-4 py-3">
-                            <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                              <ThemedIcon
-                                name={app.icon}
-                                className="w-4 h-4 text-[var(--ph-orange)]"
-                              />
-                            </div>
-                            <span className="text-white/80 text-sm font-medium">
-                              {app.name}
-                            </span>
-                          </div>
+                          </motion.div>
+                          <span className="text-xs text-white/40 font-medium tracking-wider uppercase">Tap to Resume</span>
                         </button>
                       </div>
                     </motion.div>
                   ))}
+
+                  {/* Padding to center last item */}
+                  <div className="w-4 shrink-0" />
                 </div>
 
-                {/* Clear All button */}
+                {/* Clear All button - Floating at bottom */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.15 }}
-                  className="flex justify-center pb-3 pt-2"
+                  transition={{ duration: 0.3, delay: 0.2 }}
+                  className="absolute bottom-20 left-0 right-0 flex justify-center pointer-events-none"
                 >
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       onClearAll();
                       onClose();
                     }}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 border border-white/10 active:bg-white/20 transition-colors"
+                    className="pointer-events-auto flex items-center gap-2 px-6 py-2 rounded-full bg-white/10 border border-white/10 backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all shadow-lg"
                   >
-                    <X size={14} className="text-white/60" />
-                    <span className="text-white/70 text-xs font-semibold uppercase tracking-wider">
+                    <span className="text-white/90 text-xs font-bold uppercase tracking-wider">
                       Clear All
                     </span>
                   </button>

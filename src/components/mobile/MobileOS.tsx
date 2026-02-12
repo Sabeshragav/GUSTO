@@ -27,7 +27,7 @@ import { Spotify } from "../apps/Spotify";
 import { RegisterPage } from "../apps/register/RegisterPage";
 
 // Countdown constants
-const TARGET_DATE = new Date("2026-03-06T09:00:00+05:30");
+const TARGET_DATE = new Date("2026-03-04T23:59:59+05:30");
 
 interface TimeLeft {
   days: number;
@@ -269,7 +269,7 @@ export function MobileOS() {
               ))}
             </div>
             <p className="text-white/40 text-[10px] mt-2 font-medium">
-              Registration closes 1st March 2026
+              Registration closes 4th March 2026
             </p>
           </div>
 

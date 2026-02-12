@@ -6,8 +6,8 @@ import { useDesktop } from "../../contexts/DesktopContext";
 import { useIsMobile } from "../../hooks/useIsMobile";
 
 // GUSTO 2026 event date — March 7, 2026
-const TARGET_DATE = new Date("2026-03-06T09:00:00+05:30");
-const REG_CLOSE_TEXT = "Registration closes on 1st March 2026";
+const TARGET_DATE = new Date("2026-03-04T23:59:59+05:30");
+const REG_CLOSE_TEXT = "Registration closes on 4th March 2026";
 
 interface TimeLeft {
   days: number;
