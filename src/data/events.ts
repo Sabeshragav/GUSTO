@@ -11,6 +11,8 @@ export interface Event {
   rules: string[];
   coordinators?: string[];
   image?: string;
+  track: 'A' | 'B' | 'C';
+  timeSlot: string;
 }
 
 export const GUSTO_INFO = {
@@ -38,7 +40,9 @@ export const EVENTS: Event[] = [
       "PPT must be attached as soon as possible.",
       "On-stage oral presentation duration: 7 to 10 minutes.",
       "Shortlisted authors notified via mail by 3rd March 2026."
-    ]
+    ],
+    track: "A",
+    timeSlot: "10:30 AM"
   },
   {
     id: "project-presentation",
@@ -56,7 +60,9 @@ export const EVENTS: Event[] = [
       "Presentation duration: 5-10 minutes followed by live demonstration.",
       "Hard copy of project report is required.",
       "Deadline for abstract submission: 1st March 2026."
-    ]
+    ],
+    track: "B",
+    timeSlot: "10:30 AM"
   },
   {
     id: "code-debugging",
@@ -73,7 +79,9 @@ export const EVENTS: Event[] = [
       "Two rounds, 30 minutes each.",
       "Preferred languages: C/Java.",
       "Batches allocated based on registration."
-    ]
+    ],
+    track: "A",
+    timeSlot: "11:00 AM"
   },
   {
     id: "blind-coding",
@@ -90,7 +98,9 @@ export const EVENTS: Event[] = [
       "Preferred languages: C, Python, Java.",
       "Programs must be run only once under supervision.",
       "Any runtime or compilation errors lead to instant elimination."
-    ]
+    ],
+    track: "B",
+    timeSlot: "11:00 AM"
   },
   {
     id: "tech-quiz",
@@ -107,7 +117,9 @@ export const EVENTS: Event[] = [
       "Sections: Easy, Medium, Hard.",
       "Topics: Programming (C, Python, Java), SQL logic, and DSA.",
       "Strict time limit and proctoring enforced."
-    ]
+    ],
+    track: "A",
+    timeSlot: "12:20 PM"
   },
   {
     id: "hunt-mods",
@@ -124,7 +136,9 @@ export const EVENTS: Event[] = [
       "Focus on altering code logic to achieve specific output.",
       "Allows 'N' runs within the allocated time.",
       "Winner determined by time and output quality."
-    ]
+    ],
+    track: "B",
+    timeSlot: "12:20 PM"
   },
   {
     id: "meme-contest",
@@ -141,7 +155,9 @@ export const EVENTS: Event[] = [
       "Memes must be uploaded by 1st March 2026 via email.",
       "Themes: Hostel life, 'That one professor', Senior advice, etc.",
       "No adult content or depictions of violence."
-    ]
+    ],
+    track: "C",
+    timeSlot: "Online"
   },
   {
     id: "photography",
@@ -158,6 +174,8 @@ export const EVENTS: Event[] = [
       "One photo per participant; Aspect ratio 3:4.",
       "No AI-generated content or collages allowed.",
       "Upload by 1st March 2026; only minimal editing permitted."
-    ]
+    ],
+    track: "C",
+    timeSlot: "Online"
   }
 ];
