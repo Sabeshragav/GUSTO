@@ -158,19 +158,21 @@ export function RegistrationForm({ data }: { data?: unknown }) {
     setSubmitStatus("idle");
 
     try {
+      const formData = new FormData();
+      formData.append("name", fields.name.trim());
+      formData.append("email", fields.email.trim());
+      formData.append("mobile", fields.mobile.trim());
+      formData.append("college", fields.college.trim());
+      formData.append("year", fields.year);
+      formData.append("tier", tier.name);
+      formData.append("selectedEvents", events.map((e) => e.title).join(", "));
+      if (screenshot) {
+        formData.append("screenshot", screenshot);
+      }
+
       const response = await fetch("/api/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: fields.name.trim(),
-          email: fields.email.trim(),
-          mobile: fields.mobile.trim(),
-          college: fields.college.trim(),
-          year: fields.year,
-          tier: tier.name,
-          events: events.map((e) => e.title).join(", "),
-          timestamp: new Date().toISOString(),
-        }),
+        body: formData,
       });
 
       const result = await response.json();
