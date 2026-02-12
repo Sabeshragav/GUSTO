@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useDesktop } from "../../contexts/DesktopContext";
@@ -155,11 +156,14 @@ export function DesktopIcon({ item, isMobile = false }: DesktopIconProps) {
           isMobile ? (
             <MacFolder size={40} />
           ) : (
-            <img
+            <Image
               src={getMacFolderIcon()}
               alt={item.name}
+              width={56}
+              height={56}
               className="w-14 h-14 object-contain pointer-events-none"
               draggable={false}
+              unoptimized
             />
           )
         ) : isApp ? (
@@ -176,11 +180,14 @@ export function DesktopIcon({ item, isMobile = false }: DesktopIconProps) {
                 item.icon === "trash" && state.trashedItems.length > 0,
               );
               return macSrc ? (
-                <img
+                <Image
                   src={macSrc}
                   alt={item.name}
+                  width={56}
+                  height={56}
                   className="w-14 h-14 object-contain pointer-events-none"
                   draggable={false}
+                  unoptimized
                 />
               ) : (
                 <ThemedIcon

@@ -71,9 +71,9 @@ export function EventsExplorer() {
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex-shrink-0 px-4 py-3 border-b-2 border-[var(--border-color)] bg-[var(--surface-primary)]">
-        <h2 className="text-lg font-bold text-[var(--text-primary)] mb-2">
+        {/* <h2 className="text-lg font-bold text-[var(--text-primary)] mb-2">
           GUSTO 2026 — Events
-        </h2>
+        </h2> */}
 
         {/* Category Filter Tabs */}
         <div className="flex gap-2 flex-wrap">

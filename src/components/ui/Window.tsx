@@ -15,6 +15,17 @@ interface WindowProps {
 
 type ResizeDirection = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | null;
 
+const resizeCursors: Record<string, string> = {
+  n: "ns-resize",
+  s: "ns-resize",
+  e: "ew-resize",
+  w: "ew-resize",
+  ne: "nesw-resize",
+  nw: "nwse-resize",
+  se: "nwse-resize",
+  sw: "nesw-resize",
+};
+
 export function Window({
   window: win,
   children,
@@ -191,6 +202,8 @@ export function Window({
 
   const resizeHandleClass =
     "absolute bg-transparent hover:bg-warm-500/10 transition-colors";
+  const cornerHandleClass =
+    "absolute bg-transparent hover:bg-warm-500/10 transition-colors z-10";
 
   const trafficLightSize = isMobile ? "w-4 h-4" : "w-3 h-3";
   const showResizeHandles = !win.isMaximized && !isMobile && !isTouchDevice;
@@ -316,36 +329,38 @@ export function Window({
       {/* Resize Handles */}
       {showResizeHandles && (
         <>
+          {/* Edge handles — offset to avoid overlapping corner areas */}
           <div
-            className={`${resizeHandleClass} top-0 left-2 right-2 h-2 cursor-n-resize`}
+            className={`${resizeHandleClass} top-0 left-5 right-5 h-2 cursor-n-resize`}
             onMouseDown={handleResizeStart("n")}
           />
           <div
-            className={`${resizeHandleClass} bottom-0 left-2 right-2 h-2 cursor-s-resize`}
+            className={`${resizeHandleClass} bottom-0 left-5 right-5 h-2 cursor-s-resize`}
             onMouseDown={handleResizeStart("s")}
           />
           <div
-            className={`${resizeHandleClass} left-0 top-2 bottom-2 w-2 cursor-w-resize`}
+            className={`${resizeHandleClass} left-0 top-5 bottom-5 w-2 cursor-w-resize`}
             onMouseDown={handleResizeStart("w")}
           />
           <div
-            className={`${resizeHandleClass} right-0 top-2 bottom-2 w-2 cursor-e-resize`}
+            className={`${resizeHandleClass} right-0 top-5 bottom-5 w-2 cursor-e-resize`}
             onMouseDown={handleResizeStart("e")}
           />
+          {/* Corner handles — larger hit area + higher z-index */}
           <div
-            className={`${resizeHandleClass} top-0 left-0 w-4 h-4 cursor-nw-resize rounded-tl-xl`}
+            className={`${cornerHandleClass} top-0 left-0 w-5 h-5 cursor-nw-resize rounded-tl-xl`}
             onMouseDown={handleResizeStart("nw")}
           />
           <div
-            className={`${resizeHandleClass} top-0 right-0 w-4 h-4 cursor-ne-resize rounded-tr-xl`}
+            className={`${cornerHandleClass} top-0 right-0 w-5 h-5 cursor-ne-resize rounded-tr-xl`}
             onMouseDown={handleResizeStart("ne")}
           />
           <div
-            className={`${resizeHandleClass} bottom-0 left-0 w-4 h-4 cursor-sw-resize rounded-bl-xl`}
+            className={`${cornerHandleClass} bottom-0 left-0 w-5 h-5 cursor-sw-resize rounded-bl-xl`}
             onMouseDown={handleResizeStart("sw")}
           />
           <div
-            className={`${resizeHandleClass} bottom-0 right-0 w-4 h-4 cursor-se-resize rounded-br-xl`}
+            className={`${cornerHandleClass} bottom-0 right-0 w-5 h-5 cursor-se-resize rounded-br-xl`}
             onMouseDown={handleResizeStart("se")}
           />
         </>
@@ -353,5 +368,28 @@ export function Window({
     </div>
   );
 
-  return createPortal(windowContent, document.body);
+  // Full-screen overlay during drag/resize so the cursor is tracked outside the window
+  const overlayActive = isDragging || isResizing;
+  const overlayCursor = isDragging
+    ? "grabbing"
+    : isResizing
+      ? resizeCursors[isResizing] || "default"
+      : "default";
+
+  return createPortal(
+    <>
+      {overlayActive && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 99999,
+            cursor: overlayCursor,
+          }}
+        />
+      )}
+      {windowContent}
+    </>,
+    document.body,
+  );
 }

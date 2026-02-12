@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   ChevronLeft,
@@ -52,28 +52,26 @@ export function Finder({ windowId, data }: FinderProps) {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
+  const navigateTo = useCallback(
+    (folder: FileNode) => {
+      setCurrentFolder(folder);
+      setSelectedItem(null);
+      setHistory((prev) => {
+        const newHistory = [...prev.slice(0, historyIndex + 1), folder];
+        setHistoryIndex(newHistory.length - 1);
+        return newHistory;
+      });
+      updateWindowData(windowId, { currentFolder: folder });
+      markFolderVisited(folder.id);
+    },
+    [historyIndex, windowId, updateWindowData, markFolderVisited],
+  );
+
   useEffect(() => {
     if (data?.currentFolder && data.currentFolder.id !== currentFolder.id) {
       navigateTo(data.currentFolder);
     }
-  }, [data?.currentFolder, currentFolder.id]); // Added currentFolder.id. navigateTo is stable (defined in component but state setters are stable, though navigateTo uses state, so better to suppress or optimize. Actually navigateTo changes on every render because it uses state 'history' and 'historyIndex' which change. It should be wrapped in useCallback or suppressed if intentional. 'navigateTo' depends on 'history', so it changes. But here we only want to run when 'data.currentFolder' changes. So we should likely NOT include navigateTo if we only mean to sync props. Let's just fix the warning by ignoring or adding stable deps. The warning says 'currentFolder.id' and 'navigateTo'.
-  // Resolving by adding currentFolder.id. navigateTo creates a loop if added without useCallback.
-  // Let's wrap navigateTo in useCallback? No, it depends on history.
-  // Best fix for this specific pattern ("sync prop to state") is usually to rely on the prop change.
-  // I will just suppress the line for now to avoid logic breaks, or safer: include currentFolder.id which is primitive.
-  // Actually, the error is explicit. I'll disable the line for now as refactoring navigateTo is risky without testing.
-  // data?.currentFolder is the trigger.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-
-  const navigateTo = (folder: FileNode) => {
-    setCurrentFolder(folder);
-    setSelectedItem(null);
-    const newHistory = [...history.slice(0, historyIndex + 1), folder];
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
-    updateWindowData(windowId, { currentFolder: folder });
-    markFolderVisited(folder.id);
-  };
+  }, [data?.currentFolder, currentFolder.id, navigateTo]);
 
   const goBack = () => {
     if (historyIndex > 0) {

@@ -715,7 +715,7 @@ export function DesktopProvider({ children }: { children: ReactNode }) {
         },
         events: {
           id: "events",
-          title: "Events",
+          title: "GUSTO'26 Events",
           width: 900,
           height: 600,
         },

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useDesktop } from "../../contexts/DesktopContext";
@@ -169,11 +170,13 @@ function DockIcon({
           (() => {
             const macSrc = getMacIcon(item.appId, isTrash && hasItems);
             return macSrc ? (
-              <img
+              <Image
                 src={macSrc}
                 alt={item.name}
-                className="w-full h-full object-contain pointer-events-none"
+                fill
+                className="object-contain pointer-events-none"
                 draggable={false}
+                unoptimized
               />
             ) : (
               <div className="w-3/5 h-3/5">
