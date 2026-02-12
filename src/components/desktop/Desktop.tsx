@@ -42,11 +42,22 @@ export function Desktop() {
     return fileSystem.children.map((child, index) => ({
       id: child.id,
       name: child.name,
-      icon: child.type === "folder" ? "folder" : "file",
-      type: child.type === "folder" ? "folder" : "file",
+      icon:
+        child.type === "app"
+          ? child.icon || "file"
+          : child.type === "folder"
+            ? "folder"
+            : "file",
+      type:
+        child.type === "app"
+          ? "app"
+          : child.type === "folder"
+            ? "folder"
+            : "file",
       x: isMobile ? 0 : 20,
       y: isMobile ? 0 : 20 + index * 100,
-      fileId: child.id,
+      fileId: child.type === "app" ? undefined : child.id,
+      appId: child.type === "app" ? child.name.toLowerCase() : undefined,
     }));
   }, [isMobile]);
 

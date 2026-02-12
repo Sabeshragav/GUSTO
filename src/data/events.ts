@@ -7,6 +7,7 @@ export interface Event {
   venue: string;
   description: string;
   team_size: string;
+  fee: string;
   rules: string[];
   coordinators?: string[];
   image?: string;
@@ -14,10 +15,10 @@ export interface Event {
 
 export const GUSTO_INFO = {
   name: "GUSTO '26",
-  date: "2026-03-07",
+  date: "2026-03-06",
   venue: "Government College of Engineering, Erode",
   department: "Information Technology",
-  contactRequest: "gustoreg26gcee@gmail.com"
+  contactRequest: "gustogcee@gmail.com"
 };
 
 export const EVENTS: Event[] = [
@@ -30,6 +31,7 @@ export const EVENTS: Event[] = [
     venue: "Main Auditorium",
     description: "Showcase research and technical knowledge through a formal paper presentation. Present innovative ideas and solutions to technical challenges.",
     team_size: "Solo or team of 2-3",
+    fee: "Free",
     rules: [
       "Submit abstract during registration on or before 1st March 2026.",
       "Shortlisting based on quality, relevance, and originality.",
@@ -47,6 +49,7 @@ export const EVENTS: Event[] = [
     venue: "IT Computer Lab 1",
     description: "Demonstrate engineering skills by presenting a working project or prototype. Explain design process, implementation challenges, and results.",
     team_size: "Solo or team of 2-3",
+    fee: "Free",
     rules: [
       "Upload project abstract (max 5 pages) including existing system/proposed methodology during registration.",
       "Must bring working project model and presentation slides.",
@@ -64,6 +67,7 @@ export const EVENTS: Event[] = [
     venue: "IT Computer Lab 2",
     description: "Identify and fix bugs in provided code snippets. Race against time to optimize problematic code.",
     team_size: "Individual",
+    fee: "₹50",
     rules: [
       "Pen and paper event; no internet or electronic devices allowed.",
       "Two rounds, 30 minutes each.",
@@ -80,6 +84,7 @@ export const EVENTS: Event[] = [
     venue: "IT Computer Lab 3",
     description: "A challenging competition where participants type code and run it only once. Errors lead to immediate elimination.",
     team_size: "Individual",
+    fee: "₹50",
     rules: [
       "Round 1: 15 mins (simple problem); Round 2: 15 mins (medium difficulty).",
       "Preferred languages: C, Python, Java.",
@@ -96,6 +101,7 @@ export const EVENTS: Event[] = [
     venue: "Main Auditorium",
     description: "Test knowledge of technology, computer science, and engineering trends in a fast-paced proctored online format.",
     team_size: "Individual",
+    fee: "₹50",
     rules: [
       "Conducted via an online platform in the auditorium.",
       "Sections: Easy, Medium, Hard.",
@@ -112,6 +118,7 @@ export const EVENTS: Event[] = [
     venue: "IT Computer Lab 2",
     description: "Technical treasure hunt combining cryptography, problem-solving, and logic-based coding alterations.",
     team_size: "Individual",
+    fee: "₹50",
     rules: [
       "Round 1: 30 mins; Round 2: 30 mins.",
       "Focus on altering code logic to achieve specific output.",
@@ -128,6 +135,7 @@ export const EVENTS: Event[] = [
     venue: "Online",
     description: "Create original memes based on provided situations (College life, student struggles, etc.).",
     team_size: "Individual",
+    fee: "Free",
     rules: [
       "Individual participation only.",
       "Memes must be uploaded by 1st March 2026 via email.",
@@ -144,6 +152,7 @@ export const EVENTS: Event[] = [
     venue: "Online",
     description: "Capture the essence of themes like Nature, The Color Green, or Macro photography.",
     team_size: "Individual",
+    fee: "Free",
     rules: [
       "Themes: Landscapes, Animals, Flowers, Macro, Elements of Design.",
       "One photo per participant; Aspect ratio 3:4.",

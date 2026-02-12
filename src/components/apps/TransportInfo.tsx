@@ -1,0 +1,181 @@
+"use client";
+
+import { useIsMobile } from "../../hooks/useIsMobile";
+
+interface InfoCard {
+  title: string;
+  icon: string;
+  items: string[];
+}
+
+const TRANSPORT_DATA: InfoCard[] = [
+  {
+    title: "By Bus",
+    icon: "🚌",
+    items: [
+      "Government College of Engineering is well-connected by TNSTC and private bus services.",
+      "Erode Central Bus Stand is approximately 5 km from the campus.",
+      "Frequent city buses (Route 4, 7, 12) run from the bus stand to GCE, Erode.",
+      "Auto-rickshaws and cabs are available from the bus stand (~₹100-150).",
+    ],
+  },
+  {
+    title: "By Train",
+    icon: "🚆",
+    items: [
+      "Erode Junction (ED) is the nearest railway station, about 6 km from campus.",
+      "Erode Junction is a major junction on the Salem–Coimbatore line.",
+      "Well-connected to Chennai, Coimbatore, Bangalore, Madurai, and Trichy.",
+      "Prepaid taxi and auto counters available at the station.",
+    ],
+  },
+  {
+    title: "By Air",
+    icon: "✈️",
+    items: [
+      "Coimbatore International Airport (CJB) is the nearest airport (~80 km).",
+      "Salem Airport (SLV) is approximately 90 km away.",
+      "Taxi services available from both airports to Erode (~2-2.5 hours).",
+    ],
+  },
+];
+
+const LANDMARKS = [
+  "Erode Bus Stand — 5 km",
+  "Erode Junction Railway Station — 6 km",
+  "Perundurai — 15 km",
+  "Bhavani — 16 km",
+  "Gobichettipalayam — 25 km",
+];
+
+const ACCOMMODATION = [
+  {
+    name: "Hotel JC Grand",
+    detail: "Near Erode Bus Stand, ₹800-1500/night",
+  },
+  {
+    name: "Hotel Velan",
+    detail: "EVN Road, ₹600-1200/night",
+  },
+  {
+    name: "Raj Residency",
+    detail: "Near Railway Station, ₹1000-2000/night",
+  },
+  {
+    name: "College Hostel",
+    detail: "Limited guest rooms available on request. Contact coordinator.",
+  },
+];
+
+function InfoSection({ card }: { card: InfoCard }) {
+  return (
+    <div className="bg-[var(--surface-primary)] border-2 border-[var(--border-color)] p-4">
+      <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
+        <span className="text-lg">{card.icon}</span>
+        {card.title}
+      </h3>
+      <ul className="space-y-2 list-disc pl-5 marker:text-[var(--ph-orange)]">
+        {card.items.map((item, idx) => (
+          <li
+            key={idx}
+            className="text-sm text-[var(--text-secondary)] leading-relaxed"
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export function TransportInfo() {
+  const { isMobile } = useIsMobile();
+
+  return (
+    <div className="h-full overflow-y-auto">
+      <div className={`${isMobile ? "p-4" : "p-6"} max-w-4xl mx-auto`}>
+        {/* Header */}
+        <header className="mb-6 border-b-2 border-[var(--border-color)] pb-4">
+          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-1">
+            Getting Here
+          </h2>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Government College of Engineering, Erode — Tamil Nadu 638316
+          </p>
+        </header>
+
+        {/* Transport Options */}
+        <div
+          className={`grid gap-4 mb-6 ${isMobile ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-3"}`}
+        >
+          {TRANSPORT_DATA.map((card) => (
+            <InfoSection key={card.title} card={card} />
+          ))}
+        </div>
+
+        {/* Split section: Landmarks + Accommodation */}
+        <div
+          className={`grid gap-4 mb-6 ${isMobile ? "grid-cols-1" : "grid-cols-2"}`}
+        >
+          {/* Nearby Landmarks */}
+          <div className="bg-[var(--surface-primary)] border-2 border-[var(--border-color)] p-4">
+            <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
+              <span className="text-lg">📍</span>
+              Nearby Landmarks
+            </h3>
+            <ul className="space-y-2">
+              {LANDMARKS.map((lm, idx) => (
+                <li
+                  key={idx}
+                  className="flex items-center gap-2 text-sm text-[var(--text-secondary)]"
+                >
+                  <span className="w-1.5 h-1.5 bg-[var(--ph-orange)] rounded-full flex-shrink-0" />
+                  {lm}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Accommodation */}
+          <div className="bg-[var(--surface-primary)] border-2 border-[var(--border-color)] p-4">
+            <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
+              <span className="text-lg">🏨</span>
+              Accommodation
+            </h3>
+            <div className="space-y-3">
+              {ACCOMMODATION.map((acc) => (
+                <div
+                  key={acc.name}
+                  className="border-b border-[var(--border-color)] pb-2 last:border-0 last:pb-0"
+                >
+                  <span className="block text-sm font-bold text-[var(--text-primary)]">
+                    {acc.name}
+                  </span>
+                  <span className="text-xs text-[var(--text-secondary)]">
+                    {acc.detail}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Google Maps Link */}
+        <div className="border-2 border-[var(--border-color)] bg-[var(--surface-secondary)] p-4">
+          <h3 className="text-sm font-bold text-[var(--text-primary)] mb-2 flex items-center gap-2">
+            <span className="text-lg">🗺️</span>
+            Find Us on Map
+          </h3>
+          <a
+            href="https://maps.google.com/?q=Government+College+of+Engineering+Erode"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-4 py-2 text-sm font-bold bg-[var(--ph-orange)] text-white border-2 border-[var(--ph-orange)] hover:bg-[var(--accent-hover)] transition-colors active:translate-y-[1px] min-h-[44px]"
+          >
+            Open in Google Maps ↗
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}

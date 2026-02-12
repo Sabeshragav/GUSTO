@@ -1,52 +1,69 @@
-'use client';
+"use client";
 
-import { useDesktop } from '../../contexts/DesktopContext';
-import { Window } from '../ui/Window';
-import { Finder } from '../apps/Finder';
-import { Terminal } from '../apps/Terminal';
-import { EmailClient } from '../apps/EmailClient';
-import { Minesweeper } from '../apps/Minesweeper';
-import { Snake } from '../apps/Snake';
-import { TextViewer } from '../apps/TextViewer';
-import { PDFViewer } from '../apps/PDFViewer';
-import { TrashViewer } from '../apps/TrashViewer';
-import { SystemPreferences } from '../apps/SystemPreferences';
-import { Achievements } from '../apps/Achievements';
-import { Spotify } from '../apps/Spotify';
-
-import { CalendarApp } from '../apps/Calendar';
+import { useDesktop } from "../../contexts/DesktopContext";
+import { Window } from "../ui/Window";
+import { Finder } from "../apps/Finder";
+import { Terminal } from "../apps/Terminal";
+import { EmailClient } from "../apps/EmailClient";
+import { Minesweeper } from "../apps/Minesweeper";
+import { Snake } from "../apps/Snake";
+import { TextViewer } from "../apps/TextViewer";
+import { PDFViewer } from "../apps/PDFViewer";
+import { TrashViewer } from "../apps/TrashViewer";
+import { SystemPreferences } from "../apps/SystemPreferences";
+import { Achievements } from "../apps/Achievements";
+import { Spotify } from "../apps/Spotify";
+import { CalendarApp } from "../apps/Calendar";
+import { EventsExplorer } from "../apps/EventsExplorer";
+import { RulesSection } from "../apps/RulesSection";
+import { ContactSection } from "../apps/ContactSection";
+import { TransportInfo } from "../apps/TransportInfo";
 
 export function WindowManager() {
   const { state } = useDesktop();
 
-  const renderWindowContent = (windowState: typeof state.windows[0]) => {
+  const renderWindowContent = (windowState: (typeof state.windows)[0]) => {
     switch (windowState.appId) {
-      case 'finder':
-        return <Finder windowId={windowState.id} data={windowState.data as any} />;
-      case 'calendar':
+      case "finder":
+        return (
+          <Finder windowId={windowState.id} data={windowState.data as any} />
+        );
+      case "calendar":
         return <CalendarApp />;
-      case 'terminal':
+      case "terminal":
         return <Terminal />;
-      case 'email':
+      case "email":
         return <EmailClient />;
-      case 'minesweeper':
+      case "minesweeper":
         return <Minesweeper />;
-      case 'snake':
+      case "snake":
         return <Snake />;
-      case 'textViewer':
+      case "textViewer":
         return <TextViewer data={windowState.data as any} />;
-      case 'pdfViewer':
+      case "pdfViewer":
         return <PDFViewer />;
-      case 'trash':
+      case "trash":
         return <TrashViewer />;
-      case 'systemPreferences':
+      case "systemPreferences":
         return <SystemPreferences />;
-      case 'achievements':
+      case "achievements":
         return <Achievements />;
-      case 'spotify':
+      case "spotify":
         return <Spotify />;
+      case "events":
+        return <EventsExplorer />;
+      case "rules":
+        return <RulesSection />;
+      case "contact":
+        return <ContactSection />;
+      case "transport":
+        return <TransportInfo />;
       default:
-        return <div className="p-4 text-[var(--text-muted)]">Unknown app: {windowState.appId}</div>;
+        return (
+          <div className="p-4 text-[var(--text-muted)]">
+            Unknown app: {windowState.appId}
+          </div>
+        );
     }
   };
 

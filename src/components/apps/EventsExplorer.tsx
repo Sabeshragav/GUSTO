@@ -1,99 +1,181 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { EVENTS, type Event } from '../../data/events';
+import { useState, useCallback } from "react";
+import { EVENTS, type Event } from "../../data/events";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
-export function EventsExplorer() {
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(EVENTS[0]?.id || null);
+type CategoryFilter = "All" | "Technical" | "Non-Technical";
 
-  const selectedEvent = EVENTS.find((e) => e.id === selectedEventId);
+const CATEGORIES: CategoryFilter[] = ["All", "Technical", "Non-Technical"];
+
+function EventCard({
+  event,
+  isExpanded,
+  onToggle,
+}: {
+  event: Event;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  const categoryColor =
+    event.type === "Technical"
+      ? "bg-[var(--ph-orange)] text-white"
+      : "bg-[var(--surface-elevated)] text-[var(--text-primary)] border border-[var(--border-color)]";
 
   return (
-    <div className="flex h-full text-[var(--ph-black)] font-sans">
-      {/* Sidebar List */}
-      <div 
-        className="w-1/3 min-w-[200px] border-r-2 border-[var(--border-color)] flex flex-col bg-[var(--surface-secondary)]"
-      >
-        <div className="p-2 border-b-2 border-[var(--border-color)] bg-[var(--surface-primary)] font-bold text-sm">
-          GUSTO &apos;25 Events
+    <div
+      className="border-2 border-[var(--border-color)] bg-[var(--surface-primary)] transition-shadow hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]"
+      style={{ borderRadius: "2px" }}
+    >
+      {/* Card Header */}
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <span
+            className={`inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${categoryColor}`}
+          >
+            {event.type}
+          </span>
+          <span className="text-xs font-mono text-[var(--text-muted)] whitespace-nowrap">
+            {event.fee}
+          </span>
         </div>
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
-          {EVENTS.map((event) => (
+
+        <h3 className="text-base font-bold text-[var(--text-primary)] mb-1 leading-tight">
+          {event.title}
+        </h3>
+
+        <p className="text-sm text-[var(--text-secondary)] leading-relaxed line-clamp-2 mb-3">
+          {event.description}
+        </p>
+
+        <div className="flex items-center gap-3 text-xs text-[var(--text-muted)] mb-3">
+          <span>👥 {event.team_size}</span>
+          <span>📍 {event.venue}</span>
+        </div>
+
+        <button
+          onClick={onToggle}
+          className="w-full px-4 py-2 text-sm font-bold bg-[var(--surface-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-color)] hover:bg-[var(--ph-orange)] hover:text-white hover:border-[var(--ph-orange)] transition-colors active:translate-y-[1px]"
+        >
+          {isExpanded ? "Hide Details" : "View Details"}
+        </button>
+      </div>
+
+      {/* Expanded Details */}
+      {isExpanded && (
+        <div className="border-t-2 border-[var(--border-color)] p-4 bg-[var(--surface-bg)] animate-fade-in">
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-[var(--surface-primary)] p-3 border border-[var(--border-color)]">
+              <span className="block text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">
+                Time
+              </span>
+              <span className="font-mono text-sm text-[var(--text-primary)]">
+                {event.time}
+              </span>
+            </div>
+            <div className="bg-[var(--surface-primary)] p-3 border border-[var(--border-color)]">
+              <span className="block text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">
+                Date
+              </span>
+              <span className="font-mono text-sm text-[var(--text-primary)]">
+                {event.date}
+              </span>
+            </div>
+            <div className="bg-[var(--surface-primary)] p-3 border border-[var(--border-color)]">
+              <span className="block text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">
+                Team Size
+              </span>
+              <span className="font-mono text-sm text-[var(--text-primary)]">
+                {event.team_size}
+              </span>
+            </div>
+            <div className="bg-[var(--surface-primary)] p-3 border border-[var(--border-color)]">
+              <span className="block text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">
+                Fee
+              </span>
+              <span className="font-mono text-sm text-[var(--text-primary)]">
+                {event.fee}
+              </span>
+            </div>
+          </div>
+
+          <h4 className="text-sm font-bold text-[var(--text-primary)] mb-2 border-b border-[var(--border-color)] pb-1">
+            Rules & Guidelines
+          </h4>
+          <ul className="list-disc pl-5 space-y-1 text-sm text-[var(--text-secondary)] marker:text-[var(--ph-orange)]">
+            {event.rules.map((rule, idx) => (
+              <li key={idx}>{rule}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function EventsExplorer() {
+  const { isMobile } = useIsMobile();
+  const [activeCategory, setActiveCategory] = useState<CategoryFilter>("All");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const filteredEvents =
+    activeCategory === "All"
+      ? EVENTS
+      : EVENTS.filter((e) => e.type === activeCategory);
+
+  const handleToggle = useCallback((id: string) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  }, []);
+
+  return (
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Header */}
+      <div className="flex-shrink-0 px-4 py-3 border-b-2 border-[var(--border-color)] bg-[var(--surface-primary)]">
+        <h2 className="text-lg font-bold text-[var(--text-primary)] mb-2">
+          GUSTO 2026 — Events
+        </h2>
+
+        {/* Category Filter Tabs */}
+        <div className="flex gap-2 flex-wrap">
+          {CATEGORIES.map((cat) => (
             <button
-              key={event.id}
-              onClick={() => setSelectedEventId(event.id)}
-              className={`w-full text-left px-3 py-2 text-sm font-medium border-2 transition-all active:translate-y-[1px] ${
-                selectedEventId === event.id
-                  ? 'bg-[var(--ph-orange)] text-white border-[var(--ph-black)] shadow-[2px_2px_0px_0px_var(--ph-black)]'
-                  : 'bg-[var(--surface-primary)] border-transparent hover:border-[var(--border-color)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]'
+              key={cat}
+              onClick={() => {
+                setActiveCategory(cat);
+                setExpandedId(null);
+              }}
+              className={`px-3 py-1.5 text-xs font-bold border-2 transition-colors active:translate-y-[1px] min-h-[36px] ${
+                activeCategory === cat
+                  ? "bg-[var(--ph-orange)] text-white border-[var(--ph-orange)]"
+                  : "bg-[var(--surface-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[var(--ph-orange)]"
               }`}
             >
-              {event.title}
-              <div className={`text-[10px] mt-0.5 ${selectedEventId === event.id ? 'text-white/90' : 'text-[var(--text-secondary)]'}`}>
-                {event.type}
-              </div>
+              {cat}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Main Content Detail View */}
-      <div className="flex-1 flex flex-col bg-[var(--surface-bg)] overflow-hidden">
-        {selectedEvent ? (
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-3xl mx-auto">
-              {/* Header */}
-              <div className="mb-6 border-b-2 border-[var(--border-color)] pb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="inline-block px-2 py-0.5 text-xs font-bold border border-[var(--border-color)] bg-[var(--ph-orange)] text-white">
-                    {selectedEvent.type.toUpperCase()}
-                  </span>
-                  <span className="text-sm font-mono text-[var(--text-secondary)]">
-                    {selectedEvent.date} • {selectedEvent.time}
-                  </span>
-                </div>
-                <h1 className="text-3xl font-bold mb-2 tracking-tight">{selectedEvent.title}</h1>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-4 h-4 rounded-full bg-[var(--ph-black)] flex items-center justify-center text-white text-[10px]">📍</span>
-                  {selectedEvent.venue}
-                </div>
-              </div>
+      {/* Events Grid */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <div
+          className={`grid gap-4 ${
+            isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"
+          }`}
+        >
+          {filteredEvents.map((event) => (
+            <EventCard
+              key={event.id}
+              event={event}
+              isExpanded={expandedId === event.id}
+              onToggle={() => handleToggle(event.id)}
+            />
+          ))}
+        </div>
 
-              {/* Description */}
-              <div className="prose prose-sm max-w-none mb-8">
-                <h3 className="text-lg font-bold border-b border-[var(--border-color)] mb-2 pb-1">Description</h3>
-                <p className="mb-4 leading-relaxed">{selectedEvent.description}</p>
-                
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="bg-[var(--surface-primary)] p-3 border border-[var(--border-color)] shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
-                    <span className="block text-xs uppercase font-bold text-[var(--text-secondary)] mb-1">Team Size</span>
-                    <span className="font-mono font-medium">{selectedEvent.team_size}</span>
-                  </div>
-                  {/* Add more grid items if needed */}
-                </div>
-
-                <h3 className="text-lg font-bold border-b border-[var(--border-color)] mb-2 pb-1">Rules & Guidelines</h3>
-                <ul className="list-disc pl-5 space-y-1 marker:text-[var(--ph-orange)]">
-                  {selectedEvent.rules.map((rule, idx) => (
-                    <li key={idx}>{rule}</li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-4 mt-8">
-                 <button className="px-6 py-2 bg-[var(--ph-black)] text-white font-bold border-2 border-transparent hover:bg-[var(--ph-orange)] transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-[2px] active:shadow-none">
-                  Register Now
-                </button>
-                 <button className="px-6 py-2 bg-[var(--surface-primary)] text-[var(--ph-black)] font-bold border-2 border-[var(--border-color)] hover:bg-[var(--surface-secondary)] transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] active:translate-y-[2px] active:shadow-none">
-                  Download PDF
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex-1 flex items-center justify-center text-[var(--text-muted)]">
-            Select an event to view details
+        {filteredEvents.length === 0 && (
+          <div className="text-center py-12 text-[var(--text-muted)]">
+            No events in this category.
           </div>
         )}
       </div>
