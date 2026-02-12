@@ -214,10 +214,27 @@ export function MobileOS() {
       ) : (
         /* ── Home Screen ── */
         <div className="absolute inset-0 pt-10 pb-12 flex flex-col items-center">
+          {/* GUSTO watermark background */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
+            <div className="flex">
+              {Array.from("GUSTO").map((letter, i) => (
+                <span
+                  key={i}
+                  className="font-black text-white/[0.07] tracking-tighter"
+                  style={{ fontSize: "5rem", lineHeight: 0.85 }}
+                >
+                  {letter}
+                </span>
+              ))}
+            </div>
+            <span className="text-white/[0.07] text-lg font-bold tracking-[0.5em] mt-2 uppercase">
+              2026
+            </span>
+          </div>
           {/* Countdown widget */}
           <div className="mt-8 mb-6 flex flex-col items-center">
-            <p className="text-white/70 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">
-              GUSTO 2026
+            <p className="text-white/70 text-[11px] font-bold tracking-wide mb-2">
+              The clock is ticking away !
             </p>
             <div className="flex items-baseline gap-1">
               {units.map((u, i) => (
