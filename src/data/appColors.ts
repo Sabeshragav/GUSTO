@@ -15,7 +15,8 @@ const appColors: Record<string, AppColor> = {
     events: { color: '#FF6B35', bg: 'rgba(255,107,53,0.15)' },   // warm orange
     rules: { color: '#4A90D9', bg: 'rgba(74,144,217,0.15)' },   // blue
     contact: { color: '#34C759', bg: 'rgba(52,199,89,0.15)' },    // green
-    transport: { color: '#AF52DE', bg: 'rgba(175,82,222,0.15)' },   // purple
+    transport: { color: '#AF52DE', bg: 'rgba(175,82,222,0.15)' },   // purple\r
+    register: { color: '#6C63FF', bg: 'rgba(108,99,255,0.15)' },   // indigo
 
     // ── Games ──
     snake: { color: '#30D158', bg: 'rgba(48,209,88,0.15)' },    // vivid green

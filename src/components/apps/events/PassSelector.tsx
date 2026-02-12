@@ -29,7 +29,7 @@ export function PassSelector({
             <button
               key={pass.id}
               onClick={() => onSelectPass(pass)}
-              className={`flex-shrink-0 text-left border-2 transition-all duration-200 ${
+              className={`relative flex-shrink-0 text-left border-2 transition-all duration-200 ${
                 isMobile ? "min-w-[140px] snap-start p-2.5" : "flex-1 p-3"
               } ${
                 isSelected
@@ -38,6 +38,16 @@ export function PassSelector({
               }`}
               style={{ borderRadius: "6px" }}
             >
+              {/* Price badge */}
+              <span
+                className={`absolute -top-2 -right-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                  isSelected
+                    ? "bg-[#6C63FF] text-white"
+                    : "bg-[var(--surface-primary)] text-[var(--text-muted)] border border-[var(--border-color)]"
+                }`}
+              >
+                ₹{pass.price}
+              </span>
               <div className="flex items-center gap-2 mb-1">
                 <span
                   className={`text-sm font-bold ${

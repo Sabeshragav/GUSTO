@@ -24,6 +24,7 @@ import { Minesweeper } from "../apps/Minesweeper";
 import { SystemPreferences } from "../apps/SystemPreferences";
 import { Achievements } from "../apps/Achievements";
 import { Spotify } from "../apps/Spotify";
+import { RegistrationForm } from "../apps/RegistrationForm";
 
 // Countdown constants
 const TARGET_DATE = new Date("2026-03-06T09:00:00+05:30");
@@ -69,7 +70,7 @@ const ALL_APPS: MobileApp[] = [
   { id: "spotify", name: "Spotify", icon: "music" },
 ];
 
-function renderApp(appId: string) {
+function renderApp(appId: string, data?: unknown) {
   switch (appId) {
     case "events":
       return <EventsExplorer />;
@@ -93,15 +94,18 @@ function renderApp(appId: string) {
       return <Achievements />;
     case "spotify":
       return <Spotify />;
+    case "register":
+      return <RegistrationForm data={data} />;
     default:
       return null;
   }
 }
 
 export function MobileOS() {
-  const { state } = useDesktop();
+  const { state, closeWindow } = useDesktop();
   const [isBooting, setIsBooting] = useState(true);
   const [activeApp, setActiveApp] = useState<string | null>(null);
+  const [activeAppData, setActiveAppData] = useState<unknown>(undefined);
   const [recentApps, setRecentApps] = useState<string[]>([]);
   const [showDrawer, setShowDrawer] = useState(false);
   const [showRecents, setShowRecents] = useState(false);
@@ -129,8 +133,9 @@ export function MobileOS() {
     } catch {}
   }, []);
 
-  const openApp = useCallback((appId: string) => {
+  const openApp = useCallback((appId: string, data?: unknown) => {
     setActiveApp(appId);
+    setActiveAppData(data);
     setRecentApps((prev) => {
       const filtered = prev.filter((id) => id !== appId);
       return [appId, ...filtered].slice(0, 8);
@@ -138,6 +143,15 @@ export function MobileOS() {
     setShowDrawer(false);
     setShowRecents(false);
   }, []);
+
+  // Intercept windows opened via DesktopContext (e.g. EventsExplorer calling openApp("register", data))
+  useEffect(() => {
+    const registerWindow = state.windows.find((w) => w.appId === "register");
+    if (registerWindow && activeApp !== "register") {
+      openApp("register", registerWindow.data);
+      closeWindow(registerWindow.id); // Clean up the desktop window
+    }
+  }, [state.windows, activeApp, openApp, closeWindow]);
 
   const goHome = useCallback(() => {
     setActiveApp(null);
@@ -210,7 +224,9 @@ export function MobileOS() {
               {ALL_APPS.find((a) => a.id === activeApp)?.name ?? activeApp}
             </h1>
           </div>
-          <div className="h-full overflow-auto">{renderApp(activeApp)}</div>
+          <div className="h-full overflow-auto">
+            {renderApp(activeApp, activeAppData)}
+          </div>
         </div>
       ) : (
         /* ── Home Screen ── */

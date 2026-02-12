@@ -737,6 +737,12 @@ export function DesktopProvider({ children }: { children: ReactNode }) {
           width: 800,
           height: 600,
         },
+        register: {
+          id: "register",
+          title: "Register — GUSTO'26",
+          width: 700,
+          height: 650,
+        },
       };
 
       const config = appConfigs[appId];

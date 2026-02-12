@@ -9,6 +9,7 @@ import {
   type ValidationResult,
 } from "../../data/eventValidation";
 import { useIsMobile } from "../../hooks/useIsMobile";
+import { useDesktop } from "../../contexts/DesktopContext";
 import { PassSelector } from "./events/PassSelector";
 import { EventCard } from "./events/EventCard";
 import { SelectionSummary } from "./events/SelectionSummary";
@@ -19,6 +20,7 @@ const CATEGORIES: CategoryFilter[] = ["All", "Technical", "Non-Technical"];
 
 export function EventsExplorer() {
   const { isMobile } = useIsMobile();
+  const { openApp } = useDesktop();
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedPass, setSelectedPass] = useState<Pass | null>(null);
@@ -67,34 +69,65 @@ export function EventsExplorer() {
     [selectedEvents, selectedPass],
   );
 
+  const canProceed = selectedPass !== null && selectedEvents.length >= 1;
+
+  const handleProceed = useCallback(() => {
+    if (!canProceed) return;
+    openApp("register", { tier: selectedPass, events: selectedEvents });
+  }, [canProceed, selectedPass, selectedEvents, openApp]);
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex-shrink-0 px-4 py-3 border-b-2 border-[var(--border-color)] bg-[var(--surface-primary)]">
-        {/* <h2 className="text-lg font-bold text-[var(--text-primary)] mb-2">
-          GUSTO 2026 — Events
-        </h2> */}
+        <div className="flex items-center justify-between gap-2 mb-2">
+          {/* Category Filter Tabs */}
+          <div className="flex gap-2 flex-wrap">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => {
+                  setActiveCategory(cat);
+                  setExpandedId(null);
+                }}
+                className={`px-3 py-1.5 text-xs font-bold border-2 transition-colors active:translate-y-[1px] min-h-[36px] ${
+                  activeCategory === cat
+                    ? "bg-[#6C63FF] text-white border-[#6C63FF]"
+                    : "bg-[var(--surface-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[#6C63FF]"
+                }`}
+                style={{ borderRadius: "4px" }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
 
-        {/* Category Filter Tabs */}
-        <div className="flex gap-2 flex-wrap">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setActiveCategory(cat);
-                setExpandedId(null);
-              }}
-              className={`px-3 py-1.5 text-xs font-bold border-2 transition-colors active:translate-y-[1px] min-h-[36px] ${
-                activeCategory === cat
-                  ? "bg-[#6C63FF] text-white border-[#6C63FF]"
-                  : "bg-[var(--surface-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[#6C63FF]"
-              }`}
-              style={{ borderRadius: "4px" }}
-            >
-              {cat}
-            </button>
-          ))}
+          {/* Proceed Button */}
+          <button
+            onClick={handleProceed}
+            disabled={!canProceed}
+            className={`flex-shrink-0 px-4 py-1.5 text-xs font-bold border-2 transition-all duration-200 active:translate-y-[1px] ${
+              canProceed
+                ? "bg-[#6C63FF] text-white border-[#6C63FF] hover:bg-[#5A52E0] hover:border-[#5A52E0]"
+                : "bg-[var(--surface-secondary)] text-[var(--text-muted)] border-[var(--border-color)] opacity-50 cursor-not-allowed"
+            }`}
+            style={{ borderRadius: "4px" }}
+          >
+            Proceed →
+          </button>
         </div>
+
+        {/* Inline validation hint */}
+        {!canProceed && selectedPass && selectedEvents.length === 0 && (
+          <p className="text-[11px] text-amber-400 mt-1">
+            ⚠ Select at least 1 event to proceed
+          </p>
+        )}
+        {!selectedPass && (
+          <p className="text-[11px] text-[var(--text-muted)] mt-1">
+            Select a tier and at least 1 event to proceed
+          </p>
+        )}
       </div>
 
       {/* Pass Selector */}

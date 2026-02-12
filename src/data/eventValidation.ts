@@ -4,6 +4,7 @@ export interface Pass {
     id: string;
     name: string;
     description: string;
+    price: number;
     maxTotal: number;
     maxTech: number;
     maxNonTech: number;
@@ -27,6 +28,7 @@ export const PASSES: Pass[] = [
         id: 'tier-1',
         name: 'Tier 1',
         description: 'Up to 2 Non-Technical events',
+        price: 200,
         maxTotal: 2,
         maxTech: 0,
         maxNonTech: 2,
@@ -36,6 +38,7 @@ export const PASSES: Pass[] = [
         id: 'tier-2',
         name: 'Tier 2',
         description: '3 events — mix of Tech & Non-Tech',
+        price: 350,
         maxTotal: 3,
         maxTech: 2,
         maxNonTech: 2,
@@ -48,6 +51,7 @@ export const PASSES: Pass[] = [
         id: 'tier-3',
         name: 'Tier 3',
         description: '2 Technical + 2 Non-Technical',
+        price: 500,
         maxTotal: 4,
         maxTech: 2,
         maxNonTech: 2,
@@ -56,6 +60,7 @@ export const PASSES: Pass[] = [
         id: 'tier-4',
         name: 'Tier 4',
         description: `${TIER_4_RULES.maxTech} Technical + ${TIER_4_RULES.maxNonTech} Non-Technical`,
+        price: 700,
         maxTotal: TIER_4_RULES.maxTotal,
         maxTech: TIER_4_RULES.maxTech,
         maxNonTech: TIER_4_RULES.maxNonTech,
