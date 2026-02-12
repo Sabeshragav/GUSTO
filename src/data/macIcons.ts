@@ -7,7 +7,7 @@
 
 const macIconMap: Record<string, string> = {
     // ── GUSTO Apps ──
-    events: "Calendar.svg",
+    events: "Books.svg",
     rules: "Notes.svg",
     contact: "Contacts.svg",
     transport: "Maps.svg",

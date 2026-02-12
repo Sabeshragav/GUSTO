@@ -25,7 +25,7 @@ export function PassSelector({
           <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
             Pass:
           </span>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-full bg-[#6C63FF]/15 text-[#6C63FF] border border-[#6C63FF]/30">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-full bg-[#F54E00]/15 text-[#F54E00] border border-[#F54E00]/30">
             {selectedPass.name}
             <span className="mx-0.5 text-[10px] opacity-60">•</span>₹
             {selectedPass.price}
@@ -38,7 +38,7 @@ export function PassSelector({
                 e.stopPropagation();
                 onClearPass();
               }}
-              className="ml-1 w-4 h-4 flex items-center justify-center rounded-full bg-[#6C63FF]/20 hover:bg-[#6C63FF]/40 transition-colors text-[#6C63FF] text-[10px] leading-none"
+              className="ml-1 w-4 h-4 flex items-center justify-center rounded-full bg-[#F54E00]/20 hover:bg-[#F54E00]/40 transition-colors text-[#F54E00] text-[10px] leading-none"
               aria-label="Change pass"
             >
               ✕
@@ -68,7 +68,7 @@ export function PassSelector({
             onClick={() => onSelectPass(pass)}
             className={`relative flex-shrink-0 text-left border-2 transition-all duration-200 ${
               isMobile ? "min-w-[140px] snap-start p-2.5" : "flex-1 p-3"
-            } border-[var(--border-color)] bg-[var(--surface-secondary)] hover:border-[#6C63FF] hover:bg-[#6C63FF]/5`}
+            } border-[var(--border-color)] bg-[var(--surface-secondary)] hover:border-[#F54E00] hover:bg-[#F54E00]/5`}
             style={{ borderRadius: "6px" }}
           >
             {/* Price badge */}

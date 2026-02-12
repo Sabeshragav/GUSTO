@@ -39,7 +39,7 @@ export function EventCard({
     <div
       className={`border-2 bg-[var(--surface-primary)] transition-all duration-200 ${
         isSelected
-          ? "border-[#6C63FF] shadow-[0_0_0_1px_rgba(108,99,255,0.3)]"
+          ? "border-[#F54E00] shadow-[0_0_0_1px_rgba(245,78,0,0.3)]"
           : "border-[var(--border-color)]"
       } ${!isMobile ? "hover:scale-[1.01] hover:shadow-md" : "active:scale-[0.99]"}`}
       style={{ borderRadius: "6px" }}
@@ -52,7 +52,7 @@ export function EventCard({
             {event.title}
           </h3>
           {isSelected && (
-            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#6C63FF] flex items-center justify-center">
+            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#F54E00] flex items-center justify-center">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -99,9 +99,9 @@ export function EventCard({
             disabled={!passSelected || (!canSelect && !isSelected)}
             className={`flex-1 px-3 py-2 text-xs font-bold border-2 transition-all duration-200 active:translate-y-[1px] disabled:opacity-40 disabled:cursor-not-allowed ${
               isSelected
-                ? "bg-[#6C63FF] text-white border-[#6C63FF] hover:bg-[#5A52E0]"
+                ? "bg-[#F54E00] text-white border-[#F54E00] hover:bg-[#D64000]"
                 : canSelect
-                  ? "bg-[var(--surface-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[#6C63FF] hover:text-[#6C63FF]"
+                  ? "bg-[var(--surface-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[#F54E00] hover:text-[#F54E00]"
                   : "bg-[var(--surface-secondary)] text-[var(--text-muted)] border-[var(--border-color)]"
             }`}
             style={{ borderRadius: "4px" }}
@@ -166,7 +166,7 @@ export function EventCard({
           <h4 className="text-sm font-bold text-[var(--text-primary)] mb-2 border-b border-[var(--border-color)] pb-1">
             Rules & Guidelines
           </h4>
-          <ul className="list-disc pl-5 space-y-1 text-sm text-[var(--text-secondary)] marker:text-[#6C63FF]">
+          <ul className="list-disc pl-5 space-y-1 text-sm text-[var(--text-secondary)] marker:text-[#F54E00]">
             {event.rules.map((rule, idx) => (
               <li key={idx}>{rule}</li>
             ))}

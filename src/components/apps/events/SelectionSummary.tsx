@@ -19,7 +19,7 @@ export function SelectionSummary({
     <div className="flex-shrink-0 px-4 py-2.5 border-b-2 border-[var(--border-color)] bg-[var(--surface-bg)]">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-bold text-[#6C63FF]">{pass.name}</span>
+          <span className="text-xs font-bold text-[#F54E00]">{pass.name}</span>
           <span className="text-[11px] text-[var(--text-muted)]">—</span>
           <span className="text-[11px] text-[var(--text-secondary)]">
             {counts.total} / {counts.maxTotal} selected
@@ -45,7 +45,7 @@ export function SelectionSummary({
       {/* Progress bar */}
       <div className="mt-1.5 h-1 bg-[var(--surface-secondary)] rounded-full overflow-hidden">
         <div
-          className="h-full bg-[#6C63FF] transition-all duration-300 rounded-full"
+          className="h-full bg-[#F54E00] transition-all duration-300 rounded-full"
           style={{
             width: `${Math.min((counts.total / counts.maxTotal) * 100, 100)}%`,
           }}

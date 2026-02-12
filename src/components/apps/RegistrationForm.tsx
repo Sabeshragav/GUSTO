@@ -257,7 +257,7 @@ export function RegistrationForm({ data }: { data?: unknown }) {
   }
 
   const inputClass =
-    "w-full px-3 py-2.5 text-sm bg-[var(--surface-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-color)] focus:border-[#6C63FF] focus:outline-none transition-colors placeholder:text-[var(--text-muted)]";
+    "w-full px-3 py-2.5 text-sm bg-[var(--surface-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-color)] focus:border-[#F54E00] focus:outline-none transition-colors placeholder:text-[var(--text-muted)]";
   const labelClass =
     "block text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5";
   const errorClass = "text-[11px] text-red-400 mt-1";
@@ -272,7 +272,7 @@ export function RegistrationForm({ data }: { data?: unknown }) {
           </h2>
           <div className="flex items-center gap-2 flex-wrap">
             <span
-              className="inline-block px-2.5 py-1 text-xs font-bold bg-[#6C63FF]/15 text-[#6C63FF] border border-[#6C63FF]/30"
+              className="inline-block px-2.5 py-1 text-xs font-bold bg-[#F54E00]/15 text-[#F54E00] border border-[#F54E00]/30"
               style={{ borderRadius: "4px" }}
             >
               {tier.name} — ₹{tier.price}
@@ -439,7 +439,7 @@ export function RegistrationForm({ data }: { data?: unknown }) {
                 onClick={() => fileInputRef.current?.click()}
                 className={`w-full px-3 py-3 text-xs font-bold border-2 border-dashed transition-colors ${
                   screenshot
-                    ? "border-[#6C63FF] bg-[#6C63FF]/5 text-[#6C63FF]"
+                    ? "border-[#F54E00] bg-[#F54E00]/5 text-[#F54E00]"
                     : "border-[var(--border-color)] bg-[var(--surface-secondary)] text-[var(--text-muted)] hover:border-[var(--text-muted)]"
                 }`}
                 style={{ borderRadius: "4px" }}
@@ -495,7 +495,7 @@ export function RegistrationForm({ data }: { data?: unknown }) {
             className={`w-full px-4 py-3 text-sm font-bold border-2 transition-all duration-200 active:translate-y-[1px] ${
               isSubmitting
                 ? "bg-[var(--surface-secondary)] text-[var(--text-muted)] border-[var(--border-color)] cursor-wait"
-                : "bg-[#6C63FF] text-white border-[#6C63FF] hover:bg-[#5A52E0] hover:border-[#5A52E0]"
+                : "bg-[#F54E00] text-white border-[#F54E00] hover:bg-[#D64000] hover:border-[#D64000]"
             }`}
             style={{ borderRadius: "4px" }}
           >

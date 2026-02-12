@@ -109,8 +109,8 @@ export function EventsExplorer() {
                   }}
                   className={`px-3 py-1.5 text-xs font-bold border-2 transition-colors active:translate-y-[1px] min-h-[36px] ${
                     activeCategory === cat
-                      ? "bg-[#6C63FF] text-white border-[#6C63FF]"
-                      : "bg-[var(--surface-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[#6C63FF]"
+                      ? "bg-[#F54E00] text-white border-[#F54E00]"
+                      : "bg-[var(--surface-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[#F54E00]"
                   }`}
                   style={{ borderRadius: "4px" }}
                 >
@@ -126,7 +126,7 @@ export function EventsExplorer() {
             disabled={!canProceed}
             className={`flex-shrink-0 px-4 py-1.5 text-xs font-bold border-2 transition-all duration-200 active:translate-y-[1px] ${
               canProceed
-                ? "bg-[#6C63FF] text-white border-[#6C63FF] hover:bg-[#5A52E0] hover:border-[#5A52E0]"
+                ? "bg-[#F54E00] text-white border-[#F54E00] hover:bg-[#D64000] hover:border-[#D64000]"
                 : "bg-[var(--surface-secondary)] text-[var(--text-muted)] border-[var(--border-color)] opacity-50 cursor-not-allowed"
             }`}
             style={{ borderRadius: "4px" }}
