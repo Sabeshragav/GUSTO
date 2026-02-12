@@ -5,6 +5,7 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useDesktop } from "../../contexts/DesktopContext";
 import { ThemedIcon } from "../ui/ThemedIcon";
 import { useIsMobile } from "../../hooks/useIsMobile";
+import { getAppColor } from "../../data/appColors";
 
 interface DockItem {
   id: string;
@@ -147,21 +148,24 @@ function DockIcon({
     <div className="flex flex-col items-center gap-1 group">
       <motion.div
         ref={ref}
-        style={{ width, height: width }}
+        style={{
+          width,
+          height: width,
+          backgroundColor: getAppColor(item.appId).bg,
+        }}
         onClick={onClick}
-        className="dock-item relative flex items-center justify-center rounded-xl bg-[var(--surface-secondary)] border border-transparent hover:border-[var(--ph-orange)] transition-colors cursor-pointer shadow-sm"
+        className="dock-item relative flex items-center justify-center rounded-xl border border-transparent transition-colors cursor-pointer shadow-sm"
       >
-        <div className="w-3/5 h-3/5 text-[var(--ph-orange)]">
+        <div className="w-3/5 h-3/5">
           <ThemedIcon
             name={item.iconName}
             className="w-full h-full"
-            style={
-              isTrash && hasItems
-                ? { color: "var(--ph-orange)" }
-                : isTrash
-                  ? { color: "var(--text-secondary)" }
-                  : undefined
-            }
+            style={{
+              color:
+                isTrash && !hasItems
+                  ? "var(--text-secondary)"
+                  : getAppColor(item.appId).color,
+            }}
           />
         </div>
 

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { ThemedIcon } from "../ui/ThemedIcon";
+import { getAppColor } from "../../data/appColors";
 
 export interface MobileApp {
   id: string;
@@ -84,10 +85,14 @@ export function MobileAppDrawer({
       }}
       className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform duration-150"
     >
-      <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center">
+      <div
+        className="w-14 h-14 rounded-2xl border border-white/10 flex items-center justify-center"
+        style={{ backgroundColor: getAppColor(app.id).bg }}
+      >
         <ThemedIcon
           name={app.icon}
-          className="w-7 h-7 text-[var(--ph-orange)]"
+          className="w-7 h-7"
+          style={{ color: getAppColor(app.id).color }}
         />
       </div>
       <span className="text-white/80 text-[10px] font-medium truncate max-w-[60px]">

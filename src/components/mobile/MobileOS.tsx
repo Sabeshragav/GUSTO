@@ -10,6 +10,7 @@ import { MobileRecentApps } from "./MobileRecentApps";
 import { ThemedIcon } from "../ui/ThemedIcon";
 import { BootScreen } from "../system/BootScreen";
 import { useDesktop } from "../../contexts/DesktopContext";
+import { getAppColor } from "../../data/appColors";
 
 // App components — reused from desktop
 import { EventsExplorer } from "../apps/EventsExplorer";
@@ -265,10 +266,14 @@ export function MobileOS() {
                   onClick={() => openApp(app.id)}
                   className="flex flex-col items-center gap-2 active:scale-90 transition-transform duration-150"
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 flex items-center justify-center shadow-lg">
+                  <div
+                    className="w-16 h-16 rounded-2xl backdrop-blur-sm border border-white/15 flex items-center justify-center shadow-lg"
+                    style={{ backgroundColor: getAppColor(app.id).bg }}
+                  >
                     <ThemedIcon
                       name={app.icon}
-                      className="w-8 h-8 text-[var(--ph-orange)]"
+                      className="w-8 h-8"
+                      style={{ color: getAppColor(app.id).color }}
                     />
                   </div>
                   <span className="text-white text-xs font-medium drop-shadow-md">
