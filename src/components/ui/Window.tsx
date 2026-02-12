@@ -1,0 +1,291 @@
+'use client';
+
+import { useState, useRef, useEffect, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
+import { useDesktop } from '../../contexts/DesktopContext';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import type { WindowState } from '../../types';
+
+interface WindowProps {
+  window: WindowState;
+  children: ReactNode;
+  minWidth?: number;
+  minHeight?: number;
+}
+
+type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw' | null;
+
+export function Window({ window: win, children, minWidth = 300, minHeight = 200 }: WindowProps) {
+  const { closeWindow, focusWindow, minimizeWindow, maximizeWindow, moveWindow, resizeWindow } = useDesktop();
+  const { isMobile, isTouchDevice } = useIsMobile();
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState<ResizeDirection>(null);
+  const [isClosing, setIsClosing] = useState(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
+  const resizeStart = useRef({ x: 0, y: 0, width: 0, height: 0, windowX: 0, windowY: 0 });
+  const windowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newX = e.clientX - dragOffset.current.x;
+      const newY = Math.max(28, e.clientY - dragOffset.current.y);
+      moveWindow(win.id, newX, newY);
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, moveWindow, win.id]);
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - resizeStart.current.x;
+      const deltaY = e.clientY - resizeStart.current.y;
+
+      let newWidth = resizeStart.current.width;
+      let newHeight = resizeStart.current.height;
+      let newX = resizeStart.current.windowX;
+      let newY = resizeStart.current.windowY;
+
+      if (isResizing.includes('e')) {
+        newWidth = Math.max(minWidth, resizeStart.current.width + deltaX);
+      }
+      if (isResizing.includes('w')) {
+        const widthDelta = Math.min(deltaX, resizeStart.current.width - minWidth);
+        newWidth = resizeStart.current.width - widthDelta;
+        newX = resizeStart.current.windowX + widthDelta;
+      }
+      if (isResizing.includes('s')) {
+        newHeight = Math.max(minHeight, resizeStart.current.height + deltaY);
+      }
+      if (isResizing.includes('n')) {
+        const heightDelta = Math.min(deltaY, resizeStart.current.height - minHeight);
+        newHeight = resizeStart.current.height - heightDelta;
+        newY = Math.max(28, resizeStart.current.windowY + heightDelta);
+      }
+
+      resizeWindow(win.id, newWidth, newHeight);
+      if (newX !== win.x || newY !== win.y) {
+        moveWindow(win.id, newX, newY);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(null);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing, minWidth, minHeight, resizeWindow, moveWindow, win.id, win.x, win.y]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('.traffic-light')) return;
+    focusWindow(win.id);
+    if (isMobile || isTouchDevice) return;
+    setIsDragging(true);
+    dragOffset.current = {
+      x: e.clientX - win.x,
+      y: e.clientY - win.y,
+    };
+  };
+
+  const handleResizeStart = (direction: ResizeDirection) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    focusWindow(win.id);
+    setIsResizing(direction);
+    resizeStart.current = {
+      x: e.clientX,
+      y: e.clientY,
+      width: win.width,
+      height: win.height,
+      windowX: win.x,
+      windowY: win.y,
+    };
+  };
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => closeWindow(win.id), 150);
+  };
+
+  if (win.isMinimized) return null;
+
+  const mobileInset = 8;
+  const mobileWindowStyle: React.CSSProperties = {
+    top: 28 + mobileInset,
+    left: mobileInset,
+    width: `calc(100vw - ${mobileInset * 2}px)`,
+    height: `calc(100vh - 28px - 60px - ${mobileInset * 2}px)`,
+    zIndex: win.zIndex,
+  };
+
+  const windowStyle: React.CSSProperties = isMobile
+    ? mobileWindowStyle
+    : win.isMaximized
+    ? {
+        top: 28,
+        left: 0,
+        width: '100vw',
+        height: 'calc(100vh - 28px - 80px)',
+        zIndex: win.zIndex,
+      }
+    : {
+        top: win.y,
+        left: win.x,
+        width: win.width,
+        height: win.height,
+        zIndex: win.zIndex,
+      };
+
+  const resizeHandleClass = 'absolute bg-transparent hover:bg-warm-500/10 transition-colors';
+
+  const trafficLightSize = isMobile ? 'w-4 h-4' : 'w-3 h-3';
+  const showResizeHandles = !win.isMaximized && !isMobile && !isTouchDevice;
+
+  const windowContent = (
+    <div
+      ref={windowRef}
+      className={`fixed flex flex-col overflow-hidden ${
+        isClosing ? 'animate-window-close' : 'animate-window-open'
+      }`}
+      style={{
+        ...windowStyle,
+        borderRadius: 'var(--window-radius)',
+        border: '2px solid var(--border-color)',
+        boxShadow: 'var(--shadow-window)',
+        backgroundColor: 'var(--surface-bg)',
+      }}
+      onClick={() => focusWindow(win.id)}
+    >
+      {/* Window Header */}
+      <div
+        className={`window-header relative flex items-center justify-center cursor-grab active:cursor-grabbing flex-shrink-0 select-none ${
+          isMobile ? 'h-10 px-2' : 'h-10 px-2'
+        }`}
+        style={{
+          backgroundColor: 'var(--surface-primary)',
+          borderBottom: '2px solid var(--border-color)',
+        }}
+        onMouseDown={handleMouseDown}
+      >
+        {/* Window Controls (Mac Style - Left) */}
+        <div className="absolute left-3 flex items-center gap-2 group traffic-light z-10">
+          <button
+            className="flex items-center justify-center w-3 h-3 rounded-full bg-[#FF5F56] border border-[#E0443E] active:shade-10 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClose();
+            }}
+            title="Close"
+          >
+            <svg className="w-2 h-2 text-[#4D0000] opacity-0 group-hover:opacity-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+          
+          <button
+            className="flex items-center justify-center w-3 h-3 rounded-full bg-[#FFBD2E] border border-[#DEA123] active:shade-10 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              minimizeWindow(win.id);
+            }}
+            title="Minimize"
+          >
+            <svg className="w-2 h-2 text-[#995700] opacity-0 group-hover:opacity-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+          
+          {!isMobile && (
+             <button
+              className="flex items-center justify-center w-3 h-3 rounded-full bg-[#27C93F] border border-[#1AAB29] active:shade-10 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                maximizeWindow(win.id);
+              }}
+              title={win.isMaximized ? "Restore" : "Maximize"}
+            >
+              <svg className="w-1.5 h-1.5 text-[#006500] opacity-0 group-hover:opacity-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <polyline points="9 21 3 21 3 15"></polyline>
+                <line x1="21" y1="3" x2="14" y2="10"></line>
+                <line x1="3" y1="21" x2="10" y2="14"></line>
+              </svg>
+            </button>
+          )}
+        </div>
+
+        {/* Title (Centered) */}
+        <div className="flex items-center gap-2">
+           {/* Optional: Add app icon here if available in window state */}
+          <span className="font-bold text-sm tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            {win.title}
+          </span>
+        </div>
+      </div>
+
+      {/* Window Content */}
+      <div className="flex-1 overflow-hidden relative" style={{ backgroundColor: 'var(--surface-bg)' }}>
+        {children}
+      </div>
+
+      {/* Resize Handles */}
+      {showResizeHandles && (
+        <>
+          <div
+            className={`${resizeHandleClass} top-0 left-3 right-3 h-1 cursor-n-resize`}
+            onMouseDown={handleResizeStart('n')}
+          />
+          <div
+            className={`${resizeHandleClass} bottom-0 left-3 right-3 h-1 cursor-s-resize`}
+            onMouseDown={handleResizeStart('s')}
+          />
+          <div
+            className={`${resizeHandleClass} left-0 top-3 bottom-3 w-1 cursor-w-resize`}
+            onMouseDown={handleResizeStart('w')}
+          />
+          <div
+            className={`${resizeHandleClass} right-0 top-3 bottom-3 w-1 cursor-e-resize`}
+            onMouseDown={handleResizeStart('e')}
+          />
+          <div
+            className={`${resizeHandleClass} top-0 left-0 w-3 h-3 cursor-nw-resize rounded-tl-xl`}
+            onMouseDown={handleResizeStart('nw')}
+          />
+          <div
+            className={`${resizeHandleClass} top-0 right-0 w-3 h-3 cursor-ne-resize rounded-tr-xl`}
+            onMouseDown={handleResizeStart('ne')}
+          />
+          <div
+            className={`${resizeHandleClass} bottom-0 left-0 w-3 h-3 cursor-sw-resize rounded-bl-xl`}
+            onMouseDown={handleResizeStart('sw')}
+          />
+          <div
+            className={`${resizeHandleClass} bottom-0 right-0 w-3 h-3 cursor-se-resize rounded-br-xl`}
+            onMouseDown={handleResizeStart('se')}
+          />
+        </>
+      )}
+    </div>
+  );
+
+  return createPortal(windowContent, document.body);
+}

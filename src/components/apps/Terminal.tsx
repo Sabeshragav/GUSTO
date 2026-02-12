@@ -1,0 +1,419 @@
+'use client';
+
+import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
+import { useDesktop } from '../../contexts/DesktopContext';
+import { useAchievements } from '../../contexts/AchievementsContext';
+import { fileSystem, findFileById, findFileByPath } from '../../data/filesystem';
+import type { FileNode } from '../../types';
+
+interface TerminalLine {
+  type: 'input' | 'output';
+  content: string;
+  isAscii?: boolean;
+}
+
+const ASCII_COFFEE = `
+    ( (
+     ) )
+  .______.
+  |      |]
+  \\      /
+   \`----'
+`;
+
+const ASCII_NEOFETCH = `
+       .:'          visitor@gusto
+     .'             ------------------
+    ::              OS: Gusto OS 1.0
+   :::              Host: The Internet
+  ::::              Kernel: React 18
+  ::::              Shell: Gusto Term
+  ::::              Resolution: Dynamic
+   ::::::           Theme: Warm Gray
+    '::::::::       CPU: Imagination Core
+      ::::::::      RAM: Infinite Potential
+         ':::
+          .::       Built for Gusto 2026
+         :::
+`;
+
+export function Terminal() {
+  const { openApp, openFile, setMatrixMode, setPartyMode, closeWindow } = useDesktop();
+  const { unlockAchievement } = useAchievements();
+  const [lines, setLines] = useState<TerminalLine[]>([
+    { type: 'output', content: 'Welcome to Gusto OS Terminal' },
+    { type: 'output', content: 'Type "help" for available commands.\n' },
+  ]);
+  const [input, setInput] = useState('');
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [currentPath, setCurrentPath] = useState('/Desktop');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [lines]);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const getCurrentFolder = (): FileNode => {
+    if (currentPath === '/Desktop') return fileSystem;
+    const pathWithoutDesktop = currentPath.replace('/Desktop/', '').replace('/Desktop', '');
+    if (!pathWithoutDesktop) return fileSystem;
+    return findFileByPath(pathWithoutDesktop) || fileSystem;
+  };
+
+  const addOutput = (content: string, isAscii = false) => {
+    setLines((prev) => [...prev, { type: 'output', content, isAscii }]);
+  };
+
+  const commands: Record<string, (args: string[]) => void> = {
+    help: () => {
+      addOutput(`
+Available Commands:
+  help          - Show this help message
+  about         - Learn about me
+  projects      - List all projects
+  open <name>   - Open a folder or app (finder, terminal, email, minesweeper)
+  ls            - List contents of current directory
+  cd <folder>   - Change directory
+  cat <file>    - Display file contents
+  pwd           - Print working directory
+  whoami        - Who are you?
+  clear         - Clear the terminal
+  cv            - Open my resume
+  email         - Open email client
+  minesweeper   - Play a game
+  neofetch      - Display system info
+  coffee        - Take a break
+  matrix        - Enter the matrix
+  party         - Celebrate!
+  exit          - Close terminal
+      `);
+      unlockAchievement('help-actually');
+    },
+
+    about: () => {
+      const bioFile = findFileById('bio');
+      if (bioFile?.content) {
+        addOutput(bioFile.content);
+      } else {
+        addOutput('About information not found.');
+      }
+    },
+
+    projects: () => {
+      const projectsFolder = findFileById('projects');
+      if (projectsFolder?.children) {
+        addOutput('Projects:\n');
+        projectsFolder.children.forEach((project) => {
+          addOutput(`  - ${project.name}`);
+        });
+        addOutput('\nUse "open projects" to explore them in Finder.');
+      }
+    },
+
+    open: (args) => {
+      const target = args.join(' ').toLowerCase();
+      if (!target) {
+        addOutput('Usage: open <name>');
+        return;
+      }
+
+      const appMap: Record<string, string> = {
+        finder: 'finder',
+        terminal: 'terminal',
+        email: 'email',
+        mail: 'email',
+        minesweeper: 'minesweeper',
+        game: 'minesweeper',
+        trash: 'trash',
+      };
+
+      if (appMap[target]) {
+        openApp(appMap[target]);
+        addOutput(`Opening ${target}...`);
+        return;
+      }
+
+      const folderMap: Record<string, string> = {
+        'about': 'about-me',
+        'about me': 'about-me',
+        'experience': 'experience',
+        'projects': 'projects',
+        'playground': 'playground',
+        'cv': 'cv',
+        'resume': 'cv',
+      };
+
+      const fileId = folderMap[target];
+      if (fileId) {
+        const file = findFileById(fileId);
+        if (file) {
+          openFile(file);
+          addOutput(`Opening ${file.name}...`);
+          return;
+        }
+      }
+
+      addOutput(`Cannot find "${target}". Try "ls" to see available items.`);
+    },
+
+    ls: () => {
+      const folder = getCurrentFolder();
+      if (folder.children) {
+        const items = folder.children.map((c) => {
+          const suffix = c.type === 'folder' ? '/' : '';
+          return `  ${c.name}${suffix}`;
+        });
+        addOutput(items.join('\n'));
+      } else {
+        addOutput('No items in this directory.');
+      }
+    },
+
+    cd: (args) => {
+      const target = args.join(' ');
+      if (!target || target === '~' || target === '/') {
+        setCurrentPath('/Desktop');
+        return;
+      }
+
+      if (target === '..') {
+        const parts = currentPath.split('/').filter(Boolean);
+        if (parts.length > 1) {
+          parts.pop();
+          setCurrentPath('/' + parts.join('/'));
+        }
+        return;
+      }
+
+      const currentFolder = getCurrentFolder();
+      const targetFolder = currentFolder.children?.find(
+        (c) => c.name.toLowerCase() === target.toLowerCase() && c.type === 'folder'
+      );
+
+      if (targetFolder) {
+        setCurrentPath(`${currentPath}/${targetFolder.name}`);
+      } else {
+        addOutput(`cd: no such directory: ${target}`);
+      }
+    },
+
+    cat: (args) => {
+      const filename = args.join(' ');
+      if (!filename) {
+        addOutput('Usage: cat <filename>');
+        return;
+      }
+
+      const currentFolder = getCurrentFolder();
+      const file = currentFolder.children?.find(
+        (c) => c.name.toLowerCase() === filename.toLowerCase()
+      );
+
+      if (file && file.content) {
+        addOutput(file.content);
+      } else if (file && file.type === 'folder') {
+        addOutput(`cat: ${filename}: Is a directory`);
+      } else {
+        addOutput(`cat: ${filename}: No such file`);
+      }
+    },
+
+    pwd: () => {
+      addOutput(currentPath);
+    },
+
+    whoami: () => {
+      addOutput("A curious visitor exploring Gusto OS.");
+      addOutput("Thanks for stopping by!");
+    },
+
+    clear: () => {
+      setLines([]);
+    },
+
+    cv: () => {
+      openApp('pdfViewer');
+      addOutput('Opening CV...');
+    },
+
+    email: () => {
+      openApp('email');
+      addOutput('Opening Mail...');
+    },
+
+    minesweeper: () => {
+      openApp('minesweeper');
+      addOutput('Starting Minesweeper... Good luck!');
+    },
+
+    neofetch: () => {
+      addOutput(ASCII_NEOFETCH, true);
+    },
+
+    coffee: () => {
+      addOutput(ASCII_COFFEE, true);
+      addOutput('Taking a coffee break...');
+      addOutput("You deserve it!");
+    },
+
+    matrix: () => {
+      addOutput('Entering the Matrix...');
+      setTimeout(() => setMatrixMode(true), 500);
+    },
+
+    party: () => {
+      addOutput('Time to celebrate!');
+      setTimeout(() => setPartyMode(true), 300);
+    },
+
+    sudo: () => {
+      addOutput('Nice try! This  Gusto-2026 runs on good vibes, not root access.');
+    },
+
+    rm: (args) => {
+      if (args.includes('-rf')) {
+        addOutput('I appreciate the chaos energy, but let\'s keep things constructive.');
+      } else {
+        addOutput('Permission denied. Only trashing desktop items is allowed.');
+      }
+    },
+
+    exit: () => {
+      addOutput('Goodbye!');
+      setTimeout(() => closeWindow('terminal'), 500);
+    },
+
+    secret: () => {
+      addOutput('There are hidden things here...');
+      addOutput('Try different commands, click around, maybe a konami code?');
+      addOutput('Hint: Some commands are more fun than others.');
+    },
+
+    hello: () => {
+      addOutput(`
+  _   _      _ _       _
+ | | | | ___| | | ___ | |
+ | |_| |/ _ \\ | |/ _ \\| |
+ |  _  |  __/ | | (_) |_|
+ |_| |_|\\___|_|_|\\___/(_)
+
+ Welcome to my  Gusto-2026!
+      `, true);
+    },
+
+    echo: (args) => {
+      addOutput(args.join(' '));
+    },
+
+    date: () => {
+      addOutput(new Date().toString());
+    },
+
+    uptime: () => {
+      addOutput('Gusto OS has been running since you opened this tab.');
+      addOutput('Time flies when you\'re exploring, doesn\'t it?');
+    },
+  };
+
+  const handleCommand = (cmd: string) => {
+    const trimmed = cmd.trim();
+    if (!trimmed) return;
+
+    setLines((prev) => [...prev, { type: 'input', content: `${getPrompt()} ${trimmed}` }]);
+    setHistory((prev) => [...prev, trimmed]);
+    setHistoryIndex(-1);
+
+    const [command, ...args] = trimmed.split(' ');
+    const cmdLower = command.toLowerCase();
+
+    if (commands[cmdLower]) {
+      commands[cmdLower](args);
+      unlockAchievement('command-line-curious');
+    } else {
+      addOutput(`Command not found: ${command}. Type "help" for available commands.`);
+    }
+
+    setInput('');
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleCommand(input);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (history.length > 0) {
+        const newIndex = historyIndex < history.length - 1 ? historyIndex + 1 : historyIndex;
+        setHistoryIndex(newIndex);
+        setInput(history[history.length - 1 - newIndex] || '');
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (historyIndex > 0) {
+        const newIndex = historyIndex - 1;
+        setHistoryIndex(newIndex);
+        setInput(history[history.length - 1 - newIndex] || '');
+      } else {
+        setHistoryIndex(-1);
+        setInput('');
+      }
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      const currentFolder = getCurrentFolder();
+      const partial = input.split(' ').pop()?.toLowerCase() || '';
+      const matches = currentFolder.children?.filter((c) =>
+        c.name.toLowerCase().startsWith(partial)
+      );
+      if (matches && matches.length === 1) {
+        const parts = input.split(' ');
+        parts[parts.length - 1] = matches[0].name;
+        setInput(parts.join(' '));
+      }
+    }
+  };
+
+  const getPrompt = () => {
+    const shortPath = currentPath.replace('/Desktop', '~');
+    return `visitor@gusto ${shortPath} $`;
+  };
+
+  return (
+    <div
+      className="h-full bg-[#1e1e1e] text-[#f0f0f0] font-mono text-sm p-4 overflow-auto"
+      ref={containerRef}
+      onClick={() => inputRef.current?.focus()}
+    >
+      {lines.map((line, i) => (
+        <div
+          key={i}
+          className={`${line.type === 'input' ? 'text-warm-400' : 'text-warm-300'} ${
+            line.isAscii ? 'whitespace-pre' : 'whitespace-pre-wrap'
+          } leading-relaxed`}
+        >
+          {line.content}
+        </div>
+      ))}
+      <div className="flex items-center">
+        <span className="text-warm-500 mr-2">{getPrompt()}</span>
+        <input
+          ref={inputRef}
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className="flex-1 bg-transparent outline-none text-warm-200 caret-warm-400"
+          autoFocus
+          spellCheck={false}
+        />
+        <span className="w-2 h-5 bg-warm-400 animate-cursor-blink ml-0.5" />
+      </div>
+    </div>
+  );
+}
