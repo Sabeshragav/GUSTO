@@ -163,6 +163,10 @@ export function MobileOS() {
     setRecentApps((prev) => prev.filter((id) => id !== appId));
   }, []);
 
+  const clearAllRecents = useCallback(() => {
+    setRecentApps([]);
+  }, []);
+
   // Wallpaper background style
   const wallpaperStyle = useMemo((): React.CSSProperties => {
     const { wallpaper } = state;
@@ -284,6 +288,7 @@ export function MobileOS() {
         allApps={ALL_APPS}
         onAppOpen={openApp}
         onRemoveRecent={removeRecent}
+        onClearAll={clearAllRecents}
       />
 
       <MobileNavBar onBack={goBack} onHome={goHome} onRecent={toggleRecents} />

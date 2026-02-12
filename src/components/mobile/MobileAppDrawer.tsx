@@ -173,7 +173,7 @@ export function MobileAppDrawer({
           ) : (
             /* Categorized view */
             <>
-              {renderSection("GUSTO", categories.gusto)}
+              {renderSection("GUSTO 26", categories.gusto)}
               {renderSection("Games", categories.games)}
               {renderSection("Utilities", categories.utilities)}
             </>

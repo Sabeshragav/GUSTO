@@ -1,6 +1,8 @@
 "use client";
 
+import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import { ThemedIcon } from "../ui/ThemedIcon";
 import type { MobileApp } from "./MobileAppDrawer";
 
 interface MobileRecentAppsProps {
@@ -10,6 +12,7 @@ interface MobileRecentAppsProps {
   allApps: MobileApp[];
   onAppOpen: (appId: string) => void;
   onRemoveRecent: (appId: string) => void;
+  onClearAll: () => void;
 }
 
 export function MobileRecentApps({
@@ -19,63 +22,120 @@ export function MobileRecentApps({
   allApps,
   onAppOpen,
   onRemoveRecent,
+  onClearAll,
 }: MobileRecentAppsProps) {
-  if (!isOpen) return null;
-
   const apps = recentApps
     .map((id) => allApps.find((a) => a.id === id))
     .filter(Boolean) as MobileApp[];
 
   return (
-    <div
-      className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="absolute inset-x-0 bottom-14 top-12 flex items-center justify-center"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {apps.length === 0 ? (
-          <p className="text-white/40 text-sm font-medium">No recent apps</p>
-        ) : (
-          <div className="flex gap-4 overflow-x-auto px-6 pb-4 snap-x snap-mandatory w-full justify-center">
-            {apps.map((app) => (
-              <div key={app.id} className="flex-shrink-0 w-52 snap-center">
-                <div className="relative bg-[#1a1a2e]/90 rounded-2xl border border-white/10 overflow-hidden shadow-xl">
-                  {/* Remove button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemoveRecent(app.id);
-                    }}
-                    className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-colors"
-                  >
-                    <X size={12} />
-                  </button>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-md"
+          onClick={onClose}
+        >
+          {/* Content area */}
+          <div
+            className="absolute inset-x-0 top-10 bottom-12 flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {apps.length === 0 ? (
+              /* Empty state */
+              <div className="flex-1 flex flex-col items-center justify-center gap-3">
+                <p className="text-white/40 text-sm font-medium">
+                  No recent apps
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Scrollable stacked cards */}
+                <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4 flex flex-col items-center gap-4">
+                  {apps.map((app, index) => (
+                    <motion.div
+                      key={app.id}
+                      initial={{ opacity: 0, y: 40, scale: 0.92 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, x: -200 }}
+                      transition={{
+                        duration: 0.3,
+                        delay: index * 0.06,
+                        ease: "easeOut",
+                      }}
+                      className="w-full max-w-[320px] shrink-0"
+                    >
+                      <div className="relative bg-[#1a1a2e]/90 rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+                        {/* Dismiss button */}
+                        <button
+                          onClick={() => onRemoveRecent(app.id)}
+                          className="absolute top-2.5 right-2.5 z-10 w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/50 active:text-white active:bg-white/20 transition-colors"
+                        >
+                          <X size={12} />
+                        </button>
 
-                  {/* Card body */}
+                        {/* Card preview — tap to reopen */}
+                        <button
+                          onClick={() => {
+                            onAppOpen(app.id);
+                            onClose();
+                          }}
+                          className="w-full active:bg-white/5 transition-colors"
+                        >
+                          {/* Fake app content preview area */}
+                          <div className="h-36 bg-[var(--surface-bg)]/40 flex items-center justify-center border-b border-white/5">
+                            <ThemedIcon
+                              name={app.icon}
+                              className="w-12 h-12 text-[var(--ph-orange)]/40"
+                            />
+                          </div>
+
+                          {/* App label */}
+                          <div className="flex items-center gap-3 px-4 py-3">
+                            <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                              <ThemedIcon
+                                name={app.icon}
+                                className="w-4 h-4 text-[var(--ph-orange)]"
+                              />
+                            </div>
+                            <span className="text-white/80 text-sm font-medium">
+                              {app.name}
+                            </span>
+                          </div>
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Clear All button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.15 }}
+                  className="flex justify-center pb-3 pt-2"
+                >
                   <button
                     onClick={() => {
-                      onAppOpen(app.id);
+                      onClearAll();
                       onClose();
                     }}
-                    className="w-full p-6 flex flex-col items-center gap-3 active:bg-white/5 transition-colors"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 border border-white/10 active:bg-white/20 transition-colors"
                   >
-                    <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center">
-                      <span className="text-[var(--ph-orange)] text-2xl font-bold">
-                        {app.name.charAt(0)}
-                      </span>
-                    </div>
-                    <span className="text-white/80 text-sm font-medium">
-                      {app.name}
+                    <X size={14} className="text-white/60" />
+                    <span className="text-white/70 text-xs font-semibold uppercase tracking-wider">
+                      Clear All
                     </span>
                   </button>
-                </div>
-              </div>
-            ))}
+                </motion.div>
+              </>
+            )}
           </div>
-        )}
-      </div>
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
