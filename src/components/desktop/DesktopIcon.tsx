@@ -8,6 +8,7 @@ import { findFileById } from "../../data/filesystem";
 import { MacFolder } from "../ui/icons/MacFolder";
 import { ThemedIcon } from "../ui/ThemedIcon";
 import { getAppColor } from "../../data/appColors";
+import { getMacIcon, getMacFolderIcon } from "../../data/macIcons";
 
 interface DesktopIconProps {
   item: DesktopItem;
@@ -151,13 +152,45 @@ export function DesktopIcon({ item, isMobile = false }: DesktopIconProps) {
         style={!isFolder && !isApp ? undefined : { color: getIconColor() }}
       >
         {isFolder ? (
-          <MacFolder size={isMobile ? 40 : 48} />
+          isMobile ? (
+            <MacFolder size={40} />
+          ) : (
+            <img
+              src={getMacFolderIcon()}
+              alt={item.name}
+              className="w-14 h-14 object-contain pointer-events-none"
+              draggable={false}
+            />
+          )
         ) : isApp ? (
-          <ThemedIcon
-            name={item.icon}
-            size={isMobile ? 40 : 48}
-            style={{ color: getIconColor() }}
-          />
+          isMobile ? (
+            <ThemedIcon
+              name={item.icon}
+              size={40}
+              style={{ color: getIconColor() }}
+            />
+          ) : (
+            (() => {
+              const macSrc = getMacIcon(
+                item.appId || item.id,
+                item.icon === "trash" && state.trashedItems.length > 0,
+              );
+              return macSrc ? (
+                <img
+                  src={macSrc}
+                  alt={item.name}
+                  className="w-14 h-14 object-contain pointer-events-none"
+                  draggable={false}
+                />
+              ) : (
+                <ThemedIcon
+                  name={item.icon}
+                  size={48}
+                  style={{ color: getIconColor() }}
+                />
+              );
+            })()
+          )
         ) : (
           <div className="scale-125 origin-bottom">
             <FilePreview type={item.type} name={item.name} />

@@ -6,6 +6,7 @@ import { useDesktop } from "../../contexts/DesktopContext";
 import { ThemedIcon } from "../ui/ThemedIcon";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { getAppColor } from "../../data/appColors";
+import { getMacIcon } from "../../data/macIcons";
 
 interface DockItem {
   id: string;
@@ -145,35 +146,59 @@ function DockIcon({
   });
 
   return (
-    <div className="flex flex-col items-center gap-1 group">
+    <div className="flex flex-col items-center gap-1 group relative">
+      {/* Tooltip — outside motion.div so overflow doesn't clip it */}
+      <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-[var(--surface-elevated)] text-[var(--text-primary)] text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-[var(--border-color)] shadow-lg z-50">
+        {item.name}
+        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[var(--border-color)]" />
+      </div>
+
       <motion.div
         ref={ref}
         style={{
           width,
           height: width,
-          backgroundColor: getAppColor(item.appId).bg,
+          backgroundColor: !isMobile
+            ? "transparent"
+            : getAppColor(item.appId).bg,
         }}
         onClick={onClick}
         className="dock-item relative flex items-center justify-center rounded-xl border border-transparent transition-colors cursor-pointer shadow-sm"
       >
-        <div className="w-3/5 h-3/5">
-          <ThemedIcon
-            name={item.iconName}
-            className="w-full h-full"
-            style={{
-              color:
-                isTrash && !hasItems
-                  ? "var(--text-secondary)"
-                  : getAppColor(item.appId).color,
-            }}
-          />
-        </div>
-
-        {/* Tooltip */}
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-[var(--surface-elevated)] text-[var(--text-primary)] text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-[var(--border-color)] shadow-lg z-50">
-          {item.name}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[var(--border-color)]" />
-        </div>
+        {!isMobile ? (
+          (() => {
+            const macSrc = getMacIcon(item.appId, isTrash && hasItems);
+            return macSrc ? (
+              <img
+                src={macSrc}
+                alt={item.name}
+                className="w-full h-full object-contain pointer-events-none"
+                draggable={false}
+              />
+            ) : (
+              <div className="w-3/5 h-3/5">
+                <ThemedIcon
+                  name={item.iconName}
+                  className="w-full h-full"
+                  style={{ color: getAppColor(item.appId).color }}
+                />
+              </div>
+            );
+          })()
+        ) : (
+          <div className="w-3/5 h-3/5">
+            <ThemedIcon
+              name={item.iconName}
+              className="w-full h-full"
+              style={{
+                color:
+                  isTrash && !hasItems
+                    ? "var(--text-secondary)"
+                    : getAppColor(item.appId).color,
+              }}
+            />
+          </div>
+        )}
       </motion.div>
 
       {/* Active Indicator */}
