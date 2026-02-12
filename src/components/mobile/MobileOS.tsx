@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
-import { AnimatePresence } from "framer-motion";
-import { Grid3X3 } from "lucide-react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Grid3X3, ChevronLeft, Circle, Square, Minus } from "lucide-react";
 import { MobileStatusBar } from "./MobileStatusBar";
-import { MobileNavBar } from "./MobileNavBar";
+import { IOSHomeIndicator } from "./IOSHomeIndicator";
 import { MobileAppDrawer, type MobileApp } from "./MobileAppDrawer";
 import { MobileRecentApps } from "./MobileRecentApps";
-import { ThemedIcon } from "../ui/ThemedIcon";
 import { BootScreen } from "../system/BootScreen";
 import { useDesktop } from "../../contexts/DesktopContext";
-import { getAppColor } from "../../data/appColors";
+import { getIOSIcon } from "../../data/iosIcons";
+import { useSwipeGestures } from "../../hooks/useSwipeGestures";
 
 // App components — reused from desktop
 import { EventsExplorer } from "../apps/EventsExplorer";
@@ -50,25 +50,27 @@ function pad(n: number): string {
   return String(n).padStart(2, "0");
 }
 
-// Home screen apps (shown on main grid)
+// Home screen apps (main grid — page 1)
 const HOME_APPS: MobileApp[] = [
   { id: "events", name: "Events", icon: "calendar" },
   { id: "rules", name: "Rules", icon: "clipboard" },
   { id: "contact", name: "Contact", icon: "mail" },
   { id: "transport", name: "Transport", icon: "map" },
-];
-
-// All apps (shown in drawer)
-const ALL_APPS: MobileApp[] = [
-  ...HOME_APPS,
-  { id: "terminal", name: "Terminal", icon: "terminal" },
   { id: "calendar", name: "Calendar", icon: "calendarDays" },
+  { id: "achievements", name: "Achievements", icon: "trophy" },
   { id: "snake", name: "Snake", icon: "gamepad2" },
   { id: "minesweeper", name: "Minesweeper", icon: "bomb" },
-  { id: "systemPreferences", name: "Settings", icon: "settings" },
-  { id: "achievements", name: "Achievements", icon: "trophy" },
-  { id: "spotify", name: "Spotify", icon: "music" },
 ];
+
+// Dock apps (always visible at the bottom like a real phone)
+const DOCK_APPS: MobileApp[] = [
+  { id: "terminal", name: "Terminal", icon: "terminal" },
+  { id: "spotify", name: "Music", icon: "music" },
+  { id: "systemPreferences", name: "Settings", icon: "settings" },
+];
+
+// All apps combined
+const ALL_APPS: MobileApp[] = [...HOME_APPS, ...DOCK_APPS];
 
 function renderApp(appId: string, data?: unknown) {
   switch (appId) {
@@ -101,14 +103,144 @@ function renderApp(appId: string, data?: unknown) {
   }
 }
 
+/** Detect if device likely has button navigation (Android) or gesture navigation (iOS/modern Android) */
+function useNavMode(): "buttons" | "gesture" {
+  const [mode, setMode] = useState<"buttons" | "gesture">("gesture");
+
+  useEffect(() => {
+    const ua = navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(ua);
+    const isAndroid = /android/.test(ua);
+
+    if (isIOS) {
+      // Modern iPhones use gesture nav, older ones with home button — check screen ratio
+      const ratio = window.screen.height / window.screen.width;
+      setMode(ratio > 2 ? "gesture" : "buttons"); // iPhone X+ has ratio > 2
+    } else if (isAndroid) {
+      // Check if window.innerHeight is significantly less than screen.height
+      // (button nav takes screen space, gesture nav doesn't)
+      const navBarHeight = window.screen.height - window.innerHeight;
+      setMode(navBarHeight > 80 ? "buttons" : "gesture");
+    } else {
+      // Desktop browser — use gesture mode (they can use mouse-drag)
+      setMode("gesture");
+    }
+  }, []);
+
+  return mode;
+}
+
+/** iOS-style icon button using macOS SVG icons */
+function IOSAppIcon({
+  app,
+  onOpen,
+  size = 58,
+}: {
+  app: MobileApp;
+  onOpen: (id: string) => void;
+  size?: number;
+}) {
+  const iconUrl = getIOSIcon(app.id);
+
+  return (
+    <button
+      onClick={() => onOpen(app.id)}
+      className="flex flex-col items-center gap-1 active:scale-90 transition-transform duration-150"
+    >
+      <div
+        className="rounded-[22%] overflow-hidden shadow-lg shadow-black/30"
+        style={{ width: size, height: size }}
+      >
+        {iconUrl ? (
+          <img
+            src={iconUrl}
+            alt={app.name}
+            className="w-full h-full object-cover"
+            draggable={false}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
+            <span className="text-white text-lg font-bold">
+              {app.name.charAt(0)}
+            </span>
+          </div>
+        )}
+      </div>
+      <span className="text-white text-[10px] font-medium drop-shadow-md tracking-tight leading-tight">
+        {app.name}
+      </span>
+    </button>
+  );
+}
+
+/** Bottom Dock — always visible on home screen, like a real phone */
+function MobileDock({
+  apps,
+  onOpen,
+}: {
+  apps: MobileApp[];
+  onOpen: (id: string) => void;
+}) {
+  return (
+    <div className="mx-4 mb-2 px-6 py-3 rounded-[26px] bg-white/15 backdrop-blur-2xl border border-white/20 shadow-lg">
+      <div className="flex items-center justify-around">
+        {apps.map((app) => (
+          <IOSAppIcon key={app.id} app={app} onOpen={onOpen} size={50} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Android-style 3-button nav bar */
+function ButtonNavBar({
+  onBack,
+  onHome,
+  onRecent,
+}: {
+  onBack: () => void;
+  onHome: () => void;
+  onRecent: () => void;
+}) {
+  return (
+    <div className="fixed bottom-0 left-0 right-0 h-12 z-[300] flex items-center justify-around bg-black/50 backdrop-blur-md border-t border-white/10">
+      <button
+        onClick={onBack}
+        className="flex items-center justify-center w-12 h-12 rounded-full text-white/70 active:text-white active:scale-75 active:bg-white/15 transition-all duration-100"
+        aria-label="Back"
+      >
+        <ChevronLeft size={22} strokeWidth={2.5} />
+      </button>
+      <button
+        onClick={onHome}
+        className="flex items-center justify-center w-12 h-12 rounded-full text-white/70 active:text-white active:scale-75 active:bg-white/15 transition-all duration-100"
+        aria-label="Home"
+      >
+        <Circle size={18} strokeWidth={2.5} />
+      </button>
+      <button
+        onClick={onRecent}
+        className="flex items-center justify-center w-12 h-12 rounded-full text-white/70 active:text-white active:scale-75 active:bg-white/15 transition-all duration-100"
+        aria-label="Recent Apps"
+      >
+        <Square size={16} strokeWidth={2.5} />
+      </button>
+    </div>
+  );
+}
+
 export function MobileOS() {
   const { state, closeWindow } = useDesktop();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const navMode = useNavMode();
   const [isBooting, setIsBooting] = useState(true);
   const [activeApp, setActiveApp] = useState<string | null>(null);
   const [activeAppData, setActiveAppData] = useState<unknown>(undefined);
   const [recentApps, setRecentApps] = useState<string[]>([]);
   const [showDrawer, setShowDrawer] = useState(false);
   const [showRecents, setShowRecents] = useState(false);
+  const [backPressCount, setBackPressCount] = useState(0);
+  const backTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
     hours: 0,
@@ -124,7 +256,6 @@ export function MobileOS() {
 
   const handleBootComplete = useCallback(() => {
     setIsBooting(false);
-    // Request fullscreen after boot animation
     try {
       const el = document.documentElement;
       if (!document.fullscreenElement && el.requestFullscreen) {
@@ -142,14 +273,15 @@ export function MobileOS() {
     });
     setShowDrawer(false);
     setShowRecents(false);
+    setBackPressCount(0);
   }, []);
 
-  // Intercept windows opened via DesktopContext (e.g. EventsExplorer calling openApp("register", data))
+  // Intercept windows opened via DesktopContext
   useEffect(() => {
     const registerWindow = state.windows.find((w) => w.appId === "register");
     if (registerWindow && activeApp !== "register") {
       openApp("register", registerWindow.data);
-      closeWindow(registerWindow.id); // Clean up the desktop window
+      closeWindow(registerWindow.id);
     }
   }, [state.windows, activeApp, openApp, closeWindow]);
 
@@ -157,15 +289,38 @@ export function MobileOS() {
     setActiveApp(null);
     setShowDrawer(false);
     setShowRecents(false);
+    setBackPressCount(0);
   }, []);
 
+  /** Double-back to exit: first back closes overlay/app, second back from home does nothing */
   const goBack = useCallback(() => {
     if (showRecents) {
       setShowRecents(false);
+      setBackPressCount(0);
     } else if (showDrawer) {
       setShowDrawer(false);
+      setBackPressCount(0);
     } else if (activeApp) {
+      // First back from an app → go home
       setActiveApp(null);
+      setBackPressCount(0);
+    } else {
+      // Already on home screen — track double-back
+      setBackPressCount((prev) => {
+        if (prev === 0) {
+          // Start timer — if no second back in 2s, reset
+          if (backTimerRef.current) clearTimeout(backTimerRef.current);
+          backTimerRef.current = setTimeout(() => {
+            setBackPressCount(0);
+          }, 2000);
+          return 1;
+        }
+        // Second back — could exit fullscreen or do nothing
+        if (document.fullscreenElement) {
+          document.exitFullscreen?.().catch(() => { });
+        }
+        return 0;
+      });
     }
   }, [showRecents, showDrawer, activeApp]);
 
@@ -181,6 +336,13 @@ export function MobileOS() {
   const clearAllRecents = useCallback(() => {
     setRecentApps([]);
   }, []);
+
+  // Swipe gestures — always enabled (works via pointer events for both mouse & touch)
+  useSwipeGestures(containerRef, {
+    onSwipeUpHome: goHome,
+    onSwipeUpRecents: toggleRecents,
+    onSwipeBack: goBack,
+  });
 
   // Wallpaper background style
   const wallpaperStyle = useMemo((): React.CSSProperties => {
@@ -204,9 +366,13 @@ export function MobileOS() {
     { label: "S", value: pad(timeLeft.seconds) },
   ];
 
+  // Bottom padding depends on nav mode
+  const bottomPad = navMode === "buttons" ? "pb-14" : "pb-8";
+
   return (
     <div
-      className="w-full h-full relative overflow-hidden"
+      ref={containerRef}
+      className="w-full h-full relative overflow-hidden touch-none"
       style={wallpaperStyle}
     >
       <AnimatePresence>
@@ -215,102 +381,139 @@ export function MobileOS() {
 
       <MobileStatusBar />
 
-      {activeApp ? (
-        /* ── Fullscreen App ── */
-        <div className="absolute inset-0 pt-10 pb-12 z-[50] bg-[var(--surface-bg)] overflow-auto">
-          {/* App title bar */}
-          <div className="sticky top-0 z-10 h-11 flex items-center justify-center px-4 bg-[var(--surface-bg)]/95 backdrop-blur-sm border-b border-[var(--border-color)]">
-            <h1 className="text-[var(--text-primary)] text-sm font-bold">
-              {ALL_APPS.find((a) => a.id === activeApp)?.name ?? activeApp}
-            </h1>
-          </div>
-          <div className="h-full overflow-auto">
-            {renderApp(activeApp, activeAppData)}
-          </div>
-        </div>
-      ) : (
-        /* ── Home Screen ── */
-        <div className="absolute inset-0 pt-10 pb-12 flex flex-col items-center">
-          {/* GUSTO watermark background */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
-            <div className="flex">
-              {Array.from("GUSTO").map((letter, i) => (
-                <span
-                  key={i}
-                  className="font-black text-white/[0.07] tracking-tighter"
-                  style={{ fontSize: "5rem", lineHeight: 0.85 }}
+      <AnimatePresence mode="wait">
+        {activeApp ? (
+          /* ── Fullscreen App with iOS-style animation ── */
+          <motion.div
+            key={`app-${activeApp}`}
+            initial={{ scale: 0.92, opacity: 0, borderRadius: "40px" }}
+            animate={{ scale: 1, opacity: 1, borderRadius: "0px" }}
+            exit={{ scale: 0.92, opacity: 0, borderRadius: "40px" }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 35,
+              mass: 0.8,
+            }}
+            className={`absolute inset-0 pt-11 ${bottomPad} z-[50] bg-[var(--surface-bg)] overflow-hidden`}
+          >
+            {/* App title bar with iOS-style back */}
+            <div className="sticky top-0 z-10 h-11 flex items-center justify-between px-4 bg-[var(--surface-bg)]/95 backdrop-blur-xl border-b border-[var(--border-color)]">
+              <button
+                onClick={goBack}
+                className="flex items-center gap-1 text-[#007AFF] text-sm font-medium active:opacity-50 transition-opacity"
+              >
+                <svg
+                  width="10"
+                  height="16"
+                  viewBox="0 0 10 16"
+                  fill="none"
                 >
-                  {letter}
-                </span>
-              ))}
+                  <path
+                    d="M9 1L2 8L9 15"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Back
+              </button>
+              <h1 className="text-[var(--text-primary)] text-sm font-semibold absolute left-1/2 -translate-x-1/2">
+                {ALL_APPS.find((a) => a.id === activeApp)?.name ?? activeApp}
+              </h1>
+              {/* Minimize button */}
+              <button
+                onClick={goHome}
+                className="text-[#007AFF] active:opacity-50 transition-opacity"
+                aria-label="Minimize"
+              >
+                <Minus size={20} strokeWidth={2.5} />
+              </button>
             </div>
-            <span className="text-white/[0.07] text-lg font-bold tracking-[0.5em] mt-2 uppercase">
-              2026
-            </span>
-          </div>
-          {/* Countdown widget */}
-          <div className="mt-8 mb-6 flex flex-col items-center">
-            <p className="text-white/70 text-[11px] font-bold tracking-wide mb-2">
-              The clock is ticking away !
-            </p>
-            <div className="flex items-baseline gap-1">
-              {units.map((u, i) => (
-                <span key={u.label} className="flex items-baseline">
-                  <span className="text-white font-black font-mono text-3xl tabular-nums drop-shadow-lg">
-                    {u.value}
-                  </span>
-                  <span className="text-[#F54E00] text-[9px] font-bold ml-0.5 mr-1">
-                    {u.label}
-                  </span>
-                  {i < units.length - 1 && (
-                    <span className="text-white/40 text-xl font-light">:</span>
-                  )}
-                </span>
-              ))}
+            <div className="h-full overflow-auto pb-12 touch-auto">
+              {renderApp(activeApp, activeAppData)}
             </div>
-            <p className="text-white/40 text-[10px] mt-2 font-medium">
-              Registration closes 1st March 2026
-            </p>
-          </div>
-
-          {/* App Grid */}
-          <div className="flex-1 flex items-start justify-center w-full px-8 mt-4">
-            <div className="grid grid-cols-2 gap-6 w-full max-w-[280px]">
-              {HOME_APPS.map((app) => (
-                <button
-                  key={app.id}
-                  onClick={() => openApp(app.id)}
-                  className="flex flex-col items-center gap-2 active:scale-90 transition-transform duration-150"
-                >
-                  <div
-                    className="w-16 h-16 rounded-2xl backdrop-blur-sm border border-white/15 flex items-center justify-center shadow-lg"
-                    style={{ backgroundColor: getAppColor(app.id).bg }}
+          </motion.div>
+        ) : (
+          /* ── Home Screen ── */
+          <motion.div
+            key="home"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className={`absolute inset-0 pt-11 ${bottomPad} flex flex-col`}
+          >
+            {/* GUSTO watermark background */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
+              <div className="flex">
+                {Array.from("GUSTO").map((letter, i) => (
+                  <span
+                    key={i}
+                    className="font-black text-white/[0.07] tracking-tighter"
+                    style={{ fontSize: "5rem", lineHeight: 0.85 }}
                   >
-                    <ThemedIcon
-                      name={app.icon}
-                      className="w-8 h-8"
-                      style={{ color: getAppColor(app.id).color }}
-                    />
-                  </div>
-                  <span className="text-white text-xs font-medium drop-shadow-md">
-                    {app.name}
+                    {letter}
                   </span>
-                </button>
-              ))}
+                ))}
+              </div>
+              <span className="text-white/[0.07] text-lg font-bold tracking-[0.5em] mt-2 uppercase">
+                2026
+              </span>
             </div>
-          </div>
 
-          {/* App Drawer trigger */}
-          <div className="mb-4">
-            <button
-              onClick={() => setShowDrawer(true)}
-              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 flex items-center justify-center active:scale-90 transition-transform duration-150"
-            >
-              <Grid3X3 size={18} className="text-white/70" />
-            </button>
-          </div>
-        </div>
-      )}
+            {/* Countdown widget — iOS widget style */}
+            <div className="mt-4 mb-3 flex flex-col items-center z-10 px-6">
+              <div className="bg-white/10 backdrop-blur-xl rounded-[20px] border border-white/15 px-5 py-3 shadow-lg w-full max-w-[320px]">
+                <p className="text-white/60 text-[10px] font-semibold tracking-widest uppercase text-center mb-1.5">
+                  Countdown
+                </p>
+                <div className="flex items-baseline justify-center gap-1">
+                  {units.map((u, i) => (
+                    <span key={u.label} className="flex items-baseline">
+                      <span className="text-white font-black font-mono text-2xl tabular-nums drop-shadow-lg">
+                        {u.value}
+                      </span>
+                      <span className="text-[#FF6B35] text-[8px] font-bold ml-0.5 mr-1">
+                        {u.label}
+                      </span>
+                      {i < units.length - 1 && (
+                        <span className="text-white/30 text-lg font-light">
+                          :
+                        </span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-white/40 text-[9px] mt-1 font-medium text-center">
+                  Registration closes 1st March 2026
+                </p>
+              </div>
+            </div>
+
+            {/* App Grid */}
+            <div className="flex-1 flex items-start justify-center w-full px-6 mt-1 z-10 overflow-y-auto touch-auto">
+              <div className="grid grid-cols-4 gap-x-4 gap-y-5 w-full max-w-[340px]">
+                {HOME_APPS.map((app) => (
+                  <IOSAppIcon key={app.id} app={app} onOpen={openApp} size={56} />
+                ))}
+              </div>
+            </div>
+
+            {/* Page dots */}
+            <div className="flex items-center justify-center gap-1.5 py-2 z-10">
+              <div className="w-[6px] h-[6px] rounded-full bg-white/80" />
+              <div className="w-[6px] h-[6px] rounded-full bg-white/25" />
+            </div>
+
+            {/* Bottom Dock */}
+            <div className="z-10">
+              <MobileDock apps={DOCK_APPS} onOpen={openApp} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Overlays */}
       <MobileAppDrawer
@@ -329,7 +532,28 @@ export function MobileOS() {
         onClearAll={clearAllRecents}
       />
 
-      <MobileNavBar onBack={goBack} onHome={goHome} onRecent={toggleRecents} />
+      {/* Navigation: buttons OR gesture indicator based on detection */}
+      {navMode === "buttons" ? (
+        <ButtonNavBar onBack={goBack} onHome={goHome} onRecent={toggleRecents} />
+      ) : (
+        <IOSHomeIndicator />
+      )}
+
+      {/* Double-back toast */}
+      <AnimatePresence>
+        {backPressCount === 1 && !activeApp && !showDrawer && !showRecents && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[400] px-4 py-2 rounded-full bg-black/70 backdrop-blur-sm"
+          >
+            <span className="text-white text-xs font-medium">
+              Swipe back again to exit fullscreen
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

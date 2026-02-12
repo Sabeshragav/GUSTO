@@ -26,7 +26,7 @@ export function MobileStatusBar() {
   // Track fullscreen state
   useEffect(() => {
     const onChange = () => setIsFullscreen(!!document.fullscreenElement);
-    onChange(); // initial check
+    onChange();
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
@@ -34,26 +34,37 @@ export function MobileStatusBar() {
   const requestFullscreen = useCallback(() => {
     const el = document.documentElement;
     if (!document.fullscreenElement && el.requestFullscreen) {
-      el.requestFullscreen().catch(() => {});
+      el.requestFullscreen().catch(() => { });
     }
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-10 z-[100] flex items-center justify-between px-4 bg-black/30 backdrop-blur-md text-white text-xs font-medium">
-      <span className="tracking-wide">{time}</span>
-      <div className="flex items-center gap-1.5">
-        {!isFullscreen && (
-          <button
-            onClick={requestFullscreen}
-            className="p-0.5 rounded active:opacity-60 transition-opacity"
-            aria-label="Enter fullscreen"
-          >
-            <Maximize size={12} strokeWidth={2.5} />
-          </button>
-        )}
-        <Signal size={13} strokeWidth={2.5} />
-        <Wifi size={13} strokeWidth={2.5} />
-        <BatteryFull size={15} strokeWidth={2} />
+    <div className="fixed top-0 left-0 right-0 h-11 z-[100] flex items-center justify-between px-5">
+      {/* Left: Time — iOS style (bold) */}
+      <span className="text-white text-[14px] font-semibold tracking-tight drop-shadow-sm">
+        {time}
+      </span>
+
+      {/* Center: Dynamic Island notch hint */}
+      <div className="absolute left-1/2 -translate-x-1/2 top-[5px]">
+        <div className="w-[120px] h-[28px] bg-black rounded-full shadow-lg shadow-black/50 flex items-center justify-center">
+          {!isFullscreen && (
+            <button
+              onClick={requestFullscreen}
+              className="p-0.5 rounded active:opacity-60 transition-opacity"
+              aria-label="Enter fullscreen"
+            >
+              <Maximize size={11} strokeWidth={2.5} className="text-white/50" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Right: Status icons — iOS style */}
+      <div className="flex items-center gap-1">
+        <Signal size={14} strokeWidth={2.5} className="text-white drop-shadow-sm" />
+        <Wifi size={14} strokeWidth={2.5} className="text-white drop-shadow-sm" />
+        <BatteryFull size={18} strokeWidth={1.5} className="text-white drop-shadow-sm" />
       </div>
     </div>
   );

@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
-import { ThemedIcon } from "../ui/ThemedIcon";
-import { getAppColor } from "../../data/appColors";
+import { getIOSIcon } from "../../data/iosIcons";
 
 export interface MobileApp {
   id: string;
@@ -47,6 +46,49 @@ function categorizeApps(apps: MobileApp[]) {
   return { gusto, games, utilities };
 }
 
+/** iOS-style app icon for the drawer */
+function DrawerAppIcon({
+  app,
+  onOpen,
+  onClose,
+}: {
+  app: MobileApp;
+  onOpen: (id: string) => void;
+  onClose: () => void;
+}) {
+  const iconUrl = getIOSIcon(app.id);
+
+  return (
+    <button
+      onClick={() => {
+        onOpen(app.id);
+        onClose();
+      }}
+      className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform duration-150"
+    >
+      <div className="w-14 h-14 rounded-[22%] overflow-hidden shadow-md shadow-black/20">
+        {iconUrl ? (
+          <img
+            src={iconUrl}
+            alt={app.name}
+            className="w-full h-full object-cover"
+            draggable={false}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
+            <span className="text-white text-sm font-bold">
+              {app.name.charAt(0)}
+            </span>
+          </div>
+        )}
+      </div>
+      <span className="text-white/80 text-[10px] font-medium truncate max-w-[60px]">
+        {app.name}
+      </span>
+    </button>
+  );
+}
+
 export function MobileAppDrawer({
   isOpen,
   onClose,
@@ -55,6 +97,9 @@ export function MobileAppDrawer({
 }: MobileAppDrawerProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
+
+  // Touch-to-dismiss tracking
+  const touchStartY = useRef(0);
 
   useEffect(() => {
     if (!isOpen) {
@@ -70,36 +115,11 @@ export function MobileAppDrawer({
 
   const filtered = search.trim()
     ? apps.filter((a) =>
-        a.name.toLowerCase().includes(search.trim().toLowerCase()),
-      )
+      a.name.toLowerCase().includes(search.trim().toLowerCase()),
+    )
     : null;
 
   const categories = categorizeApps(apps);
-
-  const renderAppButton = (app: MobileApp) => (
-    <button
-      key={app.id}
-      onClick={() => {
-        onAppOpen(app.id);
-        onClose();
-      }}
-      className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform duration-150"
-    >
-      <div
-        className="w-14 h-14 rounded-2xl border border-white/10 flex items-center justify-center"
-        style={{ backgroundColor: getAppColor(app.id).bg }}
-      >
-        <ThemedIcon
-          name={app.icon}
-          className="w-7 h-7"
-          style={{ color: getAppColor(app.id).color }}
-        />
-      </div>
-      <span className="text-white/80 text-[10px] font-medium truncate max-w-[60px]">
-        {app.name}
-      </span>
-    </button>
-  );
 
   const renderSection = (title: string, sectionApps: MobileApp[]) => {
     if (sectionApps.length === 0) return null;
@@ -109,7 +129,14 @@ export function MobileAppDrawer({
           {title}
         </h3>
         <div className="grid grid-cols-4 gap-y-5 gap-x-4">
-          {sectionApps.map(renderAppButton)}
+          {sectionApps.map((app) => (
+            <DrawerAppIcon
+              key={app.id}
+              app={app}
+              onOpen={onAppOpen}
+              onClose={onClose}
+            />
+          ))}
         </div>
       </div>
     );
@@ -119,34 +146,39 @@ export function MobileAppDrawer({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
-          isOpen
+        className={`fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${isOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
-        }`}
+          }`}
         onClick={onClose}
       />
 
-      {/* Full-page drawer panel */}
+      {/* iOS App Library panel */}
       <div
         ref={panelRef}
-        className={`fixed inset-x-0 top-0 bottom-0 z-[201] bg-[#0d0d1a]/98 backdrop-blur-xl transition-transform duration-300 ease-out ${
-          isOpen ? "translate-y-0" : "translate-y-full"
-        }`}
+        className={`fixed inset-x-0 top-0 bottom-0 z-[201] bg-[#0d0d1a]/95 backdrop-blur-2xl transition-transform duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] ${isOpen ? "translate-y-0" : "translate-y-full"
+          }`}
+        onTouchStart={(e) => {
+          touchStartY.current = e.touches[0].clientY;
+        }}
+        onTouchEnd={(e) => {
+          const delta = e.changedTouches[0].clientY - touchStartY.current;
+          if (delta > 80) onClose(); // Swipe down to dismiss
+        }}
       >
         {/* Handle + Search area */}
-        <div className="pt-12 px-5 pb-3">
-          {/* Drag handle */}
-          <div className="flex justify-center mb-4">
-            <div className="w-10 h-1 rounded-full bg-white/20" />
+        <div className="pt-14 px-5 pb-3">
+          {/* iOS-style drag handle */}
+          <div className="flex justify-center mb-5">
+            <div className="w-9 h-[4px] rounded-full bg-white/30" />
           </div>
 
-          {/* Search bar */}
+          {/* iOS-style search bar */}
           <div className="flex items-center gap-2.5 bg-white/8 border border-white/10 rounded-xl px-3.5 py-2.5">
             <Search size={16} className="text-white/40 shrink-0" />
             <input
               type="text"
-              placeholder="Search apps"
+              placeholder="App Library"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="bg-transparent text-white text-sm placeholder:text-white/30 outline-none w-full"
@@ -156,8 +188,8 @@ export function MobileAppDrawer({
 
         {/* Scrollable app list */}
         <div
-          className="overflow-y-auto px-5 pb-16"
-          style={{ height: "calc(100% - 120px)" }}
+          className="overflow-y-auto px-5 pb-20"
+          style={{ height: "calc(100% - 130px)" }}
         >
           {filtered ? (
             /* Search results */
@@ -167,7 +199,14 @@ export function MobileAppDrawer({
               </h3>
               {filtered.length > 0 ? (
                 <div className="grid grid-cols-4 gap-y-5 gap-x-4">
-                  {filtered.map(renderAppButton)}
+                  {filtered.map((app) => (
+                    <DrawerAppIcon
+                      key={app.id}
+                      app={app}
+                      onOpen={onAppOpen}
+                      onClose={onClose}
+                    />
+                  ))}
                 </div>
               ) : (
                 <p className="text-white/30 text-sm text-center py-8">

@@ -1,58 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Readable } from "stream";
+import { query, initDatabase, generateRegCode } from "../../../src/lib/db";
+import { uploadToS3 } from "../../../src/lib/s3";
+import { sendRegistrationEmail } from "../../../src/lib/email";
+import { EVENTS } from "../../../src/data/events";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 // Pass definitions for server-side validation
 const PASS_LIMITS: Record<
     string,
-    { price: number; maxTotal: number; maxTech: number; maxNonTech: number }
+    { name: string; price: number; maxTotal: number; maxTech: number; maxNonTech: number }
 > = {
-    silver: { price: 180, maxTotal: 1, maxTech: 1, maxNonTech: 1 },
-    gold: { price: 200, maxTotal: 2, maxTech: 2, maxNonTech: 2 },
-    diamond: { price: 250, maxTotal: 3, maxTech: 2, maxNonTech: 1 },
-    platinum: { price: 300, maxTotal: 4, maxTech: 2, maxNonTech: 2 },
+    silver: { name: "Silver", price: 180, maxTotal: 1, maxTech: 1, maxNonTech: 1 },
+    gold: { name: "Gold", price: 200, maxTotal: 2, maxTech: 2, maxNonTech: 2 },
+    diamond: { name: "Diamond", price: 250, maxTotal: 3, maxTech: 2, maxNonTech: 1 },
+    platinum: { name: "Platinum", price: 300, maxTotal: 4, maxTech: 2, maxNonTech: 2 },
 };
 
-// Track processed transaction IDs in memory (basic dedup — use DB for production)
-const processedTransactions = new Set<string>();
+// Team-based events (min 1, max 4 members)
+const TEAM_EVENTS = new Set(["paper-presentation", "project-presentation"]);
 
-// Service account auth for Google Sheets
-async function getSheetsClient() {
-    const { google } = await import("googleapis");
+let dbInitialized = false;
 
-    const auth = new google.auth.GoogleAuth({
-        credentials: {
-            client_email: process.env.GOOGLE_CLIENT_EMAIL,
-            private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-        },
-        scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-    });
-
-    return google.sheets({ version: "v4", auth });
-}
-
-// OAuth2 auth for Google Drive (personal account)
-async function getDriveClient() {
-    const { google } = await import("googleapis");
-
-    const oauth2 = new google.auth.OAuth2(
-        process.env.GOOGLE_OAUTH_CLIENT_ID,
-        process.env.GOOGLE_OAUTH_CLIENT_SECRET
-    );
-
-    oauth2.setCredentials({
-        refresh_token: process.env.GOOGLE_OAUTH_REFRESH_TOKEN,
-    });
-
-    return google.drive({ version: "v3", auth: oauth2 });
-}
-
-function bufferToStream(buffer: Buffer): Readable {
-    const stream = new Readable();
-    stream.push(buffer);
-    stream.push(null);
-    return stream;
+async function ensureDb() {
+    if (!dbInitialized) {
+        await initDatabase();
+        dbInitialized = true;
+    }
 }
 
 function sanitize(val: string): string {
@@ -61,6 +35,8 @@ function sanitize(val: string): string {
 
 export async function POST(req: NextRequest) {
     try {
+        await ensureDb();
+
         const formData = await req.formData();
 
         // ──── Extract fields ────
@@ -135,36 +111,44 @@ export async function POST(req: NextRequest) {
             console.warn(
                 `Price tamper detected: client=${clientTotal}, server=${expectedTotal}`
             );
-            // Use server-calculated total
         }
 
-        // ──── Prevent duplicate Transaction ID ────
-        const txId = sanitize(transactionId);
-        if (processedTransactions.has(txId)) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    message:
-                        "This Transaction ID has already been used. If this is an error, contact the organizers.",
-                },
-                { status: 409 }
-            );
-        }
-
-        // ──── Validate event count against pass limits ────
-        const eventList = selectedEvents
+        // ──── Parse event IDs and validate ────
+        const eventIds = selectedEvents
             .split(",")
             .map((e) => e.trim())
             .filter(Boolean);
-        if (eventList.length > passLimits.maxTotal) {
+
+        if (eventIds.length === 0) {
+            return NextResponse.json(
+                { success: false, message: "At least one event must be selected" },
+                { status: 400 }
+            );
+        }
+
+        if (eventIds.length > passLimits.maxTotal) {
             return NextResponse.json(
                 {
                     success: false,
-                    message: `Too many events selected for ${tier} pass (max ${passLimits.maxTotal})`,
+                    message: `Too many events selected for ${passLimits.name} pass (max ${passLimits.maxTotal})`,
                 },
                 { status: 400 }
             );
         }
+
+        // Validate that all event IDs exist
+        const validEventIds = new Set(EVENTS.map((e) => e.id));
+        for (const eventId of eventIds) {
+            if (!validEventIds.has(eventId)) {
+                return NextResponse.json(
+                    { success: false, message: `Unknown event: ${eventId}` },
+                    { status: 400 }
+                );
+            }
+        }
+
+        // Check if any selected events are team-based
+        const hasTeamEvents = eventIds.some((id) => TEAM_EVENTS.has(id));
 
         // ──── Parse teammate data ────
         let teammates: Array<{
@@ -174,12 +158,36 @@ export async function POST(req: NextRequest) {
             college: string;
             year: string;
         }> = [];
+
         if (teammatesRaw) {
             try {
                 teammates = JSON.parse(teammatesRaw);
             } catch {
                 return NextResponse.json(
                     { success: false, message: "Invalid teammate data format" },
+                    { status: 400 }
+                );
+            }
+
+            // Validate: teammates only allowed for team-based events
+            if (teammates.length > 0 && !hasTeamEvents) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        message:
+                            "Team members are only allowed for Paper Presentation and Project Presentation",
+                    },
+                    { status: 400 }
+                );
+            }
+
+            // Max 3 additional teammates (total team = 4 including leader)
+            if (teammates.length > 3) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        message: "Maximum 4 team members including the leader",
+                    },
                     { status: 400 }
                 );
             }
@@ -222,115 +230,125 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // ──── Check environment variables ────
-        const sheetId = process.env.GOOGLE_SHEET_ID;
-        const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-        if (
-            !process.env.GOOGLE_CLIENT_EMAIL ||
-            !process.env.GOOGLE_PRIVATE_KEY ||
-            !sheetId ||
-            !folderId ||
-            !process.env.GOOGLE_OAUTH_CLIENT_ID ||
-            !process.env.GOOGLE_OAUTH_CLIENT_SECRET ||
-            !process.env.GOOGLE_OAUTH_REFRESH_TOKEN
-        ) {
-            console.error("Missing Google credentials in environment");
-            return NextResponse.json(
-                {
-                    success: false,
-                    message:
-                        "Server configuration error. Please contact the organizers.",
-                },
-                { status: 500 }
-            );
-        }
-
-        // ──── Upload screenshot to Google Drive (via OAuth2) ────
-        const drive = await getDriveClient();
+        // ──── Upload screenshot to S3 ────
         const fileBuffer = Buffer.from(await screenshot.arrayBuffer());
-        const timestamp = new Date().toISOString();
         const safeName = sanitize(name).replace(/[^a-zA-Z0-9]/g, "_");
         const ext = screenshot.name.split(".").pop() || "jpg";
         const fileName = `${safeName}_${Date.now()}.${ext}`;
 
-        const driveResponse = await drive.files.create({
-            requestBody: {
-                name: fileName,
-                parents: [folderId],
-            },
-            media: {
-                mimeType: screenshot.type,
-                body: bufferToStream(fileBuffer),
-            },
-            fields: "id",
-        });
+        const screenshotUrl = await uploadToS3(fileBuffer, fileName, screenshot.type);
 
-        const fileId = driveResponse.data.id;
-        if (!fileId) {
-            console.error("Drive upload returned no file ID");
-            return NextResponse.json(
-                {
-                    success: false,
-                    message: "Failed to upload screenshot. Please try again.",
-                },
-                { status: 500 }
+        // ──── Generate unique registration code ────
+        let regCode = generateRegCode();
+        // Ensure uniqueness (retry if collision)
+        for (let attempt = 0; attempt < 5; attempt++) {
+            const existing = await query(
+                "SELECT id FROM registrations WHERE reg_code = $1",
+                [regCode]
+            );
+            if (existing.rows.length === 0) break;
+            regCode = generateRegCode();
+        }
+
+        // ──── Insert registration ────
+        const regResult = await query(
+            `INSERT INTO registrations 
+       (reg_code, name, email, mobile, college, year, pass_tier, selected_events, screenshot_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING id, reg_code`,
+            [
+                regCode,
+                sanitize(name),
+                sanitize(email),
+                sanitize(mobile),
+                sanitize(college),
+                year,
+                passLimits.name, // Store as "Silver", "Gold", etc.
+                eventIds,        // PostgreSQL TEXT[] — event IDs
+                screenshotUrl,
+            ]
+        );
+
+        const registrationId = regResult.rows[0].id;
+        const savedRegCode = regResult.rows[0].reg_code;
+
+        // ──── Insert event_attendance rows ────
+        for (const eventId of eventIds) {
+            await query(
+                `INSERT INTO event_attendance (registration_id, event_id, status)
+         VALUES ($1, $2, 'registered')`,
+                [registrationId, eventId]
             );
         }
 
-        // Make file publicly viewable
-        await drive.permissions.create({
-            fileId,
-            requestBody: {
-                role: "reader",
-                type: "anyone",
-            },
-        });
+        // ──── Insert team members ────
+        // For team events, insert the leader + teammates
+        const teamEventIds = eventIds.filter((id) => TEAM_EVENTS.has(id));
 
-        const screenshotLink = `https://drive.google.com/file/d/${fileId}/view`;
+        for (const teamEventId of teamEventIds) {
+            // Insert leader as team member
+            await query(
+                `INSERT INTO team_members 
+         (registration_id, event_id, member_name, member_email, member_mobile, member_college, member_year, is_leader)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, true)`,
+                [
+                    registrationId,
+                    teamEventId,
+                    sanitize(name),
+                    sanitize(email),
+                    sanitize(mobile),
+                    sanitize(college),
+                    year,
+                ]
+            );
 
-        // ──── Format teammate data for sheet ────
-        const teammateNames = teammates.map((t) => t.name).join(" | ");
-        const teammateEmails = teammates.map((t) => t.email).join(" | ");
-        const teammateMobiles = teammates.map((t) => t.mobile).join(" | ");
-        const teammateColleges = teammates.map((t) => t.college).join(" | ");
-        const teammateYears = teammates.map((t) => t.year).join(" | ");
-
-        // ──── Append to Google Sheets (via service account) ────
-        const sheets = await getSheetsClient();
-
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: sheetId,
-            range: "Sheet1!A:Q",
-            valueInputOption: "USER_ENTERED",
-            requestBody: {
-                values: [
+            // Insert additional teammates
+            for (const tm of teammates) {
+                await query(
+                    `INSERT INTO team_members 
+           (registration_id, event_id, member_name, member_email, member_mobile, member_college, member_year, is_leader)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, false)`,
                     [
-                        timestamp,
-                        sanitize(name),
-                        sanitize(email),
-                        sanitize(mobile),
-                        sanitize(college),
-                        year,
-                        tier,
-                        selectedEvents,
-                        teamSize,
-                        txId,
-                        expectedTotal,
-                        teammateNames,
-                        teammateEmails,
-                        teammateMobiles,
-                        teammateColleges,
-                        teammateYears,
-                        screenshotLink,
-                    ],
-                ],
-            },
+                        registrationId,
+                        teamEventId,
+                        sanitize(tm.name),
+                        sanitize(tm.email),
+                        sanitize(tm.mobile),
+                        sanitize(tm.college),
+                        tm.year,
+                    ]
+                );
+            }
+        }
+
+        // ──── Send confirmation email ────
+        try {
+            const eventDetails = eventIds.map((id) => {
+                const ev = EVENTS.find((e) => e.id === id);
+                return {
+                    title: ev?.title || id,
+                    date: ev?.date || "TBD",
+                    time: ev?.time || "TBD",
+                    venue: ev?.venue || "TBD",
+                };
+            });
+
+            await sendRegistrationEmail(
+                sanitize(email),
+                sanitize(name),
+                savedRegCode,
+                passLimits.name,
+                eventDetails
+            );
+        } catch (emailErr) {
+            // Don't fail registration if email fails — log and continue
+            console.error("Failed to send confirmation email:", emailErr);
+        }
+
+        return NextResponse.json({
+            success: true,
+            regCode: savedRegCode,
         });
-
-        // Mark transaction as processed
-        processedTransactions.add(txId);
-
-        return NextResponse.json({ success: true });
     } catch (error) {
         console.error("Registration error:", error);
         return NextResponse.json(

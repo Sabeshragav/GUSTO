@@ -78,7 +78,7 @@ export function SuccessScreen({
                     className="w-full p-4 rounded border-2 border-[var(--border-color)] bg-[var(--surface-secondary)] mb-4"
                 >
                     <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide font-bold mb-1">
-                        Registration ID
+                        Registration Code
                     </p>
                     <div className="flex items-center justify-center gap-2">
                         <code className="text-sm font-bold text-[var(--accent-color)] font-mono tracking-wider">

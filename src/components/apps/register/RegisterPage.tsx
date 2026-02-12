@@ -4,7 +4,6 @@ import { useState, useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { v4 as uuidv4 } from "uuid";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from "lucide-react";
 
@@ -67,6 +66,9 @@ export type RegistrationFormData = z.infer<typeof registrationSchema>;
 const STEP_LABELS = ["Details", "Pass", "Events", "Team", "Payment"];
 const TOTAL_STEPS = 5;
 
+// Events that support teams (min 1, max 4 members)
+const TEAM_EVENT_IDS = new Set(["paper-presentation", "project-presentation"]);
+
 interface RegisterPageProps {
     data?: unknown;
 }
@@ -103,6 +105,9 @@ export function RegisterPage({ data }: RegisterPageProps) {
     /* ─── Validation hook ─── */
     const { counts, validateEvent, isComplete: eventsComplete } =
         usePassValidation(selectedPass, selectedEvents);
+
+    // Whether any selected events are team-based
+    const hasTeamEvents = selectedEvents.some((e) => TEAM_EVENT_IDS.has(e.id));
 
     /* ─── React Hook Form ─── */
     const {
@@ -244,7 +249,7 @@ export function RegisterPage({ data }: RegisterPageProps) {
                 fd.append("tier", selectedPass.id);
                 fd.append(
                     "selectedEvents",
-                    selectedEvents.map((e) => e.title).join(", ")
+                    selectedEvents.map((e) => e.id).join(",")
                 );
                 fd.append("teamSize", String(teamSize));
                 fd.append("transactionId", txId);
@@ -269,9 +274,8 @@ export function RegisterPage({ data }: RegisterPageProps) {
                     );
                 }
 
-                // Success!
-                const regId = `GST-26-${uuidv4().split("-")[0].toUpperCase()}`;
-                setRegistrationId(regId);
+                // Success! Use the server-generated registration code
+                setRegistrationId(result.regCode || "SUBMITTED");
                 setIsSuccess(true);
 
                 // Achievement unlock is handled by dispatching a custom event
@@ -385,6 +389,7 @@ export function RegisterPage({ data }: RegisterPageProps) {
                                     teamSize={teamSize}
                                     onTeamSizeChange={handleTeamSizeChange}
                                     isMobile={isMobile}
+                                    hasTeamEvents={hasTeamEvents}
                                 />
                             )}
 

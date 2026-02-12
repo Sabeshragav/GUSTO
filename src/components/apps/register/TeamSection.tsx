@@ -17,6 +17,7 @@ interface TeamSectionProps {
     teamSize: number;
     onTeamSizeChange: (size: number) => void;
     isMobile: boolean;
+    hasTeamEvents: boolean;
 }
 
 const YEAR_OPTIONS = [
@@ -35,6 +36,7 @@ export function TeamSection({
     teamSize,
     onTeamSizeChange,
     isMobile,
+    hasTeamEvents,
 }: TeamSectionProps) {
     const { fields, append, remove } = useFieldArray({
         control,
@@ -72,165 +74,180 @@ export function TeamSection({
                     👥 Team Details
                 </h3>
                 <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
-                    Set your team size and add teammate details if applicable
+                    {hasTeamEvents
+                        ? "Set your team size for Paper / Project Presentation (1–4 members)"
+                        : "Team members only apply to Paper & Project Presentation"}
                 </p>
             </div>
 
-            {/* Team Size Selector */}
-            <div className="flex items-center justify-between p-3 rounded border-2 border-[var(--border-color)] bg-[var(--surface-secondary)]">
-                <div className="flex items-center gap-2">
-                    <Users size={16} className="text-[var(--accent-color)]" />
-                    <span className="text-sm font-bold text-[var(--text-primary)]">
-                        Team Size
-                    </span>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={handleDecrease}
-                        disabled={teamSize <= 1}
-                        className="w-8 h-8 flex items-center justify-center rounded border-2 border-[var(--border-color)] bg-[var(--surface-primary)] text-[var(--text-primary)] hover:border-[var(--accent-color)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    >
-                        <Minus size={14} />
-                    </button>
-                    <span className="text-lg font-bold text-[var(--text-primary)] w-6 text-center tabular-nums">
-                        {teamSize}
-                    </span>
-                    <button
-                        type="button"
-                        onClick={handleIncrease}
-                        disabled={teamSize >= 4}
-                        className="w-8 h-8 flex items-center justify-center rounded border-2 border-[var(--border-color)] bg-[var(--surface-primary)] text-[var(--text-primary)] hover:border-[var(--accent-color)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    >
-                        <Plus size={14} />
-                    </button>
-                </div>
-            </div>
-
-            {teamSize === 1 && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded bg-[var(--surface-secondary)] border border-[var(--border-color)]">
-                    <UserPlus size={14} className="text-[var(--text-muted)]" />
-                    <span className="text-[11px] text-[var(--text-muted)]">
-                        Solo participation — no teammate details needed
+            {!hasTeamEvents && (
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded bg-blue-500/10 border border-blue-500/20">
+                    <UserPlus size={14} className="text-blue-400 flex-shrink-0" />
+                    <span className="text-[11px] text-blue-400">
+                        None of your selected events require teams. You&apos;re registered as an individual participant.
                     </span>
                 </div>
             )}
 
-            {/* Teammate Forms */}
-            <AnimatePresence mode="popLayout">
-                {fields.map((field, index) => (
-                    <motion.div
-                        key={field.id}
-                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                        transition={{ duration: 0.2 }}
-                        className="p-4 rounded border-2 border-[var(--border-color)] bg-[var(--surface-primary)]"
-                    >
-                        <div className="flex items-center justify-between mb-3">
-                            <h4 className="text-xs font-bold text-[var(--accent-color)] uppercase tracking-wide">
-                                Teammate {index + 1}
-                            </h4>
-                            <span className="text-[10px] text-[var(--text-muted)] font-medium">
-                                Member {index + 2} of {teamSize}
+            {hasTeamEvents && (
+                <>
+                    {/* Team Size Selector */}
+                    <div className="flex items-center justify-between p-3 rounded border-2 border-[var(--border-color)] bg-[var(--surface-secondary)]">
+                        <div className="flex items-center gap-2">
+                            <Users size={16} className="text-[var(--accent-color)]" />
+                            <span className="text-sm font-bold text-[var(--text-primary)]">
+                                Team Size
                             </span>
                         </div>
-
-                        <div
-                            className={`grid gap-3 ${isMobile ? "grid-cols-1" : "grid-cols-2"
-                                }`}
-                        >
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
-                                    Name
-                                </label>
-                                <input
-                                    {...register(`teammates.${index}.name`)}
-                                    placeholder="Full name"
-                                    className={inputClass}
-                                />
-                                {errors.teammates?.[index]?.name && (
-                                    <p className="text-[10px] text-red-400">
-                                        {errors.teammates[index]?.name?.message}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
-                                    Email
-                                </label>
-                                <input
-                                    {...register(`teammates.${index}.email`)}
-                                    type="email"
-                                    placeholder="email@example.com"
-                                    className={inputClass}
-                                />
-                                {errors.teammates?.[index]?.email && (
-                                    <p className="text-[10px] text-red-400">
-                                        {errors.teammates[index]?.email?.message}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
-                                    Mobile
-                                </label>
-                                <input
-                                    {...register(`teammates.${index}.mobile`)}
-                                    type="tel"
-                                    placeholder="10-digit number"
-                                    className={inputClass}
-                                    maxLength={10}
-                                />
-                                {errors.teammates?.[index]?.mobile && (
-                                    <p className="text-[10px] text-red-400">
-                                        {errors.teammates[index]?.mobile?.message}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
-                                    College
-                                </label>
-                                <input
-                                    {...register(`teammates.${index}.college`)}
-                                    placeholder="College name"
-                                    className={inputClass}
-                                />
-                                {errors.teammates?.[index]?.college && (
-                                    <p className="text-[10px] text-red-400">
-                                        {errors.teammates[index]?.college?.message}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
-                                    Year
-                                </label>
-                                <select
-                                    {...register(`teammates.${index}.year`)}
-                                    className={inputClass}
-                                >
-                                    {YEAR_OPTIONS.map((opt) => (
-                                        <option key={opt.value} value={opt.value}>
-                                            {opt.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.teammates?.[index]?.year && (
-                                    <p className="text-[10px] text-red-400">
-                                        {errors.teammates[index]?.year?.message}
-                                    </p>
-                                )}
-                            </div>
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={handleDecrease}
+                                disabled={teamSize <= 1}
+                                className="w-8 h-8 flex items-center justify-center rounded border-2 border-[var(--border-color)] bg-[var(--surface-primary)] text-[var(--text-primary)] hover:border-[var(--accent-color)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <Minus size={14} />
+                            </button>
+                            <span className="text-lg font-bold text-[var(--text-primary)] w-6 text-center tabular-nums">
+                                {teamSize}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={handleIncrease}
+                                disabled={teamSize >= 4}
+                                className="w-8 h-8 flex items-center justify-center rounded border-2 border-[var(--border-color)] bg-[var(--surface-primary)] text-[var(--text-primary)] hover:border-[var(--accent-color)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <Plus size={14} />
+                            </button>
                         </div>
-                    </motion.div>
-                ))}
-            </AnimatePresence>
+                    </div>
+
+                    {teamSize === 1 && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded bg-[var(--surface-secondary)] border border-[var(--border-color)]">
+                            <UserPlus size={14} className="text-[var(--text-muted)]" />
+                            <span className="text-[11px] text-[var(--text-muted)]">
+                                Solo participation — no teammate details needed
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Teammate Forms */}
+                    <AnimatePresence mode="popLayout">
+                        {fields.map((field, index) => (
+                            <motion.div
+                                key={field.id}
+                                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                transition={{ duration: 0.2 }}
+                                className="p-4 rounded border-2 border-[var(--border-color)] bg-[var(--surface-primary)]"
+                            >
+                                <div className="flex items-center justify-between mb-3">
+                                    <h4 className="text-xs font-bold text-[var(--accent-color)] uppercase tracking-wide">
+                                        Teammate {index + 1}
+                                    </h4>
+                                    <span className="text-[10px] text-[var(--text-muted)] font-medium">
+                                        Member {index + 2} of {teamSize}
+                                    </span>
+                                </div>
+
+                                <div
+                                    className={`grid gap-3 ${isMobile ? "grid-cols-1" : "grid-cols-2"
+                                        }`}
+                                >
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
+                                            Name
+                                        </label>
+                                        <input
+                                            {...register(`teammates.${index}.name`)}
+                                            placeholder="Full name"
+                                            className={inputClass}
+                                        />
+                                        {errors.teammates?.[index]?.name && (
+                                            <p className="text-[10px] text-red-400">
+                                                {errors.teammates[index]?.name?.message}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
+                                            Email
+                                        </label>
+                                        <input
+                                            {...register(`teammates.${index}.email`)}
+                                            type="email"
+                                            placeholder="email@example.com"
+                                            className={inputClass}
+                                        />
+                                        {errors.teammates?.[index]?.email && (
+                                            <p className="text-[10px] text-red-400">
+                                                {errors.teammates[index]?.email?.message}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
+                                            Mobile
+                                        </label>
+                                        <input
+                                            {...register(`teammates.${index}.mobile`)}
+                                            type="tel"
+                                            placeholder="10-digit number"
+                                            className={inputClass}
+                                            maxLength={10}
+                                        />
+                                        {errors.teammates?.[index]?.mobile && (
+                                            <p className="text-[10px] text-red-400">
+                                                {errors.teammates[index]?.mobile?.message}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
+                                            College
+                                        </label>
+                                        <input
+                                            {...register(`teammates.${index}.college`)}
+                                            placeholder="College name"
+                                            className={inputClass}
+                                        />
+                                        {errors.teammates?.[index]?.college && (
+                                            <p className="text-[10px] text-red-400">
+                                                {errors.teammates[index]?.college?.message}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
+                                            Year
+                                        </label>
+                                        <select
+                                            {...register(`teammates.${index}.year`)}
+                                            className={inputClass}
+                                        >
+                                            {YEAR_OPTIONS.map((opt) => (
+                                                <option key={opt.value} value={opt.value}>
+                                                    {opt.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.teammates?.[index]?.year && (
+                                            <p className="text-[10px] text-red-400">
+                                                {errors.teammates[index]?.year?.message}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                </>
+            )}
         </div>
     );
 }
