@@ -20,7 +20,7 @@ export const GUSTO_INFO = {
   date: "2026-03-06",
   venue: "Government College of Engineering, Erode",
   department: "Information Technology",
-  contactRequest: "gustogcee@gmail.com"
+  contactRequest: "gustoitgcee@gmail.com"
 };
 
 export const EVENTS: Event[] = [

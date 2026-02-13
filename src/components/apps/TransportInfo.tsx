@@ -42,31 +42,13 @@ const TRANSPORT_DATA: InfoCard[] = [
 ];
 
 const LANDMARKS = [
-  "Erode Bus Stand — 5 km",
-  "Erode Junction Railway Station — 6 km",
+  "Erode Bus Stand — 12 km",
+  "Erode Junction Railway Station — 15 km",
   "Perundurai — 15 km",
-  "Bhavani — 16 km",
+  "Bhavani — 8 km",
   "Gobichettipalayam — 25 km",
 ];
 
-const ACCOMMODATION = [
-  {
-    name: "Hotel JC Grand",
-    detail: "Near Erode Bus Stand, ₹800-1500/night",
-  },
-  {
-    name: "Hotel Velan",
-    detail: "EVN Road, ₹600-1200/night",
-  },
-  {
-    name: "Raj Residency",
-    detail: "Near Railway Station, ₹1000-2000/night",
-  },
-  {
-    name: "College Hostel",
-    detail: "Limited guest rooms available on request. Contact coordinator.",
-  },
-];
 
 function InfoSection({ card }: { card: InfoCard }) {
   return (
@@ -173,29 +155,6 @@ export function TransportInfo() {
                 </li>
               ))}
             </ul>
-          </div>
-
-          {/* Accommodation */}
-          <div className="bg-[var(--surface-primary)] border-2 border-[var(--border-color)] p-4">
-            <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
-              <span className="text-lg">🏨</span>
-              Accommodation
-            </h3>
-            <div className="space-y-3">
-              {ACCOMMODATION.map((acc) => (
-                <div
-                  key={acc.name}
-                  className="border-b border-[var(--border-color)] pb-2 last:border-0 last:pb-0"
-                >
-                  <span className="block text-sm font-bold text-[var(--text-primary)]">
-                    {acc.name}
-                  </span>
-                  <span className="text-xs text-[var(--text-secondary)]">
-                    {acc.detail}
-                  </span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
 
