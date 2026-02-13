@@ -172,7 +172,7 @@ export function MobileRecentApps({
                   </div>
                 </div>
 
-                {/* Clear All button */}
+                {/* Clear All button - Floating at bottom */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -180,14 +180,14 @@ export function MobileRecentApps({
                   className="flex justify-center pb-4 pt-2"
                 >
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       onClearAll();
                       onClose();
                     }}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 active:bg-white/20 transition-colors"
                   >
-                    <X size={14} className="text-white/60" />
-                    <span className="text-white/70 text-xs font-semibold uppercase tracking-wider">
+                    <span className="text-white/90 text-xs font-bold uppercase tracking-wider">
                       Clear All
                     </span>
                   </button>

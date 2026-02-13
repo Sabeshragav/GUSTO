@@ -10,24 +10,26 @@ interface MobileNavBarProps {
 
 export function MobileNavBar({ onBack, onHome, onRecent }: MobileNavBarProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-12 z-[300] flex items-center justify-around bg-black/40 backdrop-blur-md border-t border-white/10">
+    <div className="fixed bottom-0 left-0 right-0 h-12 z-[300] flex items-center justify-around bg-black/80 backdrop-blur-md border-t border-white/5">
       <button
         onClick={onBack}
-        className="flex items-center justify-center w-12 h-12 rounded-full text-white/70 active:text-white active:scale-75 active:bg-white/15 transition-all duration-100"
+        className="w-12 h-12 flex items-center justify-center text-white/60 active:text-white active:bg-white/10 rounded-full transition-all"
         aria-label="Back"
       >
-        <ChevronLeft size={22} strokeWidth={2.5} />
+        <ChevronLeft size={24} strokeWidth={2} />
       </button>
+
       <button
         onClick={onHome}
-        className="flex items-center justify-center w-12 h-12 rounded-full text-white/70 active:text-white active:scale-75 active:bg-white/15 transition-all duration-100"
+        className="w-12 h-12 flex items-center justify-center text-white/60 active:text-white active:bg-white/10 rounded-full transition-all"
         aria-label="Home"
       >
         <Circle size={18} strokeWidth={2.5} />
       </button>
+
       <button
         onClick={onRecent}
-        className="flex items-center justify-center w-12 h-12 rounded-full text-white/70 active:text-white active:scale-75 active:bg-white/15 transition-all duration-100"
+        className="w-12 h-12 flex items-center justify-center text-white/60 active:text-white active:bg-white/10 rounded-full transition-all"
         aria-label="Recent Apps"
       >
         <Square size={16} strokeWidth={2.5} />

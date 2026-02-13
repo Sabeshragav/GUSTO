@@ -27,7 +27,7 @@ import { Spotify } from "../apps/Spotify";
 import { RegisterPage } from "../apps/register/RegisterPage";
 
 // Countdown constants
-const TARGET_DATE = new Date("2026-03-06T09:00:00+05:30");
+const TARGET_DATE = new Date("2026-03-04T23:59:59+05:30");
 
 interface TimeLeft {
   days: number;

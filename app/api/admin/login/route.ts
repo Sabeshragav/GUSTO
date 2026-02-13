@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
-
-// In-memory token store (reset on server restart — acceptable for simple admin)
-const adminTokens = new Set<string>();
-
-export function getAdminTokens(): Set<string> {
-    return adminTokens;
-}
+import { generateAdminToken } from "../auth";
 
 export async function POST(req: NextRequest) {
     try {
@@ -26,8 +19,8 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Generate a simple session token
-        const token = crypto.randomBytes(32).toString("hex");
+        // Generate stateless session token (signed JWT-like)
+        const token = generateAdminToken();
 
         const response = NextResponse.json({ success: true });
         response.cookies.set("admin_token", token, {
@@ -37,9 +30,6 @@ export async function POST(req: NextRequest) {
             maxAge: 60 * 60 * 24, // 24 hours
             path: "/",
         });
-
-        const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-        adminTokens.add(tokenHash);
 
         return response;
     } catch (error) {
