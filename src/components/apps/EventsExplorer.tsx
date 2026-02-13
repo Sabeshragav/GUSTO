@@ -6,6 +6,8 @@ import { useIsMobile } from "../../hooks/useIsMobile";
 import { useDesktop } from "../../contexts/DesktopContext";
 import { EventCard } from "./events/EventCard";
 
+import { useMobileAppPersistence } from "../../hooks/useMobileAppPersistence";
+
 // Flatten and categorize events from the detailed data source
 const EVENTS = [
   ...eventDetails.technicalEvents.map((e) => ({ ...e, type: "Technical", category: "Paper/Project" })),
@@ -20,8 +22,10 @@ const CATEGORIES: CategoryFilter[] = ["All", "Technical", "Non-Technical"];
 export function EventsExplorer() {
   const { isMobile } = useIsMobile();
   const { openApp } = useDesktop();
-  const [activeCategory, setActiveCategory] = useState<CategoryFilter>("All");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Persist category selection and expanded event
+  const [activeCategory, setActiveCategory] = useMobileAppPersistence<CategoryFilter>("events-category", "All");
+  const [expandedId, setExpandedId] = useMobileAppPersistence<string | null>("events-expanded", null);
 
   const filteredEvents = useMemo(
     () =>

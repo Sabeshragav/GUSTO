@@ -3,17 +3,19 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { Grid3X3, ChevronLeft, Circle, Square, Minus } from "lucide-react";
+import { ChevronLeft, Circle, Square, Minus } from "lucide-react";
+
 import { MobileStatusBar } from "./MobileStatusBar";
 import { IOSHomeIndicator } from "./IOSHomeIndicator";
 import { MobileAppDrawer, type MobileApp } from "./MobileAppDrawer";
 import { MobileRecentApps } from "./MobileRecentApps";
 import { BootScreen } from "../system/BootScreen";
-import { useDesktop } from "../../contexts/DesktopContext";
-import { getIOSIcon } from "../../data/iosIcons";
-import { useSwipeGestures } from "../../hooks/useSwipeGestures";
 
-// App components — reused from desktop
+import { useDesktop } from "../../contexts/DesktopContext";
+import { MobileAppProvider, useMobileApp } from "../../contexts/MobileAppContext";
+import { useSwipeGestures } from "../../hooks/useSwipeGestures";
+import { getIOSIcon } from "../../data/iosIcons";
+
 import { EventsExplorer } from "../apps/EventsExplorer";
 import { RulesSection } from "../apps/RulesSection";
 import { ContactSection } from "../apps/ContactSection";
@@ -27,15 +29,11 @@ import { Achievements } from "../apps/Achievements";
 import { Spotify } from "../apps/Spotify";
 import { RegisterPage } from "../apps/register/RegisterPage";
 
-// Countdown constants
+// ── Constants ──
+
 const TARGET_DATE = new Date("2026-03-04T23:59:59+05:30");
 
-interface TimeLeft {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-}
+interface TimeLeft { days: number; hours: number; minutes: number; seconds: number }
 
 function getTimeLeft(): TimeLeft {
   const diff = Math.max(0, TARGET_DATE.getTime() - Date.now());
@@ -47,11 +45,8 @@ function getTimeLeft(): TimeLeft {
   };
 }
 
-function pad(n: number): string {
-  return String(n).padStart(2, "0");
-}
+function pad(n: number): string { return String(n).padStart(2, "0"); }
 
-// Home screen apps (main grid — page 1)
 const HOME_APPS: MobileApp[] = [
   { id: "events", name: "Events", icon: "calendar" },
   { id: "rules", name: "Rules", icon: "clipboard" },
@@ -63,193 +58,105 @@ const HOME_APPS: MobileApp[] = [
   { id: "minesweeper", name: "Minesweeper", icon: "bomb" },
 ];
 
-// Dock apps (always visible at the bottom like a real phone)
 const DOCK_APPS: MobileApp[] = [
   { id: "terminal", name: "Terminal", icon: "terminal" },
   { id: "spotify", name: "Music", icon: "music" },
   { id: "systemPreferences", name: "Settings", icon: "settings" },
 ];
 
-// All apps combined
 const ALL_APPS: MobileApp[] = [...HOME_APPS, ...DOCK_APPS];
 
-function renderApp(appId: string, data?: unknown) {
-  switch (appId) {
-    case "events":
-      return <EventsExplorer />;
-    case "rules":
-      return <RulesSection />;
-    case "contact":
-      return <ContactSection />;
-    case "transport":
-      return <TransportInfo />;
-    case "terminal":
-      return <Terminal />;
-    case "calendar":
-      return <CalendarApp />;
-    case "snake":
-      return <Snake />;
-    case "minesweeper":
-      return <Minesweeper />;
-    case "systemPreferences":
-      return <SystemPreferences />;
-    case "achievements":
-      return <Achievements />;
-    case "spotify":
-      return <Spotify />;
-    case "register":
-      return <RegisterPage data={data} />;
-    default:
-      return null;
-  }
-}
+// ── Sub-components ──
 
-/** Detect if device likely has button navigation (Android) or gesture navigation (iOS/modern Android) */
-function useNavMode(): "buttons" | "gesture" {
-  const [mode, setMode] = useState<"buttons" | "gesture">("gesture");
-
-  useEffect(() => {
-    const ua = navigator.userAgent.toLowerCase();
-    const isIOS = /iphone|ipad|ipod/.test(ua);
-    const isAndroid = /android/.test(ua);
-
-    if (isIOS) {
-      // Modern iPhones use gesture nav, older ones with home button — check screen ratio
-      const ratio = window.screen.height / window.screen.width;
-      setMode(ratio > 2 ? "gesture" : "buttons"); // iPhone X+ has ratio > 2
-    } else if (isAndroid) {
-      // Check if window.innerHeight is significantly less than screen.height
-      // (button nav takes screen space, gesture nav doesn't)
-      const navBarHeight = window.screen.height - window.innerHeight;
-      setMode(navBarHeight > 80 ? "buttons" : "gesture");
-    } else {
-      // Desktop browser — use gesture mode (they can use mouse-drag)
-      setMode("gesture");
-    }
-  }, []);
-
-  return mode;
-}
-
-/** iOS-style icon button using macOS SVG icons */
-function IOSAppIcon({
-  app,
-  onOpen,
-  size = 58,
-}: {
-  app: MobileApp;
-  onOpen: (id: string) => void;
-  size?: number;
-}) {
+function IOSAppIcon({ app, onOpen, size = 58 }: { app: MobileApp; onOpen: (id: string) => void; size?: number }) {
   const iconUrl = getIOSIcon(app.id);
-
   return (
-    <button
-      onClick={() => onOpen(app.id)}
-      className="flex flex-col items-center gap-1 active:scale-90 transition-transform duration-150"
-    >
-      <div
-        className="relative rounded-[22%] overflow-hidden shadow-lg shadow-black/30"
-        style={{ width: size, height: size }}
-      >
+    <button onClick={() => onOpen(app.id)} className="flex flex-col items-center gap-1 active:scale-90 transition-transform duration-150">
+      <div className="relative rounded-[22%] overflow-hidden shadow-lg shadow-black/30" style={{ width: size, height: size }}>
         {iconUrl ? (
-          <Image
-            src={iconUrl}
-            alt={app.name}
-            fill
-            className="object-cover"
-            draggable={false}
-            sizes={`${size}px`}
-          />
+          <Image src={iconUrl} alt={app.name} fill className="object-cover" draggable={false} sizes={`${size}px`} />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
-            <span className="text-white text-lg font-bold">
-              {app.name.charAt(0)}
-            </span>
+            <span className="text-white text-lg font-bold">{app.name.charAt(0)}</span>
           </div>
         )}
       </div>
-      <span className="text-white text-[10px] font-medium drop-shadow-md tracking-tight leading-tight">
-        {app.name}
-      </span>
+      <span className="text-white text-[10px] font-medium drop-shadow-md tracking-tight leading-tight">{app.name}</span>
     </button>
   );
 }
 
-/** Bottom Dock — always visible on home screen, like a real phone */
-function MobileDock({
-  apps,
-  onOpen,
-}: {
-  apps: MobileApp[];
-  onOpen: (id: string) => void;
-}) {
+function MobileDock({ apps, onOpen }: { apps: MobileApp[]; onOpen: (id: string) => void }) {
   return (
     <div className="mx-4 mb-2 px-6 py-3 rounded-[26px] bg-white/15 backdrop-blur-2xl border border-white/20 shadow-lg">
       <div className="flex items-center justify-around">
-        {apps.map((app) => (
-          <IOSAppIcon key={app.id} app={app} onOpen={onOpen} size={50} />
-        ))}
+        {apps.map(app => <IOSAppIcon key={app.id} app={app} onOpen={onOpen} size={50} />)}
       </div>
     </div>
   );
 }
 
-/** Android-style 3-button nav bar */
-function ButtonNavBar({
-  onBack,
-  onHome,
-  onRecent,
-}: {
-  onBack: () => void;
-  onHome: () => void;
-  onRecent: () => void;
-}) {
+function ButtonNavBar({ onBack, onHome, onRecent }: { onBack: () => void; onHome: () => void; onRecent: () => void }) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-12 z-[300] flex items-center justify-around bg-black/50 backdrop-blur-md border-t border-white/10">
-      <button
-        onClick={onBack}
-        className="flex items-center justify-center w-12 h-12 rounded-full text-white/70 active:text-white active:scale-75 active:bg-white/15 transition-all duration-100"
-        aria-label="Back"
-      >
-        <ChevronLeft size={22} strokeWidth={2.5} />
+    <div className="fixed bottom-0 left-0 right-0 h-12 z-[300] flex items-center justify-around bg-black/80 backdrop-blur-md border-t border-white/5">
+      <button onClick={onBack} className="w-12 h-12 flex items-center justify-center text-white/60 active:text-white active:bg-white/10 rounded-full transition-all" aria-label="Back">
+        <ChevronLeft size={24} strokeWidth={2} />
       </button>
-      <button
-        onClick={onHome}
-        className="flex items-center justify-center w-12 h-12 rounded-full text-white/70 active:text-white active:scale-75 active:bg-white/15 transition-all duration-100"
-        aria-label="Home"
-      >
+      <button onClick={onHome} className="w-12 h-12 flex items-center justify-center text-white/60 active:text-white active:bg-white/10 rounded-full transition-all" aria-label="Home">
         <Circle size={18} strokeWidth={2.5} />
       </button>
-      <button
-        onClick={onRecent}
-        className="flex items-center justify-center w-12 h-12 rounded-full text-white/70 active:text-white active:scale-75 active:bg-white/15 transition-all duration-100"
-        aria-label="Recent Apps"
-      >
+      <button onClick={onRecent} className="w-12 h-12 flex items-center justify-center text-white/60 active:text-white active:bg-white/10 rounded-full transition-all" aria-label="Recent Apps">
         <Square size={16} strokeWidth={2.5} />
       </button>
     </div>
   );
 }
 
-export function MobileOS() {
-  const { state, closeWindow } = useDesktop();
+function renderApp(appId: string, data?: unknown) {
+  switch (appId) {
+    case "events": return <EventsExplorer />;
+    case "rules": return <RulesSection />;
+    case "contact": return <ContactSection />;
+    case "transport": return <TransportInfo />;
+    case "terminal": return <Terminal />;
+    case "calendar": return <CalendarApp />;
+    case "snake": return <Snake />;
+    case "minesweeper": return <Minesweeper />;
+    case "systemPreferences": return <SystemPreferences />;
+    case "achievements": return <Achievements />;
+    case "spotify": return <Spotify />;
+    case "register": return <RegisterPage data={data} />;
+    default: return null;
+  }
+}
+
+// ── Main Content ──
+
+function MobileOSContent() {
+  const { state: desktopState, closeWindow } = useDesktop();
+  const { activeApp, activeAppData, openApp, goHome, closeApp, recentApps } = useMobileApp();
+
   const containerRef = useRef<HTMLDivElement>(null);
-  const navMode = useNavMode();
+  const [navMode, setNavMode] = useState<"buttons" | "gesture">("gesture");
   const [isBooting, setIsBooting] = useState(true);
-  const [activeApp, setActiveApp] = useState<string | null>(null);
-  const [activeAppData, setActiveAppData] = useState<unknown>(undefined);
-  const [recentApps, setRecentApps] = useState<string[]>([]);
   const [showDrawer, setShowDrawer] = useState(false);
   const [showRecents, setShowRecents] = useState(false);
   const [backPressCount, setBackPressCount] = useState(0);
   const backTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const ua = navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(ua);
+    const isAndroid = /android/.test(ua);
+    if (isIOS) {
+      setNavMode(window.screen.height / window.screen.width > 2 ? "gesture" : "buttons");
+    } else if (isAndroid) {
+      setNavMode(window.screen.height - window.innerHeight > 80 ? "buttons" : "gesture");
+    } else {
+      setNavMode("gesture");
+    }
+  }, []);
 
   useEffect(() => {
     setTimeLeft(getTimeLeft());
@@ -259,108 +166,58 @@ export function MobileOS() {
 
   const handleBootComplete = useCallback(() => {
     setIsBooting(false);
-    try {
-      const el = document.documentElement;
-      if (!document.fullscreenElement && el.requestFullscreen) {
-        el.requestFullscreen().catch(() => {});
-      }
-    } catch {}
+    try { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => { }); } catch { }
   }, []);
 
-  const openApp = useCallback((appId: string, data?: unknown) => {
-    setActiveApp(appId);
-    setActiveAppData(data);
-    setRecentApps((prev) => {
-      const filtered = prev.filter((id) => id !== appId);
-      return [appId, ...filtered].slice(0, 8);
-    });
-    setShowDrawer(false);
-    setShowRecents(false);
-    setBackPressCount(0);
-  }, []);
-
-  // Intercept windows opened via DesktopContext
   useEffect(() => {
-    const registerWindow = state.windows.find((w) => w.appId === "register");
+    const registerWindow = desktopState.windows.find(w => w.appId === "register");
     if (registerWindow && activeApp !== "register") {
-      openApp("register", registerWindow.data);
+      handleOpenApp("register", registerWindow.data);
       closeWindow(registerWindow.id);
     }
-  }, [state.windows, activeApp, openApp, closeWindow]);
+  }, [desktopState.windows, activeApp, closeWindow]);
 
-  const goHome = useCallback(() => {
-    setActiveApp(null);
-    setShowDrawer(false);
+  const handleOpenApp = useCallback((appId: string, data?: unknown) => {
     setShowRecents(false);
+    setShowDrawer(false);
     setBackPressCount(0);
-  }, []);
+    openApp(appId, data);
+  }, [openApp]);
 
-  /** Double-back to exit: first back closes overlay/app, second back from home does nothing */
-  const goBack = useCallback(() => {
-    if (showRecents) {
-      setShowRecents(false);
-      setBackPressCount(0);
-    } else if (showDrawer) {
-      setShowDrawer(false);
-      setBackPressCount(0);
-    } else if (activeApp) {
-      // First back from an app → go home
-      setActiveApp(null);
-      setBackPressCount(0);
-    } else {
-      // Already on home screen — track double-back
-      setBackPressCount((prev) => {
+  const handleGoHome = useCallback(() => {
+    if (showRecents) setShowRecents(false);
+    if (showDrawer) setShowDrawer(false);
+    if (activeApp) goHome();
+    setBackPressCount(0);
+  }, [showRecents, showDrawer, activeApp, goHome]);
+
+  const handleGoBack = useCallback(() => {
+    if (showRecents) { setShowRecents(false); setBackPressCount(0); }
+    else if (showDrawer) { setShowDrawer(false); setBackPressCount(0); }
+    else if (activeApp) { goHome(); setBackPressCount(0); }
+    else {
+      setBackPressCount(prev => {
         if (prev === 0) {
-          // Start timer — if no second back in 2s, reset
           if (backTimerRef.current) clearTimeout(backTimerRef.current);
-          backTimerRef.current = setTimeout(() => {
-            setBackPressCount(0);
-          }, 2000);
+          backTimerRef.current = setTimeout(() => setBackPressCount(0), 2000);
           return 1;
         }
-        // Second back — could exit fullscreen or do nothing
-        if (document.fullscreenElement) {
-          document.exitFullscreen?.().catch(() => {});
-        }
+        if (document.fullscreenElement) document.exitFullscreen?.().catch(() => { });
         return 0;
       });
     }
-  }, [showRecents, showDrawer, activeApp]);
+  }, [showRecents, showDrawer, activeApp, goHome]);
 
-  const toggleRecents = useCallback(() => {
-    setShowRecents((prev) => !prev);
-    setShowDrawer(false);
-  }, []);
+  const toggleRecents = useCallback(() => { setShowRecents(p => !p); setShowDrawer(false); }, []);
 
-  const removeRecent = useCallback((appId: string) => {
-    setRecentApps((prev) => prev.filter((id) => id !== appId));
-  }, []);
+  useSwipeGestures(containerRef, { onSwipeUpHome: handleGoHome, onSwipeUpRecents: toggleRecents, onSwipeBack: handleGoBack });
 
-  const clearAllRecents = useCallback(() => {
-    setRecentApps([]);
-  }, []);
-
-  // Swipe gestures — always enabled (works via pointer events for both mouse & touch)
-  useSwipeGestures(containerRef, {
-    onSwipeUpHome: goHome,
-    onSwipeUpRecents: toggleRecents,
-    onSwipeBack: goBack,
-  });
-
-  // Wallpaper background style
   const wallpaperStyle = useMemo((): React.CSSProperties => {
-    const { wallpaper } = state;
-    if (wallpaper.type === "image") {
-      return {
-        backgroundImage: `url(${wallpaper.value})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      };
-    } else if (wallpaper.type === "gradient") {
-      return { background: wallpaper.value };
-    }
+    const { wallpaper } = desktopState;
+    if (wallpaper.type === "image") return { backgroundImage: `url(${wallpaper.value})`, backgroundSize: "cover", backgroundPosition: "center" };
+    if (wallpaper.type === "gradient") return { background: wallpaper.value };
     return { backgroundColor: wallpaper.value };
-  }, [state]);
+  }, [desktopState]);
 
   const units = [
     { label: "D", value: pad(timeLeft.days) },
@@ -369,198 +226,115 @@ export function MobileOS() {
     { label: "S", value: pad(timeLeft.seconds) },
   ];
 
-  // Bottom padding depends on nav mode
   const bottomPad = navMode === "buttons" ? "pb-14" : "pb-8";
 
   return (
-    <div
-      ref={containerRef}
-      className="w-full h-full relative overflow-hidden touch-none"
-      style={wallpaperStyle}
-    >
-      <AnimatePresence>
-        {isBooting && <BootScreen onComplete={handleBootComplete} />}
-      </AnimatePresence>
-
+    <div ref={containerRef} className="w-full h-full relative overflow-hidden touch-none" style={wallpaperStyle}>
+      <AnimatePresence>{isBooting && <BootScreen onComplete={handleBootComplete} />}</AnimatePresence>
       <MobileStatusBar />
 
       <AnimatePresence mode="wait">
         {activeApp ? (
-          /* ── Fullscreen App with iOS-style animation ── */
           <motion.div
             key={`app-${activeApp}`}
             initial={{ scale: 0.92, opacity: 0, borderRadius: "40px" }}
             animate={{ scale: 1, opacity: 1, borderRadius: "0px" }}
             exit={{ scale: 0.92, opacity: 0, borderRadius: "40px" }}
-            transition={{
-              type: "spring",
-              stiffness: 400,
-              damping: 35,
-              mass: 0.8,
-            }}
-            className={`absolute inset-0 pt-11 ${bottomPad} z-[50] bg-[var(--surface-bg)] overflow-hidden`}
+            transition={{ type: "spring", stiffness: 400, damping: 35, mass: 0.8 }}
+            className={`absolute inset-0 pt-11 ${bottomPad} z-[50] bg-[var(--surface-bg)] overflow-hidden flex flex-col`}
           >
-            {/* App title bar with iOS-style back */}
-            <div className="sticky top-0 z-10 h-11 flex items-center justify-between px-4 bg-[var(--surface-bg)]/95 backdrop-blur-xl border-b border-[var(--border-color)]">
-              <button
-                onClick={goBack}
-                className="flex items-center gap-1 text-[#007AFF] text-sm font-medium active:opacity-50 transition-opacity"
-              >
-                <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
-                  <path
-                    d="M9 1L2 8L9 15"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                Back
+            <div className="sticky top-0 z-10 h-11 min-h-[44px] flex items-center justify-between px-4 bg-[var(--surface-bg)]/95 backdrop-blur-xl border-b border-[var(--border-color)]">
+              <button onClick={handleGoBack} className="flex items-center gap-1 text-[#007AFF] text-sm font-medium active:opacity-50 transition-opacity">
+                <ChevronLeft size={20} /> Back
               </button>
-              <h1 className="text-[var(--text-primary)] text-sm font-semibold absolute left-1/2 -translate-x-1/2">
-                {ALL_APPS.find((a) => a.id === activeApp)?.name ?? activeApp}
+              <h1 className="text-[var(--text-primary)] text-sm font-semibold absolute left-1/2 -translate-x-1/2 truncate max-w-[50%]">
+                {ALL_APPS.find(a => a.id === activeApp)?.name ?? activeApp}
               </h1>
-              {/* Minimize button */}
-              <button
-                onClick={goHome}
-                className="text-[#007AFF] active:opacity-50 transition-opacity"
-                aria-label="Minimize"
-              >
-                <Minus size={20} strokeWidth={2.5} />
+              <button onClick={handleGoHome} className="text-[#007AFF] active:opacity-50 transition-opacity" aria-label="Minimize">
+                <Minus size={24} strokeWidth={2} />
               </button>
             </div>
-            <div className="h-full overflow-auto pb-12 touch-auto">
+            <div className="flex-1 overflow-auto touch-auto">
               {renderApp(activeApp, activeAppData)}
             </div>
           </motion.div>
         ) : (
-          /* ── Home Screen ── */
-          <motion.div
-            key="home"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className={`absolute inset-0 pt-11 ${bottomPad} flex flex-col`}
-          >
-            {/* GUSTO watermark background */}
+          <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} className={`absolute inset-0 pt-11 ${bottomPad} flex flex-col`}>
+            {/* GUSTO watermark */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
               <div className="flex">
                 {Array.from("GUSTO").map((letter, i) => (
-                  <span
-                    key={i}
-                    className="font-black text-white/[0.07] tracking-tighter"
-                    style={{ fontSize: "5rem", lineHeight: 0.85 }}
-                  >
-                    {letter}
-                  </span>
+                  <span key={i} className="font-black text-white/[0.07] tracking-tighter" style={{ fontSize: "5rem", lineHeight: 0.85 }}>{letter}</span>
                 ))}
               </div>
-              <span className="text-white/[0.07] text-lg font-bold tracking-[0.5em] mt-2 uppercase">
-                2026
-              </span>
+              <span className="text-white/[0.07] text-lg font-bold tracking-[0.5em] mt-2 uppercase">2026</span>
             </div>
 
-            {/* Countdown widget — iOS widget style */}
+            {/* Countdown */}
             <div className="mt-4 mb-3 flex flex-col items-center z-10 px-6">
               <div className="bg-white/10 backdrop-blur-xl rounded-[20px] border border-white/15 px-5 py-3 shadow-lg w-full max-w-[320px]">
-                <p className="text-white/60 text-[10px] font-semibold tracking-widest uppercase text-center mb-1.5">
-                  Countdown
-                </p>
+                <p className="text-white/60 text-[10px] font-semibold tracking-widest uppercase text-center mb-1.5">Countdown</p>
                 <div className="flex items-baseline justify-center gap-1">
                   {units.map((u, i) => (
                     <span key={u.label} className="flex items-baseline">
-                      <span className="text-white font-black font-mono text-2xl tabular-nums drop-shadow-lg">
-                        {u.value}
-                      </span>
-                      <span className="text-[#FF6B35] text-[8px] font-bold ml-0.5 mr-1">
-                        {u.label}
-                      </span>
-                      {i < units.length - 1 && (
-                        <span className="text-white/30 text-lg font-light">
-                          :
-                        </span>
-                      )}
+                      <span className="text-white font-black font-mono text-2xl tabular-nums drop-shadow-lg">{u.value}</span>
+                      <span className="text-[#FF6B35] text-[8px] font-bold ml-0.5 mr-1">{u.label}</span>
+                      {i < units.length - 1 && <span className="text-white/30 text-lg font-light">:</span>}
                     </span>
                   ))}
                 </div>
-                <p className="text-white/40 text-[9px] mt-1 font-medium text-center">
-                  Registration closes 1st March 2026
-                </p>
+                <p className="text-white/40 text-[9px] mt-1 font-medium text-center">Registration closes 4th March 2026</p>
               </div>
             </div>
 
             {/* App Grid */}
             <div className="flex-1 flex items-start justify-center w-full px-6 mt-1 z-10 overflow-y-auto touch-auto">
               <div className="grid grid-cols-4 gap-x-4 gap-y-5 w-full max-w-[340px]">
-                {HOME_APPS.map((app) => (
-                  <IOSAppIcon
-                    key={app.id}
-                    app={app}
-                    onOpen={openApp}
-                    size={56}
-                  />
-                ))}
+                {HOME_APPS.map(app => <IOSAppIcon key={app.id} app={app} onOpen={handleOpenApp} size={56} />)}
               </div>
             </div>
 
-            {/* Page dots */}
             <div className="flex items-center justify-center gap-1.5 py-2 z-10">
               <div className="w-[6px] h-[6px] rounded-full bg-white/80" />
               <div className="w-[6px] h-[6px] rounded-full bg-white/25" />
             </div>
 
-            {/* Bottom Dock */}
-            <div className="z-10">
-              <MobileDock apps={DOCK_APPS} onOpen={openApp} />
-            </div>
+            <div className="z-10"><MobileDock apps={DOCK_APPS} onOpen={handleOpenApp} /></div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Overlays */}
-      <MobileAppDrawer
-        isOpen={showDrawer}
-        onClose={() => setShowDrawer(false)}
-        apps={ALL_APPS}
-        onAppOpen={openApp}
-      />
+      <MobileAppDrawer isOpen={showDrawer} onClose={() => setShowDrawer(false)} apps={ALL_APPS} onAppOpen={handleOpenApp} />
       <MobileRecentApps
         isOpen={showRecents}
         onClose={() => setShowRecents(false)}
         recentApps={recentApps}
         allApps={ALL_APPS}
-        onAppOpen={openApp}
-        onRemoveRecent={removeRecent}
-        onClearAll={clearAllRecents}
+        onAppOpen={handleOpenApp}
+        onRemoveRecent={closeApp}
+        onClearAll={() => { recentApps.forEach(id => closeApp(id)); }}
+        renderApp={renderApp}
       />
 
-      {/* Navigation: buttons OR gesture indicator based on detection */}
-      {navMode === "buttons" ? (
-        <ButtonNavBar
-          onBack={goBack}
-          onHome={goHome}
-          onRecent={toggleRecents}
-        />
-      ) : (
-        <IOSHomeIndicator />
-      )}
+      {navMode === "buttons" ? <ButtonNavBar onBack={handleGoBack} onHome={handleGoHome} onRecent={toggleRecents} /> : <IOSHomeIndicator />}
 
-      {/* Double-back toast */}
       <AnimatePresence>
         {backPressCount === 1 && !activeApp && !showDrawer && !showRecents && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[400] px-4 py-2 rounded-full bg-black/70 backdrop-blur-sm"
-          >
-            <span className="text-white text-xs font-medium">
-              Swipe back again to exit fullscreen
-            </span>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[400] px-4 py-2 rounded-full bg-black/70 backdrop-blur-sm">
+            <span className="text-white text-xs font-medium">Swipe back again to exit fullscreen</span>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+// ── Export ──
+
+export function MobileOS() {
+  return (
+    <MobileAppProvider>
+      <MobileOSContent />
+    </MobileAppProvider>
   );
 }
