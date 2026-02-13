@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Search } from "lucide-react";
 import { getIOSIcon } from "../../data/iosIcons";
 
@@ -66,13 +67,15 @@ function DrawerAppIcon({
       }}
       className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform duration-150"
     >
-      <div className="w-14 h-14 rounded-[22%] overflow-hidden shadow-md shadow-black/20">
+      <div className="relative w-14 h-14 rounded-[22%] overflow-hidden shadow-md shadow-black/20">
         {iconUrl ? (
-          <img
+          <Image
             src={iconUrl}
             alt={app.name}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
             draggable={false}
+            sizes="56px"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
@@ -115,8 +118,8 @@ export function MobileAppDrawer({
 
   const filtered = search.trim()
     ? apps.filter((a) =>
-      a.name.toLowerCase().includes(search.trim().toLowerCase()),
-    )
+        a.name.toLowerCase().includes(search.trim().toLowerCase()),
+      )
     : null;
 
   const categories = categorizeApps(apps);
@@ -146,18 +149,20 @@ export function MobileAppDrawer({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${isOpen
+        className={`fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
+          isOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
-          }`}
+        }`}
         onClick={onClose}
       />
 
       {/* iOS App Library panel */}
       <div
         ref={panelRef}
-        className={`fixed inset-x-0 top-0 bottom-0 z-[201] bg-[#0d0d1a]/95 backdrop-blur-2xl transition-transform duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] ${isOpen ? "translate-y-0" : "translate-y-full"
-          }`}
+        className={`fixed inset-x-0 top-0 bottom-0 z-[201] bg-[#0d0d1a]/95 backdrop-blur-2xl transition-transform duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] ${
+          isOpen ? "translate-y-0" : "translate-y-full"
+        }`}
         onTouchStart={(e) => {
           touchStartY.current = e.touches[0].clientY;
         }}

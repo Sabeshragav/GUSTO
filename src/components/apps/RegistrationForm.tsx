@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useRef } from "react";
+import Image from "next/image";
 import type { Event } from "../../data/events";
 import type { Pass } from "../../data/eventValidation";
 import { useIsMobile } from "../../hooks/useIsMobile";
@@ -203,7 +204,7 @@ export function RegistrationForm({ data }: { data?: unknown }) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [currentErrors, isValid, fields, tier, events]);
+  }, [currentErrors, isValid, fields, tier, events, screenshot]);
 
   // If no data provided
   if (!tier) {
@@ -405,9 +406,11 @@ export function RegistrationForm({ data }: { data?: unknown }) {
             <div
               className={`flex-shrink-0 ${isMobile ? "mb-4 flex justify-center" : ""}`}
             >
-              <img
+              <Image
                 src="/placeholder/payment_qrcode.jpeg"
                 alt={`Scan QR to pay ₹${tier.price}`}
+                width={176}
+                height={176}
                 className="w-44 h-44 object-cover border-2 border-[var(--border-color)] bg-white"
                 style={{ borderRadius: "6px" }}
               />
@@ -455,6 +458,7 @@ export function RegistrationForm({ data }: { data?: unknown }) {
               {/* Screenshot Preview */}
               {screenshotPreview && (
                 <div className="mt-3 relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={screenshotPreview}
                     alt="Payment screenshot preview"

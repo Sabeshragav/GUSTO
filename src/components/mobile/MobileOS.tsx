@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { Grid3X3, ChevronLeft, Circle, Square, Minus } from "lucide-react";
 import { MobileStatusBar } from "./MobileStatusBar";
 import { IOSHomeIndicator } from "./IOSHomeIndicator";
@@ -148,15 +149,17 @@ function IOSAppIcon({
       className="flex flex-col items-center gap-1 active:scale-90 transition-transform duration-150"
     >
       <div
-        className="rounded-[22%] overflow-hidden shadow-lg shadow-black/30"
+        className="relative rounded-[22%] overflow-hidden shadow-lg shadow-black/30"
         style={{ width: size, height: size }}
       >
         {iconUrl ? (
-          <img
+          <Image
             src={iconUrl}
             alt={app.name}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
             draggable={false}
+            sizes={`${size}px`}
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
@@ -259,9 +262,9 @@ export function MobileOS() {
     try {
       const el = document.documentElement;
       if (!document.fullscreenElement && el.requestFullscreen) {
-        el.requestFullscreen().catch(() => { });
+        el.requestFullscreen().catch(() => {});
       }
-    } catch { }
+    } catch {}
   }, []);
 
   const openApp = useCallback((appId: string, data?: unknown) => {
@@ -317,7 +320,7 @@ export function MobileOS() {
         }
         // Second back — could exit fullscreen or do nothing
         if (document.fullscreenElement) {
-          document.exitFullscreen?.().catch(() => { });
+          document.exitFullscreen?.().catch(() => {});
         }
         return 0;
       });
@@ -403,12 +406,7 @@ export function MobileOS() {
                 onClick={goBack}
                 className="flex items-center gap-1 text-[#007AFF] text-sm font-medium active:opacity-50 transition-opacity"
               >
-                <svg
-                  width="10"
-                  height="16"
-                  viewBox="0 0 10 16"
-                  fill="none"
-                >
+                <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
                   <path
                     d="M9 1L2 8L9 15"
                     stroke="currentColor"
@@ -496,7 +494,12 @@ export function MobileOS() {
             <div className="flex-1 flex items-start justify-center w-full px-6 mt-1 z-10 overflow-y-auto touch-auto">
               <div className="grid grid-cols-4 gap-x-4 gap-y-5 w-full max-w-[340px]">
                 {HOME_APPS.map((app) => (
-                  <IOSAppIcon key={app.id} app={app} onOpen={openApp} size={56} />
+                  <IOSAppIcon
+                    key={app.id}
+                    app={app}
+                    onOpen={openApp}
+                    size={56}
+                  />
                 ))}
               </div>
             </div>
@@ -534,7 +537,11 @@ export function MobileOS() {
 
       {/* Navigation: buttons OR gesture indicator based on detection */}
       {navMode === "buttons" ? (
-        <ButtonNavBar onBack={goBack} onHome={goHome} onRecent={toggleRecents} />
+        <ButtonNavBar
+          onBack={goBack}
+          onHome={goHome}
+          onRecent={toggleRecents}
+        />
       ) : (
         <IOSHomeIndicator />
       )}

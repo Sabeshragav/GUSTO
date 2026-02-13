@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import Image from "next/image";
 import { getIOSIcon } from "../../data/iosIcons";
 import type { MobileApp } from "./MobileAppDrawer";
 
@@ -75,10 +76,12 @@ function RecentCard({
           {/* Fake app content preview area */}
           <div className="h-40 bg-[var(--surface-bg)]/30 flex items-center justify-center">
             {iconUrl ? (
-              <img
+              <Image
                 src={iconUrl}
                 alt={app.name}
-                className="w-16 h-16 rounded-[22%] opacity-60"
+                width={64}
+                height={64}
+                className="rounded-[22%] opacity-60 object-cover"
                 draggable={false}
               />
             ) : (
@@ -94,10 +97,12 @@ function RecentCard({
           <div className="flex items-center gap-3 px-4 py-3">
             <div className="w-8 h-8 rounded-[22%] overflow-hidden shrink-0">
               {iconUrl ? (
-                <img
+                <Image
                   src={iconUrl}
                   alt=""
-                  className="w-full h-full object-cover"
+                  width={32}
+                  height={32}
+                  className="rounded-[22%] object-cover"
                   draggable={false}
                 />
               ) : (

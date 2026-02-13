@@ -18,7 +18,7 @@ export function ContactSection() {
 
   // Simple alphabetical sort for filtered contacts
   const sortedContacts = [...filteredContacts].sort((a, b) =>
-    a.name.localeCompare(b.name)
+    a.name.localeCompare(b.name),
   );
 
   useEffect(() => {
@@ -33,7 +33,9 @@ export function ContactSection() {
       {/* Sticky Header */}
       <div className="sticky top-0 z-20 bg-[var(--surface-bg)]/80 backdrop-blur-md border-b border-[var(--border-color)] px-4 py-3 flex items-center justify-between shadow-sm">
         <div>
-          <h1 className="text-xl font-bold text-[var(--text-primary)] leading-none">Contacts</h1>
+          <h1 className="text-xl font-bold text-[var(--text-primary)] leading-none">
+            Contacts
+          </h1>
           <p className="text-[10px] text-[var(--text-secondary)] mt-1 font-medium tracking-wide opacity-80">
             {filteredContacts.length} contacts
           </p>
@@ -41,7 +43,10 @@ export function ContactSection() {
 
         {/* Search Input */}
         <div className="relative group w-40 focus-within:w-48 transition-all duration-300">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--accent-color)] transition-colors" />
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--accent-color)] transition-colors"
+          />
           <input
             type="text"
             placeholder="Search..."
@@ -62,20 +67,35 @@ export function ContactSection() {
 
           {/* General Info Footer */}
           <div className="mt-8 mb-8 border-t border-[var(--border-color)] pt-6 text-center pb-8">
-            <h3 className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">Connect With Us</h3>
+            <h3 className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">
+              Connect With Us
+            </h3>
             <div className="flex justify-center gap-8">
-              <a href={instagram} target="_blank" rel="noreferrer" className="p-2 rounded-full bg-[var(--surface-secondary)] text-[var(--text-secondary)] hover:text-[#E1306C] hover:bg-[#E1306C]/10 transition-colors">
+              <a
+                href={instagram}
+                target="_blank"
+                rel="noreferrer"
+                className="p-2 rounded-full bg-[var(--surface-secondary)] text-[var(--text-secondary)] hover:text-[#E1306C] hover:bg-[#E1306C]/10 transition-colors"
+              >
                 <Instagram size={18} />
               </a>
-              <a href={youtube} target="_blank" rel="noreferrer" className="p-2 rounded-full bg-[var(--surface-secondary)] text-[var(--text-secondary)] hover:text-[#FF0000] hover:bg-[#FF0000]/10 transition-colors">
+              <a
+                href={youtube}
+                target="_blank"
+                rel="noreferrer"
+                className="p-2 rounded-full bg-[var(--surface-secondary)] text-[var(--text-secondary)] hover:text-[#FF0000] hover:bg-[#FF0000]/10 transition-colors"
+              >
                 <Youtube size={18} />
               </a>
-              <a href={`mailto:${gustoMail}`} className="p-2 rounded-full bg-[var(--surface-secondary)] text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color)]/10 transition-colors">
+              <a
+                href={`mailto:${gustoMail}`}
+                className="p-2 rounded-full bg-[var(--surface-secondary)] text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:bg-[var(--accent-color)]/10 transition-colors"
+              >
                 <Mail size={18} />
               </a>
             </div>
             <p className="text-[10px] text-[var(--text-muted)] mt-4 opacity-60">
-              Gusto '26 — Government College of Engineering, Erode
+              Gusto &apos;26 — Government College of Engineering, Erode
             </p>
           </div>
         </div>
