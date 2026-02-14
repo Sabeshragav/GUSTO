@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import Image from "next/image";
-import { ChevronLeft, Circle, Square, Minus } from "lucide-react";
+import { ChevronLeft, Circle, Square, Minus, Construction } from "lucide-react";
 
 import { MobileStatusBar } from "./MobileStatusBar";
 import { IOSHomeIndicator } from "./IOSHomeIndicator";
@@ -15,6 +15,7 @@ import { useDesktop } from "../../contexts/DesktopContext";
 import { MobileAppProvider, useMobileApp } from "../../contexts/MobileAppContext";
 import { useSwipeGestures } from "../../hooks/useSwipeGestures";
 import { getIOSIcon } from "../../data/iosIcons";
+import { EventPromoWidget } from "../widgets/EventPromoWidget";
 
 import { EventsExplorer } from "../apps/EventsExplorer";
 import { RulesSection } from "../apps/RulesSection";
@@ -47,7 +48,7 @@ function getTimeLeft(): TimeLeft {
 
 function pad(n: number): string { return String(n).padStart(2, "0"); }
 
-const HOME_APPS: MobileApp[] = [
+const PAGE_1_APPS: MobileApp[] = [
   { id: "events", name: "Events", icon: "calendar" },
   { id: "rules", name: "Rules", icon: "clipboard" },
   { id: "contact", name: "Contact", icon: "mail" },
@@ -58,13 +59,26 @@ const HOME_APPS: MobileApp[] = [
   { id: "minesweeper", name: "Minesweeper", icon: "bomb" },
 ];
 
+const PAGE_2_APPS: MobileApp[] = [
+  { id: "gallery", name: "Gallery", icon: "image" },
+  { id: "team", name: "Team", icon: "users" },
+  { id: "sponsors", name: "Sponsors", icon: "gem" },
+  { id: "faq", name: "FAQ", icon: "help-circle" },
+  { id: "store", name: "Store", icon: "shopping-bag" },
+  { id: "feedback", name: "Feedback", icon: "message-square" },
+  { id: "about", name: "About", icon: "info" },
+  { id: "register", name: "Register", icon: "user-plus" },
+];
+
+const HOME_PAGES = [PAGE_1_APPS, PAGE_2_APPS];
+
 const DOCK_APPS: MobileApp[] = [
   { id: "terminal", name: "Terminal", icon: "terminal" },
   { id: "spotify", name: "Music", icon: "music" },
   { id: "systemPreferences", name: "Settings", icon: "settings" },
 ];
 
-const ALL_APPS: MobileApp[] = [...HOME_APPS, ...DOCK_APPS];
+const ALL_APPS: MobileApp[] = [...PAGE_1_APPS, ...PAGE_2_APPS, ...DOCK_APPS];
 
 // ── Sub-components ──
 
@@ -81,16 +95,16 @@ function IOSAppIcon({ app, onOpen, size = 58 }: { app: MobileApp; onOpen: (id: s
           </div>
         )}
       </div>
-      <span className="text-white text-[10px] font-medium drop-shadow-md tracking-tight leading-tight">{app.name}</span>
+      <span className="text-white text-[10px] font-medium drop-shadow-md tracking-tight leading-tight mix-blend-plus-lighter">{app.name}</span>
     </button>
   );
 }
 
 function MobileDock({ apps, onOpen }: { apps: MobileApp[]; onOpen: (id: string) => void }) {
   return (
-    <div className="mx-4 mb-2 px-6 py-3 rounded-[26px] bg-white/15 backdrop-blur-2xl border border-white/20 shadow-lg">
-      <div className="flex items-center justify-around">
-        {apps.map(app => <IOSAppIcon key={app.id} app={app} onOpen={onOpen} size={50} />)}
+    <div className="mx-8 mb-3 px-4 py-2 rounded-[22px] bg-black/20 backdrop-blur-lg border border-white/10 shadow-lg">
+      <div className="flex items-center justify-around gap-4">
+        {apps.map(app => <IOSAppIcon key={app.id} app={app} onOpen={onOpen} size={42} />)}
       </div>
     </div>
   );
@@ -112,9 +126,19 @@ function ButtonNavBar({ onBack, onHome, onRecent }: { onBack: () => void; onHome
   );
 }
 
+function PlaceholderApp({ name }: { name: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full text-white/60 p-8 text-center">
+      <Construction size={48} className="mb-4 text-white/40" />
+      <h2 className="text-xl font-bold mb-2">{name}</h2>
+      <p className="text-sm">This app is currently under construction. Check back later!</p>
+    </div>
+  );
+}
+
 function renderApp(appId: string, data?: unknown) {
   switch (appId) {
-    case "events": return <EventsExplorer />;
+    case "events": return <EventsExplorer initialEventId={(data as any)?.initialEventId} />;
     case "rules": return <RulesSection />;
     case "contact": return <ContactSection />;
     case "transport": return <TransportInfo />;
@@ -126,7 +150,7 @@ function renderApp(appId: string, data?: unknown) {
     case "achievements": return <Achievements />;
     case "spotify": return <Spotify />;
     case "register": return <RegisterPage data={data} />;
-    default: return null;
+    default: return <PlaceholderApp name={appId} />;
   }
 }
 
@@ -141,6 +165,7 @@ function MobileOSContent() {
   const [isBooting, setIsBooting] = useState(true);
   const [showDrawer, setShowDrawer] = useState(false);
   const [showRecents, setShowRecents] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
   const [backPressCount, setBackPressCount] = useState(0);
   const backTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -210,7 +235,29 @@ function MobileOSContent() {
 
   const toggleRecents = useCallback(() => { setShowRecents(p => !p); setShowDrawer(false); }, []);
 
-  useSwipeGestures(containerRef, { onSwipeUpHome: handleGoHome, onSwipeUpRecents: toggleRecents, onSwipeBack: handleGoBack });
+  const handleWidgetClick = useCallback((eventId: string) => {
+    handleOpenApp("events", { initialEventId: eventId });
+  }, [handleOpenApp]);
+
+  const handlePageDragEnd = (event: any, info: PanInfo) => {
+    if (info.offset.x < -30) {
+      if (currentPage < HOME_PAGES.length - 1) setCurrentPage(p => p + 1);
+    } else if (info.offset.x > 30) {
+      if (currentPage > 0) {
+        setCurrentPage(p => p - 1);
+      } else {
+        // Handle Back gesture on Page 0 (Swipe Right -> Back)
+        handleGoBack();
+      }
+    }
+  };
+
+  useSwipeGestures(containerRef, {
+    onSwipeUpHome: handleGoHome,
+    onSwipeUpRecents: toggleRecents,
+    onSwipeBack: handleGoBack,
+    // Note: Left/Right swipes now handled by Framer Motion drag on page container
+  });
 
   const wallpaperStyle = useMemo((): React.CSSProperties => {
     const { wallpaper } = desktopState;
@@ -220,10 +267,10 @@ function MobileOSContent() {
   }, [desktopState]);
 
   const units = [
-    { label: "D", value: pad(timeLeft.days) },
-    { label: "H", value: pad(timeLeft.hours) },
-    { label: "M", value: pad(timeLeft.minutes) },
-    { label: "S", value: pad(timeLeft.seconds) },
+    { label: "Days", value: pad(timeLeft.days) },
+    { label: "Hrs", value: pad(timeLeft.hours) },
+    { label: "Min", value: pad(timeLeft.minutes) },
+    { label: "Sec", value: pad(timeLeft.seconds) },
   ];
 
   const bottomPad = navMode === "buttons" ? "pb-14" : "pb-8";
@@ -243,7 +290,7 @@ function MobileOSContent() {
             transition={{ type: "spring", stiffness: 400, damping: 35, mass: 0.8 }}
             className={`absolute inset-0 pt-11 ${bottomPad} z-[50] bg-[var(--surface-bg)] overflow-hidden flex flex-col`}
           >
-            <div className="sticky top-0 z-10 h-11 min-h-[44px] flex items-center justify-between px-4 bg-[var(--surface-bg)]/95 backdrop-blur-xl border-b border-[var(--border-color)]">
+            <div className="sticky top-0 z-10 h-11 min-h-[44px] flex items-center justify-between px-4 bg-[var(--surface-bg)]/95 backdrop-blur-md border-b border-[var(--border-color)]">
               <button onClick={handleGoBack} className="flex items-center gap-1 text-[#007AFF] text-sm font-medium active:opacity-50 transition-opacity">
                 <ChevronLeft size={20} /> Back
               </button>
@@ -270,33 +317,84 @@ function MobileOSContent() {
               <span className="text-white/[0.07] text-lg font-bold tracking-[0.5em] mt-2 uppercase">2026</span>
             </div>
 
-            {/* Countdown */}
-            <div className="mt-4 mb-3 flex flex-col items-center z-10 px-6">
-              <div className="bg-white/10 backdrop-blur-xl rounded-[20px] border border-white/15 px-5 py-3 shadow-lg w-full max-w-[320px]">
-                <p className="text-white/60 text-[10px] font-semibold tracking-widest uppercase text-center mb-1.5">Countdown</p>
-                <div className="flex items-baseline justify-center gap-1">
-                  {units.map((u, i) => (
-                    <span key={u.label} className="flex items-baseline">
-                      <span className="text-white font-black font-mono text-2xl tabular-nums drop-shadow-lg">{u.value}</span>
-                      <span className="text-[#FF6B35] text-[8px] font-bold ml-0.5 mr-1">{u.label}</span>
-                      {i < units.length - 1 && <span className="text-white/30 text-lg font-light">:</span>}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-white/40 text-[9px] mt-1 font-medium text-center">Registration closes 4th March 2026</p>
-              </div>
+            {/* Page Content with Drag Animation */}
+            <div className="flex-1 w-full relative z-10 flex flex-col overflow-hidden">
+              <AnimatePresence mode="wait" custom={currentPage}>
+                <motion.div
+                  key={currentPage}
+                  custom={currentPage}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="flex-1 flex flex-col items-center w-full px-6 overflow-y-auto touch-auto pb-4 cursor-grab active:cursor-grabbing"
+                  style={{ willChange: "transform" }}
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.2}
+                  onDragEnd={handlePageDragEnd}
+                >
+                  {/* Page 0: Branding & Widgets */}
+                  {currentPage === 0 && (
+                    <div className="w-full max-w-[340px] flex flex-col gap-4 mt-2 mb-4">
+                      {/* Header Branding */}
+                      <div className="flex flex-col items-center justify-center pt-4 pb-2">
+                        <div className="flex items-center gap-5 mb-3">
+                          <div className="relative w-16 h-16 drop-shadow-xl filter brightness-110">
+                            <Image src="/logos/GCEE/white.png" alt="GCEE Logo" fill className="object-contain" />
+                          </div>
+                          <div className="h-10 w-[1.5px] bg-white/20 rounded-full"></div>
+                          <div className="relative w-16 h-16 drop-shadow-xl filter brightness-110">
+                            <Image src="/logos/AIT/silver.png" alt="AIT Logo" fill className="object-contain" />
+                          </div>
+                        </div>
+                        <h2 className="text-white text-xs font-black text-center uppercase tracking-widest leading-relaxed max-w-[300px] drop-shadow-md">
+                          Government College of Engineering, Erode
+                        </h2>
+                        <h3 className="text-[#FF6B35] text-[10px] font-black text-center uppercase tracking-[0.2em] mt-1.5 drop-shadow-sm">
+                          Information Technology
+                        </h3>
+                      </div>
+                      {/* Countdown */}
+                      <div className="bg-black/30 backdrop-blur-md rounded-[20px] border border-white/10 px-4 py-3 shadow-lg flex items-center justify-between">
+                        <div className="flex flex-col">
+                          <span className="text-[#FF6B35] text-[9px] font-bold uppercase tracking-wider mb-0.5">Countdown</span>
+                          <span className="text-white/60 text-[10px] font-medium leading-tight">Registration Ends Soon</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {units.map((u) => (
+                            <div key={u.label} className="flex flex-col items-center">
+                              <span className="text-white text-lg font-bold font-mono leading-none tracking-tight">{u.value}</span>
+                              <span className="text-[8px] text-white/50 font-bold uppercase tracking-wider mt-0.5">{u.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Event Promo Widget */}
+                      <EventPromoWidget variant="mobile" onEventClick={handleWidgetClick} />
+                    </div>
+                  )}
+
+                  {/* App Grid */}
+                  <div className={`grid grid-cols-4 gap-x-4 gap-y-6 w-full max-w-[340px] ${currentPage === 0 ? "mt-0" : "mt-8"}`}>
+                    {HOME_PAGES[currentPage].map(app => (
+                      <IOSAppIcon key={app.id} app={app} onOpen={handleOpenApp} size={56} />
+                    ))}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             </div>
 
-            {/* App Grid */}
-            <div className="flex-1 flex items-start justify-center w-full px-6 mt-1 z-10 overflow-y-auto touch-auto">
-              <div className="grid grid-cols-4 gap-x-4 gap-y-5 w-full max-w-[340px]">
-                {HOME_APPS.map(app => <IOSAppIcon key={app.id} app={app} onOpen={handleOpenApp} size={56} />)}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-1.5 py-2 z-10">
-              <div className="w-[6px] h-[6px] rounded-full bg-white/80" />
-              <div className="w-[6px] h-[6px] rounded-full bg-white/25" />
+            {/* Page Dots */}
+            <div className="flex items-center justify-center gap-2 py-3 z-10">
+              {HOME_PAGES.map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${i === currentPage ? "w-4 bg-white" : "w-1.5 bg-white/30"
+                    }`}
+                />
+              ))}
             </div>
 
             <div className="z-10"><MobileDock apps={DOCK_APPS} onOpen={handleOpenApp} /></div>
@@ -328,8 +426,6 @@ function MobileOSContent() {
     </div>
   );
 }
-
-// ── Export ──
 
 export function MobileOS() {
   return (

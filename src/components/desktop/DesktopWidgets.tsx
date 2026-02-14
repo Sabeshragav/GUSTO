@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useDesktop } from "../../contexts/DesktopContext";
 import { useIsMobile } from "../../hooks/useIsMobile";
+import { EventPromoWidget } from "../widgets/EventPromoWidget";
+import Image from "next/image";
 
 // GUSTO 2026 event date — March 7, 2026
 const TARGET_DATE = new Date("2026-03-04T23:59:59+05:30");
@@ -135,6 +137,39 @@ export function DesktopWidgets() {
         </motion.p>
       </div>
 
+      {/* Branding - Top Center (Desktop) */}
+      {!isMobile && (
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 flex flex-col items-center z-10 pointer-events-auto">
+          <motion.div
+            className="flex items-center gap-6 mb-4"
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            <div className="relative w-24 h-24 drop-shadow-2xl filter brightness-110">
+              <Image src="/logos/GCEE/white.png" alt="GCEE" fill className="object-contain" />
+            </div>
+            <div className="h-16 w-[2px] bg-white/20 rounded-full"></div>
+            <div className="relative w-24 h-24 drop-shadow-2xl filter brightness-110">
+              <Image src="/logos/AIT/silver.png" alt="AIT" fill className="object-contain" />
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="flex flex-col items-center gap-1"
+          >
+            <h2 className={`font-black uppercase tracking-[0.2em] ${textColor} text-base drop-shadow-lg max-w-[600px] text-center leading-relaxed whitespace-nowrap`}>
+              Government College of Engineering, Erode
+            </h2>
+            <h3 className="text-[#FF6B35] text-sm font-black uppercase tracking-[0.3em] drop-shadow-md text-center">
+              Information Technology
+            </h3>
+          </motion.div>
+        </div>
+      )}
+
       {/* Brand Widget - Massive, Center/Background */}
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center opacity-70">
         <div className="flex overflow-hidden">
@@ -175,6 +210,19 @@ export function DesktopWidgets() {
           2026
         </motion.div>
       </div>
+
+      {/* Event Promo Widget - Bottom Right */}
+      {!isMobile && (
+        <div className="absolute bottom-24 right-8 z-10 pointer-events-auto">
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+          >
+            <EventPromoWidget variant="desktop" />
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

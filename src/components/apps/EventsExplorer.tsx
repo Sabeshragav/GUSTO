@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { eventDetails } from "../../data/details/event_data";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useDesktop } from "../../contexts/DesktopContext";
@@ -19,13 +19,27 @@ type CategoryFilter = "All" | "Technical" | "Non-Technical";
 
 const CATEGORIES: CategoryFilter[] = ["All", "Technical", "Non-Technical"];
 
-export function EventsExplorer() {
+export function EventsExplorer({ initialEventId }: { initialEventId?: string }) {
   const { isMobile } = useIsMobile();
   const { openApp } = useDesktop();
 
   // Persist category selection and expanded event
   const [activeCategory, setActiveCategory] = useMobileAppPersistence<CategoryFilter>("events-category", "All");
   const [expandedId, setExpandedId] = useMobileAppPersistence<string | null>("events-expanded", null);
+
+  // Handle deep linking from widget
+  useEffect(() => {
+    if (initialEventId) {
+      setExpandedId(initialEventId);
+      const evt = EVENTS.find((e) => e.id === initialEventId);
+      if (evt) {
+        // Ensure category matches so it's visible
+        if (evt.type !== activeCategory && activeCategory !== "All") {
+          setActiveCategory(evt.type as CategoryFilter);
+        }
+      }
+    }
+  }, [initialEventId]);
 
   const filteredEvents = useMemo(
     () =>
