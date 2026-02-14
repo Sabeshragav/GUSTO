@@ -1,18 +1,23 @@
+export type EventCategory = 'Technical' | 'Non-Technical';
+export type EventType = 'ABSTRACT' | 'DIRECT' | 'SUBMISSION';
+export type TimeSlot = 'SLOT_1015' | 'SLOT_1100' | 'ONLINE';
+
 export interface Event {
   id: string;
   title: string;
-  type: 'Technical' | 'Non-Technical' | 'Workshop' | 'Other';
+  type: EventCategory;
+  eventType: EventType;
   date: string;
   time: string;
   venue: string;
   description: string;
   team_size: string;
-  fee: string;
   rules: string[];
   coordinators?: string[];
   image?: string;
   track: 'A' | 'B' | 'C';
-  timeSlot: string;
+  timeSlot: TimeSlot;
+  submissionEmail?: string;
 }
 
 export const GUSTO_INFO = {
@@ -20,162 +25,201 @@ export const GUSTO_INFO = {
   date: "2026-03-06",
   venue: "Government College of Engineering, Erode",
   department: "Information Technology",
-  contactRequest: "gustoitgcee@gmail.com"
 };
 
+export const REGISTRATION_PRICE = 250;
+
 export const EVENTS: Event[] = [
+  // ── Technical Events (ABSTRACT) ──
   {
     id: "paper-presentation",
     title: "Paper Presentation",
     type: "Technical",
+    eventType: "ABSTRACT",
     date: "2026-03-06",
-    time: "10:30 AM",
+    time: "10:15 AM",
     venue: "Main Auditorium",
-    description: "Showcase research and technical knowledge through a formal paper presentation. Present innovative ideas and solutions to technical challenges.",
-    team_size: "Solo or team of 2-3",
-    fee: "Free",
+    description:
+      "Present your innovative ideas and research work. Submit your abstract via email for shortlisting.",
+    team_size: "1-3",
     rules: [
-      "Submit abstract during registration on or before 1st March 2026.",
-      "Shortlisting based on quality, relevance, and originality.",
-      "PPT must be attached as soon as possible.",
-      "On-stage oral presentation duration: 7 to 10 minutes.",
-      "Shortlisted authors notified via mail by 3rd March 2026."
+      "Solo or team (max 3).",
+      "Submit abstract via email before deadline.",
+      "Shortlisted papers notified via email.",
+      "Oral presentation: 7–10 min.",
     ],
     track: "A",
-    timeSlot: "10:30 AM"
+    timeSlot: "SLOT_1015",
+    submissionEmail: "subramanidhaya77@gmail.com",
   },
   {
     id: "project-presentation",
-    title: "Project Presentation (Exposition)",
+    title: "Project Presentation",
     type: "Technical",
+    eventType: "ABSTRACT",
     date: "2026-03-06",
-    time: "10:30 AM",
+    time: "10:15 AM",
     venue: "IT Computer Lab 1",
-    description: "Demonstrate engineering skills by presenting a working project or prototype. Explain design process, implementation challenges, and results.",
-    team_size: "Solo or team of 2-3",
-    fee: "Free",
+    description:
+      "Demonstrate a working project or prototype. Submit your project abstract via email for shortlisting.",
+    team_size: "1-3",
     rules: [
-      "Upload project abstract (max 5 pages) including existing system/proposed methodology during registration.",
-      "Must bring working project model and presentation slides.",
-      "Presentation duration: 5-10 minutes followed by live demonstration.",
-      "Hard copy of project report is required.",
-      "Deadline for abstract submission: 1st March 2026."
-    ],
-    track: "B",
-    timeSlot: "10:30 AM"
-  },
-  {
-    id: "code-debugging",
-    title: "Code Debugging",
-    type: "Technical",
-    date: "2026-03-06",
-    time: "11:00 AM",
-    venue: "IT Computer Lab 2",
-    description: "Identify and fix bugs in provided code snippets. Race against time to optimize problematic code.",
-    team_size: "Individual",
-    fee: "₹50",
-    rules: [
-      "Pen and paper event; no internet or electronic devices allowed.",
-      "Two rounds, 30 minutes each.",
-      "Preferred languages: C/Java.",
-      "Batches allocated based on registration."
+      "Solo or team (max 3).",
+      "Submit abstract via email before deadline.",
+      "Bring working model and slides.",
+      "Presentation: 5–10 min + live demo.",
     ],
     track: "A",
-    timeSlot: "11:00 AM"
+    timeSlot: "SLOT_1015",
+    submissionEmail: "project.gusto26@example.com",
+  },
+
+  // ── Technical Events (DIRECT) ──
+  {
+    id: "think-like-a-compiler",
+    title: "Think Like a Compiler",
+    type: "Technical",
+    eventType: "DIRECT",
+    date: "2026-03-06",
+    time: "10:15 AM",
+    venue: "TBD",
+    description:
+      "Analyse, interpret, and correct code with precision — approach problems from a compiler's perspective.",
+    team_size: "1",
+    rules: [
+      "Individual event.",
+      "No devices allowed.",
+      "Manual code analysis only.",
+      "Two rounds: Think + Flip the Code.",
+    ],
+    track: "B",
+    timeSlot: "SLOT_1015",
   },
   {
-    id: "blind-coding",
-    title: "Blind Coding",
+    id: "code-chaos",
+    title: "Code Chaos",
     type: "Technical",
+    eventType: "DIRECT",
     date: "2026-03-06",
     time: "11:00 AM",
-    venue: "IT Computer Lab 3",
-    description: "A challenging competition where participants type code and run it only once. Errors lead to immediate elimination.",
-    team_size: "Individual",
-    fee: "₹50",
+    venue: "TBD",
+    description:
+      "A two-stage programming challenge: blind coding + hunt debugging under time pressure.",
+    team_size: "1",
     rules: [
-      "Round 1: 15 mins (simple problem); Round 2: 15 mins (medium difficulty).",
-      "Preferred languages: C, Python, Java.",
-      "Programs must be run only once under supervision.",
-      "Any runtime or compilation errors lead to instant elimination."
-    ],
-    track: "B",
-    timeSlot: "11:00 AM"
-  },
-  {
-    id: "tech-quiz",
-    title: "Tech Quiz",
-    type: "Technical",
-    date: "2026-03-06",
-    time: "12:20 PM",
-    venue: "Main Auditorium",
-    description: "Test knowledge of technology, computer science, and engineering trends in a fast-paced proctored online format.",
-    team_size: "Individual",
-    fee: "₹50",
-    rules: [
-      "Conducted via an online platform in the auditorium.",
-      "Sections: Easy, Medium, Hard.",
-      "Topics: Programming (C, Python, Java), SQL logic, and DSA.",
-      "Strict time limit and proctoring enforced."
+      "Individual event.",
+      "Languages: C, Python, Java.",
+      "Two rounds: Blind Coding + Hunt Debugging.",
+      "No external assistance.",
     ],
     track: "A",
-    timeSlot: "12:20 PM"
+    timeSlot: "SLOT_1100",
   },
   {
-    id: "hunt-mods",
-    title: "Hunt Mods",
+    id: "promptx",
+    title: "PROMPTX",
     type: "Technical",
+    eventType: "DIRECT",
     date: "2026-03-06",
-    time: "12:20 PM",
-    venue: "IT Computer Lab 2",
-    description: "Technical treasure hunt combining cryptography, problem-solving, and logic-based coding alterations.",
-    team_size: "Individual",
-    fee: "₹50",
+    time: "11:00 AM",
+    venue: "TBD",
+    description:
+      "AI-based prompt engineering competition — recreate images and replicate web pages using AI tools.",
+    team_size: "1",
     rules: [
-      "Round 1: 30 mins; Round 2: 30 mins.",
-      "Focus on altering code logic to achieve specific output.",
-      "Allows 'N' runs within the allocated time.",
-      "Winner determined by time and output quality."
+      "Individual event.",
+      "Two rounds: Image Recreation + Web Page Replication.",
+      "Max 3 prompts per task.",
+      "Bring your own laptop.",
     ],
     track: "B",
-    timeSlot: "12:20 PM"
+    timeSlot: "SLOT_1100",
+  },
+
+  // ── Non-Technical Events (SUBMISSION — online) ──
+  {
+    id: "photography",
+    title: "Photography",
+    type: "Non-Technical",
+    eventType: "SUBMISSION",
+    date: "2026-03-06",
+    time: "Online Event",
+    venue: "Online",
+    description:
+      "Capture the essence of a theme and tell a visual story through your lens. Submit via email.",
+    team_size: "1",
+    rules: [
+      "Online event.",
+      "Original photos only (no AI).",
+      "One photo, 3:4 aspect ratio.",
+      "Minimal editing permitted.",
+    ],
+    track: "C",
+    timeSlot: "ONLINE",
+    submissionEmail: "photo.gusto26@example.com",
   },
   {
     id: "meme-contest",
     title: "Meme Contest",
     type: "Non-Technical",
+    eventType: "SUBMISSION",
     date: "2026-03-06",
-    time: "Online",
+    time: "Online Event",
     venue: "Online",
-    description: "Create original memes based on provided situations (College life, student struggles, etc.).",
-    team_size: "Individual",
-    fee: "Free",
+    description:
+      "Create original memes based on given themes — showcase creativity and humor.",
+    team_size: "1",
     rules: [
-      "Individual participation only.",
-      "Memes must be uploaded by 1st March 2026 via email.",
-      "Themes: Hostel life, 'That one professor', Senior advice, etc.",
-      "No adult content or depictions of violence."
+      "Online event.",
+      "Individual only.",
+      "Based on provided themes.",
+      "No adult or violent content.",
     ],
     track: "C",
-    timeSlot: "Online"
+    timeSlot: "ONLINE",
+    submissionEmail: "meme.gusto26@example.com",
   },
   {
-    id: "photography",
-    title: "Photography",
+    id: "short-film",
+    title: "Short Film Competition",
     type: "Non-Technical",
+    eventType: "SUBMISSION",
     date: "2026-03-06",
-    time: "Online",
+    time: "Online Event",
     venue: "Online",
-    description: "Capture the essence of themes like Nature, The Color Green, or Macro photography.",
-    team_size: "Individual",
-    fee: "Free",
+    description:
+      "Create a short film (20–30 min) with a meaningful message. Upload to Google Drive and share the link.",
+    team_size: "1-5",
     rules: [
-      "Themes: Landscapes, Animals, Flowers, Macro, Elements of Design.",
-      "One photo per participant; Aspect ratio 3:4.",
-      "No AI-generated content or collages allowed.",
-      "Upload by 1st March 2026; only minimal editing permitted."
+      "Online event.",
+      "Team of 1–5 members.",
+      "MP4, min 1080p, 20–30 min.",
+      "English subtitles required if not in English.",
     ],
     track: "C",
-    timeSlot: "Online"
-  }
+    timeSlot: "ONLINE",
+    submissionEmail: "shortfilm.gusto26@example.com",
+  },
+
+  // ── Non-Technical Event (DIRECT — offline) ──
+  {
+    id: "icon-iq",
+    title: "Icon IQ",
+    type: "Non-Technical",
+    eventType: "DIRECT",
+    date: "2026-03-06",
+    time: "TBD",
+    venue: "TBD",
+    description:
+      "Test your visual intelligence — identify logos and connect images to tech concepts.",
+    team_size: "1",
+    rules: [
+      "Individual event, offline.",
+      "Two rounds: Logo Guessing + Connection Game.",
+      "No devices allowed.",
+      "Judge's decision is final.",
+    ],
+    track: "C",
+    timeSlot: "SLOT_1015",
+  },
 ];

@@ -1,18 +1,12 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Upload,
-  X,
-  Image as ImageIcon,
-  QrCode,
-  CreditCard,
-  AlertCircle,
-  CheckCircle,
-} from "lucide-react";
-import type { UseFormRegister, FieldErrors } from "react-hook-form";
+import { FieldErrors, UseFormRegister } from "react-hook-form";
+import { Upload, X, Image as ImageIcon, AlertCircle, Mail } from "lucide-react";
+import { motion } from "framer-motion";
 import type { RegistrationFormData } from "./RegisterPage";
+import { REGISTRATION_PRICE, type Event } from "../../../data/events";
+import Image from "next/image";
 
 interface PaymentSectionProps {
   register: UseFormRegister<RegistrationFormData>;
@@ -20,10 +14,11 @@ interface PaymentSectionProps {
   screenshotFile: File | null;
   onScreenshotChange: (file: File | null) => void;
   isMobile: boolean;
+  hasAbstractEvents: boolean;
+  hasSubmissionEvents: boolean;
+  abstractEvents: Event[];
+  submissionEvents: Event[];
 }
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 
 export function PaymentSection({
   register,
@@ -31,213 +26,195 @@ export function PaymentSection({
   screenshotFile,
   onScreenshotChange,
   isMobile,
+  hasAbstractEvents,
+  hasSubmissionEvents,
+  abstractEvents,
+  submissionEvents,
 }: PaymentSectionProps) {
-  const [preview, setPreview] = useState<string | null>(null);
-  const [fileError, setFileError] = useState<string | null>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const inputClass =
-    "w-full px-3 py-2.5 text-sm bg-[var(--surface-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-color)] rounded focus:outline-none focus:border-[var(--accent-color)] transition-colors placeholder:text-[var(--text-muted)]";
-
-  const handleFile = useCallback(
-    (file: File | null) => {
-      setFileError(null);
-
-      if (!file) {
-        onScreenshotChange(null);
-        setPreview(null);
-        return;
-      }
-
-      if (!ACCEPTED_TYPES.includes(file.type)) {
-        setFileError("Only JPG, JPEG or PNG files are accepted");
-        return;
-      }
-
-      if (file.size > MAX_FILE_SIZE) {
-        setFileError("File must be under 5MB");
-        return;
-      }
-
-      onScreenshotChange(file);
-
-      // Generate preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    },
-    [onScreenshotChange],
-  );
+  const [dragOver, setDragOver] = useState(false);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
-      setIsDragOver(false);
-      const file = e.dataTransfer.files?.[0] || null;
-      handleFile(file);
+      setDragOver(false);
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith("image/")) {
+        onScreenshotChange(file);
+      }
     },
-    [handleFile],
+    [onScreenshotChange],
   );
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  }, []);
-
-  const handleDragLeave = useCallback(() => {
-    setIsDragOver(false);
-  }, []);
-
-  const handleRemove = useCallback(() => {
-    onScreenshotChange(null);
-    setPreview(null);
-    setFileError(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  }, [onScreenshotChange]);
 
   return (
     <div className="space-y-4">
-      <div className="pb-2 border-b border-[var(--border-color)]">
-        <h3 className="text-sm font-bold text-[var(--text-primary)]">
-          💳 Payment
-        </h3>
-        <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
-          Scan the QR code, pay, and upload the screenshot
-        </p>
-      </div>
+      {/* Deadline notice for abstract/submission events */}
+      {(hasAbstractEvents || hasSubmissionEvents) && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30"
+        >
+          <div className="flex items-start gap-2">
+            <AlertCircle
+              size={14}
+              className="text-amber-400 flex-shrink-0 mt-0.5"
+            />
+            <div>
+              <p className="text-[11px] font-bold text-amber-400">
+                ⚠️ Submission Deadline: March 2, 2026 EOD
+              </p>
+              <p className="text-[10px] text-[var(--text-muted)] mt-1">
+                Please send your works for the following events to the
+                respective emails:
+              </p>
+              <div className="mt-2 space-y-1.5">
+                {abstractEvents.map((e) => (
+                  <div
+                    key={e.id}
+                    className="flex items-center gap-1.5 text-[10px]"
+                  >
+                    <Mail size={10} className="text-purple-400" />
+                    <span className="text-[var(--text-primary)] font-semibold">
+                      {e.title}
+                    </span>
+                    <span className="text-[var(--text-muted)]">→</span>
+                    <a
+                      href={`mailto:${e.submissionEmail}`}
+                      className="text-[var(--accent-color)] underline"
+                    >
+                      {e.submissionEmail}
+                    </a>
+                  </div>
+                ))}
+                {submissionEvents.map((e) => (
+                  <div
+                    key={e.id}
+                    className="flex items-center gap-1.5 text-[10px]"
+                  >
+                    <Mail size={10} className="text-green-400" />
+                    <span className="text-[var(--text-primary)] font-semibold">
+                      {e.title}
+                    </span>
+                    <span className="text-[var(--text-muted)]">→</span>
+                    <a
+                      href={`mailto:${e.submissionEmail}`}
+                      className="text-[var(--accent-color)] underline"
+                    >
+                      {e.submissionEmail}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
-      {/* QR Code Placeholder */}
-      <div className="flex flex-col items-center p-6 rounded border-2 border-dashed border-[var(--border-color)] bg-[var(--surface-secondary)]">
-        <div className="w-48 h-48 rounded-lg border-2 border-[var(--border-color)] bg-[var(--surface-primary)] flex flex-col items-center justify-center gap-3">
-          <QrCode size={48} className="text-[var(--text-muted)]" />
-          <span className="text-[11px] text-[var(--text-muted)] font-medium text-center px-4">
-            Payment QR will be displayed here
+      {/* Amount display */}
+      <div className="p-3 rounded-lg bg-[var(--accent-color)]/5 border border-[var(--border-color)]">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] text-[var(--accent-color)]">
+            Registration Fee
+          </span>
+          <span className="text-[16px] font-bold text-[var(--accent-color)]">
+            ₹{REGISTRATION_PRICE}
           </span>
         </div>
-        <p className="text-[10px] text-[var(--text-muted)] mt-3">
-          Scan and pay the exact amount shown in the summary
+      </div>
+
+      {/* QR Code */}
+      <div className="flex flex-col items-center gap-2 py-2">
+        <Image
+          src="/placeholder/payment_qrcode.jpeg"
+          alt={`Scan QR to pay ₹${REGISTRATION_PRICE}`}
+          width={200}
+          height={200}
+          className="rounded-lg border-2 border-[var(--border-color)] bg-white"
+        />
+        <p className="text-[10px] text-[var(--text-muted)] text-center">
+          Scan the QR code above to pay{" "}
+          <strong className="text-[var(--text-primary)]">
+            ₹{REGISTRATION_PRICE}
+          </strong>{" "}
+          via UPI
         </p>
       </div>
 
       {/* Transaction ID */}
-      <div className="flex flex-col gap-1">
-        <label className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wide">
-          <CreditCard size={12} className="inline mr-1.5" />
-          Transaction ID / UTR
+      <div>
+        <label className="block text-[11px] font-semibold text-[var(--text-primary)] mb-1">
+          Transaction / UTR ID
         </label>
         <input
+          type="text"
           {...register("transactionId")}
-          placeholder="Enter your transaction ID"
-          className={inputClass}
+          placeholder="Enter your UPI transaction ID"
+          className="w-full text-[12px] px-3 py-2.5 rounded-lg border-2 border-[var(--border-color)] bg-[var(--surface-secondary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent-color)] focus:outline-none transition-colors"
         />
         {errors.transactionId && (
-          <p className="text-[11px] text-red-400 font-medium">
+          <p className="text-[10px] text-red-400 mt-1">
             {errors.transactionId.message}
           </p>
         )}
       </div>
 
-      {/* Screenshot Upload */}
-      <div className="flex flex-col gap-1">
-        <label className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wide">
-          <ImageIcon size={12} className="inline mr-1.5" />
+      {/* Screenshot upload */}
+      <div>
+        <label className="block text-[11px] font-semibold text-[var(--text-primary)] mb-1">
           Payment Screenshot
         </label>
-
-        {!preview ? (
-          <div
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onClick={() => fileInputRef.current?.click()}
-            className={`flex flex-col items-center justify-center p-6 rounded border-2 border-dashed cursor-pointer transition-colors ${
-              isDragOver
-                ? "border-[var(--accent-color)] bg-[var(--accent-color)]/5"
-                : "border-[var(--border-color)] bg-[var(--surface-secondary)] hover:border-[var(--text-muted)]"
-            }`}
-          >
-            <Upload
-              size={24}
-              className={
-                isDragOver
-                  ? "text-[var(--accent-color)]"
-                  : "text-[var(--text-muted)]"
-              }
-            />
-            <p className="text-xs text-[var(--text-muted)] mt-2">
-              {isDragOver
-                ? "Drop your screenshot here"
-                : "Click or drag to upload screenshot"}
-            </p>
-            <p className="text-[10px] text-[var(--text-muted)] mt-1">
-              JPG, JPEG, PNG • Max 5MB
-            </p>
-          </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative rounded border-2 border-[var(--border-color)] bg-[var(--surface-secondary)] p-2"
-          >
-            <div className="flex items-start gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={preview}
-                alt="Payment screenshot preview"
-                className="w-20 h-20 object-cover rounded border border-[var(--border-color)]"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 text-green-400 text-xs font-bold">
-                  <CheckCircle size={12} />
-                  <span>Screenshot uploaded</span>
-                </div>
-                <p className="text-[10px] text-[var(--text-muted)] mt-0.5 truncate">
-                  {screenshotFile?.name}
-                </p>
-                <p className="text-[10px] text-[var(--text-muted)]">
-                  {screenshotFile
-                    ? `${(screenshotFile.size / 1024).toFixed(1)} KB`
-                    : ""}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleRemove}
-                className="p-1 rounded hover:bg-red-500/10 text-red-400 transition-colors"
-              >
-                <X size={16} />
-              </button>
-            </div>
-          </motion.div>
-        )}
-
         <input
           ref={fileInputRef}
           type="file"
-          accept=".jpg,.jpeg,.png"
-          onChange={(e) => handleFile(e.target.files?.[0] || null)}
+          accept="image/*"
           className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) onScreenshotChange(file);
+          }}
         />
 
-        {/* File error */}
-        <AnimatePresence>
-          {(fileError || errors.screenshot) && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="flex items-center gap-1.5 text-[11px] text-red-400 font-medium"
-            >
-              <AlertCircle size={11} />
-              <span>{fileError || (errors.screenshot?.message as string)}</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {screenshotFile ? (
+          <div className="relative p-3 rounded-lg border-2 border-[var(--border-color)] bg-[var(--accent-color)]/5">
+            <div className="flex items-center gap-2">
+              <ImageIcon size={14} className="text-[var(--accent-color)]" />
+              <span className="text-[11px] text-[var(--text-primary)] truncate flex-1">
+                {screenshotFile.name}
+              </span>
+              <button
+                type="button"
+                onClick={() => onScreenshotChange(null)}
+                className="p-1 rounded hover:bg-red-500/10 transition-colors"
+              >
+                <X size={12} className="text-red-400" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            onDrop={handleDrop}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
+            onDragLeave={() => setDragOver(false)}
+            className={`cursor-pointer p-6 rounded-lg border-2 border-dashed text-center transition-colors ${
+              dragOver
+                ? "border-[var(--accent-color)] bg-[var(--accent-color)]/5"
+                : "border-[var(--border-color)] hover:border-[var(--text-muted)]"
+            }`}
+          >
+            <Upload
+              size={20}
+              className="mx-auto text-[var(--text-muted)] mb-2"
+            />
+            <p className="text-[11px] text-[var(--text-muted)]">
+              Click or drop payment screenshot here
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

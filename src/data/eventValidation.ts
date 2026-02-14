@@ -1,140 +1,143 @@
 import type { Event } from './events';
 
-export interface Pass {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    maxTotal: number;
-    maxTech: number;
-    maxNonTech: number;
-}
+export const REGISTRATION_PRICE = 250;
 
-export const PASSES: Pass[] = [
-    {
-        id: 'silver',
-        name: 'Silver',
-        description: '1 event — any Tech or Non-Tech',
-        price: 180,
-        maxTotal: 1,
-        maxTech: 1,
-        maxNonTech: 1,
-    },
-    {
-        id: 'gold',
-        name: 'Gold',
-        description: '2 events — any mix of Tech & Non-Tech',
-        price: 200,
-        maxTotal: 2,
-        maxTech: 2,
-        maxNonTech: 2,
-    },
-    {
-        id: 'diamond',
-        name: 'Diamond',
-        description: '2 Technical + 1 Non-Technical',
-        price: 250,
-        maxTotal: 3,
-        maxTech: 2,
-        maxNonTech: 1,
-    },
-    {
-        id: 'platinum',
-        name: 'Platinum',
-        description: '2 Technical + 2 Non-Technical',
-        price: 300,
-        maxTotal: 4,
-        maxTech: 2,
-        maxNonTech: 2,
-    },
-];
+/**
+ * Validate event selection: exactly 3 events, 2T+1N or 1T+2N, no duplicate time slots.
+ */
+export function validateEventSelection(
+    events: Event[]
+): { valid: boolean; error?: string } {
+    if (events.length === 0) {
+        return { valid: false, error: 'Select at least 1 event' };
+    }
+    if (events.length > 3) {
+        return { valid: false, error: `Maximum 3 events allowed (currently ${events.length})` };
+    }
 
-export interface ValidationResult {
-    isValid: boolean;
-    message: string | null;
+    const tech = events.filter((e) => e.type === 'Technical').length;
+    const nonTech = events.filter((e) => e.type === 'Non-Technical').length;
+
+    if (tech > 2) {
+        return { valid: false, error: 'Maximum 2 Technical events allowed' };
+    }
+    if (nonTech > 2) {
+        return { valid: false, error: 'Maximum 2 Non-Technical events allowed' };
+    }
+
+    // Check time slot conflicts (ONLINE events never conflict)
+    const slotted = events.filter((e) => e.timeSlot !== 'ONLINE');
+    const seenSlots = new Set<string>();
+    for (const e of slotted) {
+        if (seenSlots.has(e.timeSlot)) {
+            return {
+                valid: false,
+                error: `Time slot conflict: multiple events in ${e.timeSlot === 'SLOT_1015' ? '10:15 AM' : '11:00 AM'} slot`,
+            };
+        }
+        seenSlots.add(e.timeSlot);
+    }
+
+    return { valid: true };
 }
 
 /**
- * Count technical and non-technical events in a selection.
+ * Get count breakdown of selected events.
  */
-function countByType(events: Event[]): { tech: number; nonTech: number } {
-    let tech = 0;
-    let nonTech = 0;
-    for (const e of events) {
-        if (e.type === 'Technical') tech++;
-        else nonTech++;
-    }
-    return { tech, nonTech };
-}
-
-/**
- * Validate whether a new event can be added to the current selection
- * given the selected pass constraints.
- */
-export function validateSelection(
-    selectedEvents: Event[],
-    pass: Pass,
-    newEvent: Event
-): ValidationResult {
-    // 1. Check if already selected
-    if (selectedEvents.some(e => e.id === newEvent.id)) {
-        return { isValid: false, message: 'Event already selected' };
-    }
-
-    // 2. Track conflict check
-    const trackConflict = selectedEvents.find(
-        e => e.track === newEvent.track && e.timeSlot === newEvent.timeSlot && e.timeSlot !== 'Online'
-    );
-    if (trackConflict) {
-        return {
-            isValid: false,
-            message: `Track conflict — "${trackConflict.title}" occurs at the same time on Track ${newEvent.track}`,
-        };
-    }
-
-    // 3. Total limit
-    if (selectedEvents.length >= pass.maxTotal) {
-        return {
-            isValid: false,
-            message: `Maximum ${pass.maxTotal} events allowed for ${pass.name}`,
-        };
-    }
-
-    const { tech, nonTech } = countByType(selectedEvents);
-    const newTech = newEvent.type === 'Technical' ? tech + 1 : tech;
-    const newNonTech = newEvent.type !== 'Technical' ? nonTech + 1 : nonTech;
-
-    // 4. Tech limit
-    if (newTech > pass.maxTech) {
-        return {
-            isValid: false,
-            message: `Maximum ${pass.maxTech} Technical event${pass.maxTech !== 1 ? 's' : ''} allowed for ${pass.name}`,
-        };
-    }
-
-    // 5. Non-tech limit
-    if (newNonTech > pass.maxNonTech) {
-        return {
-            isValid: false,
-            message: `Maximum ${pass.maxNonTech} Non-Technical event${pass.maxNonTech !== 1 ? 's' : ''} allowed for ${pass.name}`,
-        };
-    }
-
-    return { isValid: true, message: null };
-}
-
-/**
- * Get current selection counts for display.
- */
-export function getSelectionCounts(selectedEvents: Event[], pass: Pass) {
-    const { tech, nonTech } = countByType(selectedEvents);
-
+export function getSelectionCounts(events: Event[]) {
+    const tech = events.filter((e) => e.type === 'Technical').length;
+    const nonTech = events.filter((e) => e.type === 'Non-Technical').length;
     return {
         tech,
         nonTech,
-        total: tech + nonTech,
-        maxTech: pass.maxTech,
-        maxNonTech: pass.maxNonTech,
-        maxTotal: pass.maxTotal,
+        total: events.length,
     };
+}
+
+/**
+ * Return selected events that are ABSTRACT type.
+ */
+export function getAbstractEvents(events: Event[]): Event[] {
+    return events.filter((e) => e.eventType === 'ABSTRACT');
+}
+
+/**
+ * Return selected events that are SUBMISSION type.
+ */
+export function getSubmissionEvents(events: Event[]): Event[] {
+    return events.filter((e) => e.eventType === 'SUBMISSION');
+}
+
+/**
+ * Check if a candidate event can be selected given current selection.
+ */
+export function canSelectEvent(
+    candidate: Event,
+    currentSelection: Event[]
+): { canSelect: boolean; reason: string | null } {
+    // Already selected → toggle off is always fine
+    if (currentSelection.some((e) => e.id === candidate.id)) {
+        return { canSelect: true, reason: null };
+    }
+
+    // Max 3
+    if (currentSelection.length >= 3) {
+        return { canSelect: false, reason: 'Maximum 3 events reached' };
+    }
+
+    const tech = currentSelection.filter((e) => e.type === 'Technical').length;
+    const nonTech = currentSelection.filter((e) => e.type === 'Non-Technical').length;
+
+    // Check category limits (max 2 of either type)
+    if (candidate.type === 'Technical' && tech >= 2) {
+        return { canSelect: false, reason: 'Max 2 Technical events' };
+    }
+    if (candidate.type === 'Non-Technical' && nonTech >= 2) {
+        return { canSelect: false, reason: 'Max 2 Non-Technical events' };
+    }
+
+    // Time slot conflict (ONLINE never conflicts)
+    if (candidate.timeSlot !== 'ONLINE') {
+        const conflict = currentSelection.find(
+            (e) => e.timeSlot !== 'ONLINE' && e.timeSlot === candidate.timeSlot
+        );
+        if (conflict) {
+            return {
+                canSelect: false,
+                reason: `Time conflict with "${conflict.title}"`,
+            };
+        }
+    }
+
+    return { canSelect: true, reason: null };
+}
+
+/**
+ * Get valid fallback events for an ABSTRACT event.
+ * Fallback must be: non-ABSTRACT, different time slot, not already selected.
+ */
+export function getValidFallbacks(
+    selectedEvents: Event[],
+    abstractEvent: Event,
+    allEvents: Event[]
+): Event[] {
+    const selectedIds = new Set(selectedEvents.map((e) => e.id));
+
+    // Fallback events that should NOT appear (submission-only events)
+    const EXCLUDED_FALLBACK_IDS = new Set(['photography', 'meme-contest', 'short-film']);
+
+    return allEvents.filter((e) => {
+        if (e.id === abstractEvent.id) return false;
+        if (selectedIds.has(e.id)) return false;
+        if (e.eventType === 'ABSTRACT') return false;
+        if (EXCLUDED_FALLBACK_IDS.has(e.id)) return false;
+        // Must not conflict with other selected non-online events (excluding the abstract being replaced)
+        if (e.timeSlot !== 'ONLINE') {
+            const otherSelected = selectedEvents.filter(
+                (s) => s.id !== abstractEvent.id && s.timeSlot !== 'ONLINE'
+            );
+            if (otherSelected.some((s) => s.timeSlot === e.timeSlot)) return false;
+        }
+        return true;
+    });
 }

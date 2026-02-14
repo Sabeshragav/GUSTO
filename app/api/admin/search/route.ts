@@ -1,68 +1,59 @@
-import { NextRequest, NextResponse } from "next/server";
-import { query, initDatabase } from "../../../../src/lib/db";
-import { validateAdmin } from "../auth";
-
-let dbInitialized = false;
-
-async function ensureDb() {
-    if (!dbInitialized) {
-        await initDatabase();
-        dbInitialized = true;
-    }
-}
+import { NextRequest, NextResponse } from 'next/server';
+import { validateAdmin } from '../auth';
+import { query } from '@/lib/db';
+import { EVENTS } from '@/data/events';
 
 export async function GET(req: NextRequest) {
+    const authError = validateAdmin(req);
+    if (authError) return authError;
+
+    const url = new URL(req.url);
+    const code = url.searchParams.get('code');
+
+    if (!code) {
+        return NextResponse.json({ error: 'Code is required' }, { status: 400 });
+    }
+
     try {
-        if (!validateAdmin(req)) {
-            return NextResponse.json(
-                { success: false, message: "Unauthorized" },
-                { status: 401 }
-            );
-        }
-
-        await ensureDb();
-
-        const { searchParams } = new URL(req.url);
-        const code = searchParams.get("code");
-
-        if (!code) {
-            return NextResponse.json(
-                { success: false, message: "Registration code is required" },
-                { status: 400 }
-            );
-        }
-
-        const result = await query(
-            `SELECT r.*, 
-        (SELECT json_agg(json_build_object(
-          'id', tm.id, 'event_id', tm.event_id, 'member_name', tm.member_name, 
-          'member_email', tm.member_email, 'member_mobile', tm.member_mobile,
-          'member_college', tm.member_college, 'member_year', tm.member_year, 'is_leader', tm.is_leader
-        )) FROM team_members tm WHERE tm.registration_id = r.id) as team_members,
-        (SELECT json_agg(json_build_object(
-          'event_id', ea.event_id, 'status', ea.status, 'marked_at', ea.marked_at
-        )) FROM event_attendance ea WHERE ea.registration_id = r.id) as event_attendance
-       FROM registrations r
-       WHERE r.reg_code = $1`,
-            [code.toUpperCase().trim()]
+        const userResult = await query(
+            `SELECT id, name, email, mobile, college, year, unique_code, checked_in, check_in_time, created_at
+             FROM users WHERE unique_code = $1`,
+            [code]
         );
 
-        if (result.rows.length === 0) {
-            return NextResponse.json(
-                { success: false, message: "Registration not found" },
-                { status: 404 }
-            );
+        if (userResult.rows.length === 0) {
+            return NextResponse.json({ error: 'Registration not found' }, { status: 404 });
         }
+
+        const user = userResult.rows[0];
+
+        const eventsResult = await query(
+            `SELECT event_id, fallback_event_id, status, attendance_status, created_at
+             FROM event_registrations WHERE user_id = $1`,
+            [user.id]
+        );
+
+        const paymentResult = await query(
+            `SELECT amount, screenshot_url, transaction_id, status, created_at
+             FROM payments WHERE user_id = $1`,
+            [user.id]
+        );
+
+        const eventMap = Object.fromEntries(EVENTS.map((e) => [e.id, e.title]));
 
         return NextResponse.json({
-            success: true,
-            registration: result.rows[0],
+            user,
+            events: eventsResult.rows.map((row) => ({
+                ...row,
+                event_title: eventMap[row.event_id] || row.event_id,
+                fallback_event_title: row.fallback_event_id
+                    ? eventMap[row.fallback_event_id] || row.fallback_event_id
+                    : null,
+            })),
+            payment: paymentResult.rows[0] || null,
         });
-    } catch (error) {
-        console.error("Admin search error:", error);
-        return NextResponse.json(
-            { success: false, message: "Server error" },
-            { status: 500 }
-        );
+    } catch (err) {
+        console.error('Search error:', err);
+        return NextResponse.json({ error: 'Search failed' }, { status: 500 });
     }
 }

@@ -1,68 +1,62 @@
-import { NextRequest, NextResponse } from "next/server";
-import { query, initDatabase } from "../../../../src/lib/db";
-import { validateAdmin } from "../auth";
-
-let dbInitialized = false;
-
-async function ensureDb() {
-    if (!dbInitialized) {
-        await initDatabase();
-        dbInitialized = true;
-    }
-}
+import { NextRequest, NextResponse } from 'next/server';
+import { validateAdmin } from '../auth';
+import { query } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
+    const authError = validateAdmin(req);
+    if (authError) return authError;
+
     try {
-        if (!validateAdmin(req)) {
+        const { userId, eventId, status } = await req.json();
+
+        if (!userId || !eventId || !status) {
             return NextResponse.json(
-                { success: false, message: "Unauthorized" },
-                { status: 401 }
-            );
-        }
-
-        await ensureDb();
-
-        const { registrationId, eventId, status } = await req.json();
-
-        if (!registrationId || !eventId || !status) {
-            return NextResponse.json(
-                { success: false, message: "registrationId, eventId, and status are required" },
+                { error: 'userId, eventId, and status are required' },
                 { status: 400 }
             );
         }
 
-        const validStatuses = ["registered", "present", "absent"];
+        const validStatuses = ['PENDING', 'PRESENT', 'ABSENT', 'NOT_REQUIRED'];
         if (!validStatuses.includes(status)) {
             return NextResponse.json(
-                { success: false, message: `Status must be one of: ${validStatuses.join(", ")}` },
+                { error: `Status must be one of: ${validStatuses.join(', ')}` },
                 { status: 400 }
+            );
+        }
+
+        // Gate: only allow marking attendance if user is checked in
+        const userCheck = await query(
+            'SELECT checked_in FROM users WHERE id = $1',
+            [userId]
+        );
+        if (userCheck.rows.length === 0) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+        if (!userCheck.rows[0].checked_in) {
+            return NextResponse.json(
+                { error: 'User must be checked in before marking attendance' },
+                { status: 403 }
             );
         }
 
         const result = await query(
-            `UPDATE event_attendance 
-       SET status = $1, marked_at = NOW()
-       WHERE registration_id = $2 AND event_id = $3
-       RETURNING *`,
-            [status, registrationId, eventId]
+            `UPDATE event_registrations
+             SET attendance_status = $1
+             WHERE user_id = $2 AND event_id = $3
+             RETURNING id, event_id, attendance_status`,
+            [status, userId, eventId]
         );
 
         if (result.rows.length === 0) {
             return NextResponse.json(
-                { success: false, message: "Event attendance record not found" },
+                { error: 'Event registration not found' },
                 { status: 404 }
             );
         }
 
-        return NextResponse.json({
-            success: true,
-            attendance: result.rows[0],
-        });
-    } catch (error) {
-        console.error("Admin event-status error:", error);
-        return NextResponse.json(
-            { success: false, message: "Server error" },
-            { status: 500 }
-        );
+        return NextResponse.json({ success: true, registration: result.rows[0] });
+    } catch (err) {
+        console.error('Event status update error:', err);
+        return NextResponse.json({ error: 'Failed to update event status' }, { status: 500 });
     }
 }

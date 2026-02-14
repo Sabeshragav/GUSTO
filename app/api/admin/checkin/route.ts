@@ -1,59 +1,44 @@
-import { NextRequest, NextResponse } from "next/server";
-import { query, initDatabase } from "../../../../src/lib/db";
-import { validateAdmin } from "../auth";
-
-let dbInitialized = false;
-
-async function ensureDb() {
-    if (!dbInitialized) {
-        await initDatabase();
-        dbInitialized = true;
-    }
-}
+import { NextRequest, NextResponse } from 'next/server';
+import { validateAdmin } from '../auth';
+import { query } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
+    const authError = validateAdmin(req);
+    if (authError) return authError;
+
     try {
-        if (!validateAdmin(req)) {
-            return NextResponse.json(
-                { success: false, message: "Unauthorized" },
-                { status: 401 }
-            );
+        const { code, action } = await req.json();
+
+        if (!code) {
+            return NextResponse.json({ error: 'Registration code is required' }, { status: 400 });
         }
 
-        await ensureDb();
-
-        const { regCode } = await req.json();
-
-        if (!regCode) {
-            return NextResponse.json(
-                { success: false, message: "Registration code is required" },
-                { status: 400 }
+        if (action === 'checkin') {
+            const result = await query(
+                `UPDATE users SET checked_in = true, check_in_time = NOW()
+                 WHERE unique_code = $1 AND checked_in = false
+                 RETURNING id, name, unique_code, checked_in`,
+                [code]
             );
+
+            if (result.rows.length === 0) {
+                // Check if already checked in
+                const existing = await query(
+                    'SELECT checked_in FROM users WHERE unique_code = $1',
+                    [code]
+                );
+                if (existing.rows.length > 0 && existing.rows[0].checked_in) {
+                    return NextResponse.json({ error: 'Already checked in' }, { status: 409 });
+                }
+                return NextResponse.json({ error: 'Registration not found' }, { status: 404 });
+            }
+
+            return NextResponse.json({ success: true, user: result.rows[0] });
         }
 
-        const result = await query(
-            `UPDATE registrations SET checked_in = true
-       WHERE reg_code = $1
-       RETURNING id, reg_code, name, checked_in`,
-            [regCode.toUpperCase().trim()]
-        );
-
-        if (result.rows.length === 0) {
-            return NextResponse.json(
-                { success: false, message: "Registration not found" },
-                { status: 404 }
-            );
-        }
-
-        return NextResponse.json({
-            success: true,
-            registration: result.rows[0],
-        });
-    } catch (error) {
-        console.error("Admin checkin error:", error);
-        return NextResponse.json(
-            { success: false, message: "Server error" },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+    } catch (err) {
+        console.error('Check-in error:', err);
+        return NextResponse.json({ error: 'Check-in failed' }, { status: 500 });
     }
 }

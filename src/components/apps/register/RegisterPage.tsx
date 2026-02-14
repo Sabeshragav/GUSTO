@@ -8,467 +8,456 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from "lucide-react";
 
 import { useIsMobile } from "../../../hooks/useIsMobile";
-import { usePassValidation } from "../../../hooks/usePassValidation";
-import { PASSES, type Pass } from "../../../data/eventValidation";
-import type { Event } from "../../../data/events";
+import { useEventValidation } from "../../../hooks/useEventValidation";
+import { EVENTS, REGISTRATION_PRICE, type Event } from "../../../data/events";
+import {
+  getAbstractEvents,
+  getSubmissionEvents,
+} from "../../../data/eventValidation";
 
 import { StepIndicator } from "./StepIndicator";
 import { TeamLeaderForm } from "./TeamLeaderForm";
-import { PassSelectorStep } from "./PassSelectorStep";
 import { EventSelectorStep } from "./EventSelectorStep";
-import { TeamSection } from "./TeamSection";
+import { FallbackStep } from "./FallbackStep";
 import { PaymentSection } from "./PaymentSection";
 import { SummaryCard } from "./SummaryCard";
 import { SuccessScreen } from "./SuccessScreen";
 
 /* ─── Zod Schema ─── */
 const teammateSchema = z.object({
-    name: z.string().min(1, "Name is required"),
-    email: z.string().min(1, "Email is required").email("Invalid email"),
-    mobile: z
-        .string()
-        .min(1, "Mobile is required")
-        .regex(/^\d{10}$/, "Must be 10 digits"),
-    college: z.string().min(1, "College is required"),
-    year: z.string().min(1, "Year is required"),
+  name: z.string().min(1, "Name is required"),
+  email: z.string().min(1, "Email is required").email("Invalid email"),
+  mobile: z
+    .string()
+    .min(1, "Mobile is required")
+    .regex(/^\d{10}$/, "Must be 10 digits"),
+  college: z.string().min(1, "College is required"),
+  year: z.string().min(1, "Year is required"),
 });
 
 const registrationSchema = z.object({
-    // Step 1
-    leaderName: z.string().min(1, "Name is required").min(2, "Min 2 characters"),
-    leaderEmail: z
-        .string()
-        .min(1, "Email is required")
-        .email("Enter a valid email"),
-    leaderMobile: z
-        .string()
-        .min(1, "Mobile is required")
-        .regex(/^\d{10}$/, "Must be 10 digits"),
-    leaderCollege: z.string().min(1, "College is required"),
-    leaderYear: z.string().min(1, "Select a year"),
+  // Step 1: Details
+  leaderName: z.string().min(1, "Name is required").min(2, "Min 2 characters"),
+  leaderEmail: z
+    .string()
+    .min(1, "Email is required")
+    .email("Enter a valid email"),
+  leaderMobile: z
+    .string()
+    .min(1, "Mobile is required")
+    .regex(/^\d{10}$/, "Must be 10 digits"),
+  leaderCollege: z.string().min(1, "College is required"),
+  leaderYear: z.string().min(1, "Select a year"),
 
-    // Step 5
-    transactionId: z
-        .string()
-        .min(1, "Transaction ID is required")
-        .min(4, "Enter a valid transaction ID"),
+  // Step 4: Payment
+  transactionId: z
+    .string()
+    .min(1, "Transaction ID is required")
+    .min(4, "Enter a valid transaction ID"),
 
-    // Teammates (dynamic)
-    teammates: z.array(teammateSchema),
+  // Teammates (dynamic)
+  teammates: z.array(teammateSchema),
 
-    // Virtual fields (managed outside react-hook-form)
-    screenshot: z.any().optional(),
+  // Virtual fields
+  screenshot: z.any().optional(),
 });
 
 export type RegistrationFormData = z.infer<typeof registrationSchema>;
 
-/* ─── Step config ─── */
-const STEP_LABELS = ["Details", "Pass", "Events", "Team", "Payment"];
-const TOTAL_STEPS = 5;
-
-// Events that support teams (min 1, max 4 members)
-const TEAM_EVENT_IDS = new Set(["paper-presentation", "project-presentation"]);
+/* ─── Step config (4 steps) ─── */
+const STEP_LABELS = ["Details", "Events", "Fallbacks", "Payment"];
+const TOTAL_STEPS = 4;
 
 interface RegisterPageProps {
-    data?: unknown;
+  data?: unknown;
 }
 
 export function RegisterPage({ data }: RegisterPageProps) {
-    const { isMobile } = useIsMobile();
-    const scrollRef = useRef<HTMLDivElement>(null);
+  const { isMobile } = useIsMobile();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-    /* ─── Multi-step state ─── */
-    const [currentStep, setCurrentStep] = useState(1);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitError, setSubmitError] = useState<string | null>(null);
-    const [isSuccess, setIsSuccess] = useState(false);
-    const [registrationId, setRegistrationId] = useState("");
+  /* ─── Multi-step state ─── */
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [registrationId, setRegistrationId] = useState("");
 
-    /* ─── Pass & Event state (outside form because they aren't simple inputs) ─── */
-    const [selectedPass, setSelectedPass] = useState<Pass | null>(() => {
-        // Pre-fill if coming from EventsExplorer
-        const d = data as { tier?: Pass; events?: Event[] } | undefined;
-        if (d?.tier) {
-            return PASSES.find((p) => p.id === d.tier?.id) || d.tier;
+  /* ─── Event state ─── */
+  const [selectedEvents, setSelectedEvents] = useState<Event[]>(() => {
+    const d = data as { events?: Event[] } | undefined;
+    return d?.events || [];
+  });
+
+  /* ─── Fallback selections for ABSTRACT events ─── */
+  const [fallbackSelections, setFallbackSelections] = useState<
+    Record<string, string>
+  >({});
+
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+
+  /* ─── Validation hook ─── */
+  const {
+    counts,
+    validateEvent,
+    isComplete: eventsComplete,
+  } = useEventValidation(selectedEvents);
+
+  // Abstract events that need fallbacks
+  const abstractEvents = getAbstractEvents(selectedEvents);
+
+  // Submission events that need reminders
+  const submissionEvents = getSubmissionEvents(selectedEvents);
+
+  /* ─── React Hook Form ─── */
+  const {
+    register,
+    handleSubmit,
+    trigger,
+    formState: { errors },
+  } = useForm<RegistrationFormData>({
+    resolver: zodResolver(registrationSchema) as any,
+    mode: "onTouched",
+    defaultValues: {
+      leaderName: "",
+      leaderEmail: "",
+      leaderMobile: "",
+      leaderCollege: "",
+      leaderYear: "",
+      transactionId: "",
+      teammates: [],
+    },
+  });
+
+  /* ─── Event toggle handler ─── */
+  const handleToggleEvent = useCallback(
+    (event: Event) => {
+      setSelectedEvents((prev) => {
+        const exists = prev.some((e) => e.id === event.id);
+        if (exists) {
+          // Remove fallback for this event if it was abstract
+          setFallbackSelections((fb) => {
+            const copy = { ...fb };
+            delete copy[event.id];
+            return copy;
+          });
+          return prev.filter((e) => e.id !== event.id);
         }
-        return null;
-    });
+        // Validate before adding
+        const validation = validateEvent(event);
+        if (!validation.canSelect) return prev;
+        return [...prev, event];
+      });
+    },
+    [validateEvent],
+  );
 
-    const [selectedEvents, setSelectedEvents] = useState<Event[]>(() => {
-        const d = data as { events?: Event[] } | undefined;
-        return d?.events || [];
-    });
+  /* ─── Fallback handler ─── */
+  const handleFallbackChange = useCallback(
+    (abstractEventId: string, fallbackEventId: string) => {
+      setFallbackSelections((prev) => ({
+        ...prev,
+        [abstractEventId]: fallbackEventId,
+      }));
+    },
+    [],
+  );
 
-    const [teamSize, setTeamSize] = useState(1);
-    const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  /* ─── Step navigation ─── */
+  const scrollToTop = () => {
+    scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
-    /* ─── Validation hook ─── */
-    const { counts, validateEvent, isComplete: eventsComplete } =
-        usePassValidation(selectedPass, selectedEvents);
-
-    // Whether any selected events are team-based
-    const hasTeamEvents = selectedEvents.some((e) => TEAM_EVENT_IDS.has(e.id));
-
-    /* ─── React Hook Form ─── */
-    const {
-        register,
-        control,
-        handleSubmit,
-        trigger,
-        formState: { errors },
-    } = useForm<RegistrationFormData>({
-        resolver: zodResolver(registrationSchema) as any,
-        mode: "onTouched",
-        defaultValues: {
-            leaderName: "",
-            leaderEmail: "",
-            leaderMobile: "",
-            leaderCollege: "",
-            leaderYear: "",
-            transactionId: "",
-            teammates: [],
-        },
-    });
-
-    /* ─── Event toggle handler ─── */
-    const handleToggleEvent = useCallback(
-        (event: Event) => {
-            setSelectedEvents((prev) => {
-                const exists = prev.some((e) => e.id === event.id);
-                if (exists) {
-                    return prev.filter((e) => e.id !== event.id);
-                }
-                // Validate before adding
-                const validation = validateEvent(event);
-                if (!validation.canSelect) return prev;
-                return [...prev, event];
-            });
-        },
-        [validateEvent]
-    );
-
-    /* ─── Pass change handler: reset invalid events ─── */
-    const handleSelectPass = useCallback(
-        (pass: Pass) => {
-            setSelectedPass(pass);
-            // If events exceed new pass limits, reset
-            if (selectedEvents.length > pass.maxTotal) {
-                setSelectedEvents([]);
-            }
-        },
-        [selectedEvents]
-    );
-
-    /* ─── Team size change handler ─── */
-    const handleTeamSizeChange = useCallback((size: number) => {
-        setTeamSize(size);
-    }, []);
-
-    /* ─── Step navigation ─── */
-    const scrollToTop = () => {
-        scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-    };
-
-    const canGoNext = useCallback(async (): Promise<boolean> => {
-        switch (currentStep) {
-            case 1: {
-                const valid = await trigger([
-                    "leaderName",
-                    "leaderEmail",
-                    "leaderMobile",
-                    "leaderCollege",
-                    "leaderYear",
-                ]);
-                return valid;
-            }
-            case 2:
-                return selectedPass !== null;
-            case 3:
-                return eventsComplete;
-            case 4: {
-                if (teamSize > 1) {
-                    const valid = await trigger("teammates");
-                    return valid;
-                }
-                return true;
-            }
-            case 5:
-                return true;
-            default:
-                return false;
+  const canGoNext = useCallback(async (): Promise<boolean> => {
+    switch (currentStep) {
+      case 1: {
+        const valid = await trigger([
+          "leaderName",
+          "leaderEmail",
+          "leaderMobile",
+          "leaderCollege",
+          "leaderYear",
+        ]);
+        return valid;
+      }
+      case 2: {
+        if (!eventsComplete) return false;
+        return true;
+      }
+      case 3: {
+        // Check fallbacks for abstract events
+        for (const ae of abstractEvents) {
+          if (!fallbackSelections[ae.id]) return false;
         }
-    }, [currentStep, trigger, selectedPass, eventsComplete, teamSize]);
-
-    const goNext = useCallback(async () => {
-        const valid = await canGoNext();
-        if (!valid) return;
-        if (currentStep < TOTAL_STEPS) {
-            setCurrentStep((s) => s + 1);
-            scrollToTop();
-        }
-    }, [canGoNext, currentStep]);
-
-    const goPrev = useCallback(() => {
-        if (currentStep > 1) {
-            setCurrentStep((s) => s - 1);
-            scrollToTop();
-        }
-    }, [currentStep]);
-
-    /* ─── Submit ─── */
-    const onSubmit = useCallback(
-        async (formData: RegistrationFormData) => {
-            if (!selectedPass || selectedEvents.length === 0) {
-                setSubmitError("Pass and events are required");
-                return;
-            }
-
-            if (!screenshotFile) {
-                setSubmitError("Payment screenshot is required");
-                return;
-            }
-
-            const txId = formData.transactionId.trim();
-            if (!txId) {
-                setSubmitError("Transaction ID is required");
-                return;
-            }
-
-            setIsSubmitting(true);
-            setSubmitError(null);
-
-            try {
-                const totalAmount = selectedPass.price * teamSize;
-
-                const fd = new FormData();
-                fd.append("name", formData.leaderName.trim());
-                fd.append("email", formData.leaderEmail.trim());
-                fd.append("mobile", formData.leaderMobile.trim());
-                fd.append("college", formData.leaderCollege.trim());
-                fd.append("year", formData.leaderYear);
-                fd.append("tier", selectedPass.id);
-                fd.append(
-                    "selectedEvents",
-                    selectedEvents.map((e) => e.id).join(",")
-                );
-                fd.append("teamSize", String(teamSize));
-                fd.append("transactionId", txId);
-                fd.append("totalAmount", String(totalAmount));
-                fd.append("screenshot", screenshotFile);
-
-                // Append teammate data as JSON
-                if (teamSize > 1 && formData.teammates.length > 0) {
-                    fd.append("teammates", JSON.stringify(formData.teammates));
-                }
-
-                const response = await fetch("/api/register", {
-                    method: "POST",
-                    body: fd,
-                });
-
-                const result = await response.json();
-
-                if (!response.ok || !result.success) {
-                    throw new Error(
-                        result.message || "Registration failed. Please try again."
-                    );
-                }
-
-                // Success! Use the server-generated registration code
-                setRegistrationId(result.regCode || "SUBMITTED");
-                setIsSuccess(true);
-
-                // Achievement unlock is handled by dispatching a custom event
-                // that the AchievementsContext can listen to
-                window.dispatchEvent(
-                    new CustomEvent("gusto-achievement", {
-                        detail: { id: "registered-for-gusto-26" },
-                    })
-                );
-            } catch (err) {
-                setSubmitError(
-                    err instanceof Error
-                        ? err.message
-                        : "Something went wrong. Please try again."
-                );
-            } finally {
-                setIsSubmitting(false);
-            }
-        },
-        [selectedPass, selectedEvents, screenshotFile, teamSize]
-    );
-
-    const handleFormSubmit = handleSubmit(onSubmit);
-
-    /* ─── Success screen ─── */
-    if (isSuccess) {
-        return (
-            <SuccessScreen registrationId={registrationId} isMobile={isMobile} />
-        );
+        return true;
+      }
+      case 4:
+        return true;
+      default:
+        return false;
     }
+  }, [
+    currentStep,
+    trigger,
+    eventsComplete,
+    abstractEvents,
+    fallbackSelections,
+  ]);
 
-    /* ─── Render ─── */
+  const goNext = useCallback(async () => {
+    const valid = await canGoNext();
+    if (!valid) return;
+    if (currentStep < TOTAL_STEPS) {
+      setCurrentStep((s) => s + 1);
+      scrollToTop();
+    }
+  }, [canGoNext, currentStep]);
+
+  const goPrev = useCallback(() => {
+    if (currentStep > 1) {
+      setCurrentStep((s) => s - 1);
+      scrollToTop();
+    }
+  }, [currentStep]);
+
+  /* ─── Submit ─── */
+  const onSubmit = useCallback(
+    async (formData: RegistrationFormData) => {
+      if (selectedEvents.length === 0) {
+        setSubmitError("Events are required");
+        return;
+      }
+
+      if (!screenshotFile) {
+        setSubmitError("Payment screenshot is required");
+        return;
+      }
+
+      const txId = formData.transactionId.trim();
+      if (!txId) {
+        setSubmitError("Transaction ID is required");
+        return;
+      }
+
+      setIsSubmitting(true);
+      setSubmitError(null);
+
+      try {
+        const fd = new FormData();
+        fd.append("name", formData.leaderName.trim());
+        fd.append("email", formData.leaderEmail.trim());
+        fd.append("mobile", formData.leaderMobile.trim());
+        fd.append("college", formData.leaderCollege.trim());
+        fd.append("year", formData.leaderYear);
+        fd.append(
+          "selectedEventIds",
+          JSON.stringify(selectedEvents.map((e) => e.id)),
+        );
+        fd.append("fallbackSelections", JSON.stringify(fallbackSelections));
+        fd.append("transactionId", txId);
+        fd.append("screenshot", screenshotFile);
+
+        // Append teammate data as JSON
+        if (formData.teammates.length > 0) {
+          fd.append("teammates", JSON.stringify(formData.teammates));
+        }
+
+        const response = await fetch("/api/register", {
+          method: "POST",
+          body: fd,
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(
+            result.error || "Registration failed. Please try again.",
+          );
+        }
+
+        setRegistrationId(result.uniqueCode || "SUBMITTED");
+        setIsSuccess(true);
+
+        window.dispatchEvent(
+          new CustomEvent("gusto-achievement", {
+            detail: { id: "registered-for-gusto-26" },
+          }),
+        );
+      } catch (err) {
+        setSubmitError(
+          err instanceof Error
+            ? err.message
+            : "Something went wrong. Please try again.",
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [selectedEvents, screenshotFile, fallbackSelections],
+  );
+
+  const handleFormSubmit = handleSubmit(onSubmit);
+
+  /* ─── Success screen ─── */
+  if (isSuccess) {
     return (
-        <div className="h-full flex flex-col overflow-hidden bg-[var(--surface-primary)]">
-            {/* Step Indicator */}
-            <div className="flex-shrink-0 border-b border-[var(--border-color)] bg-[var(--surface-primary)]">
-                <StepIndicator
-                    currentStep={currentStep}
-                    totalSteps={TOTAL_STEPS}
-                    labels={STEP_LABELS}
-                    isMobile={isMobile}
-                />
-            </div>
-
-            {/* Scrollable content */}
-            <div
-                ref={scrollRef}
-                className="flex-1 overflow-y-auto"
-            >
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        if (currentStep === TOTAL_STEPS) {
-                            handleFormSubmit();
-                        }
-                    }}
-                    className={`p-4 space-y-4 ${isMobile ? "max-w-full" : "max-w-2xl mx-auto"
-                        }`}
-                >
-                    {/* Summary card (persistent after step 2) */}
-                    {currentStep >= 2 && (
-                        <SummaryCard
-                            selectedPass={selectedPass}
-                            selectedEvents={selectedEvents}
-                            teamSize={teamSize}
-                            isMobile={isMobile}
-                        />
-                    )}
-
-                    {/* Step content */}
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={currentStep}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.2 }}
-                        >
-                            {currentStep === 1 && (
-                                <TeamLeaderForm
-                                    register={register}
-                                    errors={errors}
-                                    isMobile={isMobile}
-                                />
-                            )}
-
-                            {currentStep === 2 && (
-                                <PassSelectorStep
-                                    selectedPassId={selectedPass?.id ?? null}
-                                    onSelectPass={handleSelectPass}
-                                    isMobile={isMobile}
-                                />
-                            )}
-
-                            {currentStep === 3 && selectedPass && counts && (
-                                <EventSelectorStep
-                                    selectedPass={selectedPass}
-                                    selectedEvents={selectedEvents}
-                                    onToggleEvent={handleToggleEvent}
-                                    validateEvent={validateEvent}
-                                    counts={counts}
-                                    isMobile={isMobile}
-                                />
-                            )}
-
-                            {currentStep === 4 && (
-                                <TeamSection
-                                    control={control}
-                                    register={register}
-                                    errors={errors}
-                                    teamSize={teamSize}
-                                    onTeamSizeChange={handleTeamSizeChange}
-                                    isMobile={isMobile}
-                                    hasTeamEvents={hasTeamEvents}
-                                />
-                            )}
-
-                            {currentStep === 5 && (
-                                <PaymentSection
-                                    register={register}
-                                    errors={errors}
-                                    screenshotFile={screenshotFile}
-                                    onScreenshotChange={setScreenshotFile}
-                                    isMobile={isMobile}
-                                />
-                            )}
-                        </motion.div>
-                    </AnimatePresence>
-
-                    {/* Submit error */}
-                    <AnimatePresence>
-                        {submitError && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="flex items-center gap-2 px-3 py-2.5 rounded bg-red-500/10 border border-red-500/20"
-                            >
-                                <AlertCircle size={14} className="text-red-400 flex-shrink-0" />
-                                <p className="text-[11px] text-red-400 font-medium">
-                                    {submitError}
-                                </p>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </form>
-            </div>
-
-            {/* Navigation buttons */}
-            <div className="flex-shrink-0 border-t border-[var(--border-color)] bg-[var(--surface-primary)] px-4 py-3">
-                <div
-                    className={`flex items-center ${currentStep === 1 ? "justify-end" : "justify-between"
-                        } ${isMobile ? "" : "max-w-2xl mx-auto"}`}
-                >
-                    {currentStep > 1 && (
-                        <button
-                            type="button"
-                            onClick={goPrev}
-                            className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold border-2 border-[var(--border-color)] bg-[var(--surface-secondary)] text-[var(--text-primary)] rounded hover:border-[var(--text-muted)] transition-colors"
-                        >
-                            <ChevronLeft size={14} />
-                            Back
-                        </button>
-                    )}
-
-                    {currentStep < TOTAL_STEPS ? (
-                        <button
-                            type="button"
-                            onClick={goNext}
-                            className="flex items-center gap-1.5 px-5 py-2 text-xs font-bold border-2 border-[var(--accent-color)] bg-[var(--accent-color)] text-white rounded hover:bg-[var(--accent-hover)] hover:border-[var(--accent-hover)] transition-colors"
-                        >
-                            Next
-                            <ChevronRight size={14} />
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={() => handleFormSubmit()}
-                            disabled={isSubmitting}
-                            className="flex items-center gap-1.5 px-6 py-2 text-xs font-bold border-2 border-[var(--accent-color)] bg-[var(--accent-color)] text-white rounded hover:bg-[var(--accent-hover)] hover:border-[var(--accent-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 size={14} className="animate-spin" />
-                                    Submitting...
-                                </>
-                            ) : (
-                                "Submit Registration"
-                            )}
-                        </button>
-                    )}
-                </div>
-            </div>
-        </div>
+      <SuccessScreen registrationId={registrationId} isMobile={isMobile} />
     );
+  }
+
+  /* ─── Render ─── */
+  return (
+    <div className="h-full flex flex-col overflow-hidden bg-[var(--surface-primary)]">
+      {/* Step Indicator */}
+      <div className="flex-shrink-0 border-b border-[var(--border-color)] bg-[var(--surface-primary)]">
+        <StepIndicator
+          currentStep={currentStep}
+          totalSteps={TOTAL_STEPS}
+          labels={STEP_LABELS}
+          isMobile={isMobile}
+        />
+      </div>
+
+      {/* Scrollable content */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (currentStep === TOTAL_STEPS) {
+              handleFormSubmit();
+            }
+          }}
+          className={`p-4 space-y-4 ${
+            isMobile ? "max-w-full" : "max-w-2xl mx-auto"
+          }`}
+        >
+          {/* Submit error (shown at top) */}
+          <AnimatePresence>
+            {submitError && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="flex items-center gap-2 px-3 py-2.5 rounded bg-red-500/10 border border-red-500/20"
+              >
+                <AlertCircle size={14} className="text-red-400 flex-shrink-0" />
+                <p className="text-[11px] text-red-400 font-medium">
+                  {submitError}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Summary card (persistent after step 1) */}
+          {currentStep >= 2 && (
+            <SummaryCard selectedEvents={selectedEvents} isMobile={isMobile} />
+          )}
+
+          {/* Step content */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              {currentStep === 1 && (
+                <TeamLeaderForm
+                  register={register}
+                  errors={errors}
+                  isMobile={isMobile}
+                />
+              )}
+
+              {currentStep === 2 && (
+                <EventSelectorStep
+                  selectedEvents={selectedEvents}
+                  onToggleEvent={handleToggleEvent}
+                  validateEvent={validateEvent}
+                  counts={counts}
+                  isMobile={isMobile}
+                  fallbackSelections={fallbackSelections}
+                  onFallbackChange={handleFallbackChange}
+                  allEvents={EVENTS}
+                />
+              )}
+
+              {currentStep === 3 && (
+                <FallbackStep
+                  abstractEvents={abstractEvents}
+                  selectedEvents={selectedEvents}
+                  allEvents={EVENTS}
+                  fallbackSelections={fallbackSelections}
+                  onFallbackChange={handleFallbackChange}
+                  isMobile={isMobile}
+                />
+              )}
+
+              {currentStep === 4 && (
+                <PaymentSection
+                  register={register}
+                  errors={errors}
+                  screenshotFile={screenshotFile}
+                  onScreenshotChange={setScreenshotFile}
+                  isMobile={isMobile}
+                  hasAbstractEvents={abstractEvents.length > 0}
+                  hasSubmissionEvents={submissionEvents.length > 0}
+                  abstractEvents={abstractEvents}
+                  submissionEvents={submissionEvents}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </form>
+      </div>
+
+      {/* Navigation buttons */}
+      <div className="flex-shrink-0 border-t border-[var(--border-color)] bg-[var(--surface-primary)] px-4 py-3">
+        <div
+          className={`flex items-center ${
+            currentStep === 1 ? "justify-end" : "justify-between"
+          } ${isMobile ? "" : "max-w-2xl mx-auto"}`}
+        >
+          {currentStep > 1 && (
+            <button
+              type="button"
+              onClick={goPrev}
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold border-2 border-[var(--border-color)] bg-[var(--surface-secondary)] text-[var(--text-primary)] rounded hover:border-[var(--text-muted)] transition-colors"
+            >
+              <ChevronLeft size={14} />
+              Back
+            </button>
+          )}
+
+          {currentStep < TOTAL_STEPS ? (
+            <button
+              type="button"
+              onClick={goNext}
+              className="flex items-center gap-1.5 px-5 py-2 text-xs font-bold border-2 border-[var(--accent-color)] bg-[var(--accent-color)] text-white rounded hover:bg-[var(--accent-hover)] hover:border-[var(--accent-hover)] transition-colors"
+            >
+              Next
+              <ChevronRight size={14} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => handleFormSubmit()}
+              disabled={isSubmitting}
+              className="flex items-center gap-1.5 px-6 py-2 text-xs font-bold border-2 border-[var(--accent-color)] bg-[var(--accent-color)] text-white rounded hover:bg-[var(--accent-hover)] hover:border-[var(--accent-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit Registration"
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }

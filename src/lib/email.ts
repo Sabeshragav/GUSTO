@@ -1,121 +1,140 @@
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer';
 
-interface EventDetail {
-    title: string;
-    date: string;
-    time: string;
-    venue: string;
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASSWORD,
+  },
+});
+
+interface RegistrationEmailData {
+  to: string;
+  name: string;
+  uniqueCode: string;
+  events: { title: string; eventType: string; submissionEmail?: string }[];
+  amount: number;
 }
 
-let transporter: nodemailer.Transporter | null = null;
+export async function sendRegistrationEmail(data: RegistrationEmailData) {
+  const { to, name, uniqueCode, events, amount } = data;
 
-function getTransporter(): nodemailer.Transporter {
-    if (!transporter) {
-        transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: process.env.SMTP_EMAIL,
-                pass: process.env.SMTP_PASSWORD,
-            },
-        });
-    }
-    return transporter;
+  const eventRows = events
+    .map(
+      (e) =>
+        `<tr>
+                    <td style="padding:8px 12px;border:1px solid #ddd;">${e.title}</td>
+                    <td style="padding:8px 12px;border:1px solid #ddd;">${e.eventType}</td>
+                </tr>`
+    )
+    .join('');
+
+  // Build submission reminder section
+  const submissionEvents = events.filter((e) => e.eventType === 'ABSTRACT' || e.eventType === 'SUBMISSION');
+  let submissionReminder = '';
+  if (submissionEvents.length > 0) {
+    const items = submissionEvents
+      .map(
+        (e) =>
+          `<li><strong>${e.title}</strong> → Send to: <a href="mailto:${e.submissionEmail}">${e.submissionEmail}</a></li>`
+      )
+      .join('');
+    submissionReminder = `
+            <div style="background:#fff3cd;border:1px solid #ffc107;padding:12px;border-radius:6px;margin-top:16px;">
+                <strong>⚠️ Submission Reminder</strong>
+                <p>Please send your works for the following events before <strong>March 2, 2026 EOD</strong>:</p>
+                <ul>${items}</ul>
+            </div>
+        `;
+  }
+
+  const html = `
+        <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;">
+            <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:24px;border-radius:12px 12px 0 0;">
+                <h1 style="color:#fff;margin:0;">Registration Confirmed! 🎉</h1>
+                <p style="color:#e0e7ff;margin:4px 0 0;">GUSTO '26 — Government College of Engineering, Erode</p>
+            </div>
+            <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px;">
+                <p>Hi <strong>${name}</strong>,</p>
+                <p>Your registration for <strong>GUSTO '26</strong> has been confirmed!</p>
+
+                <div style="background:#f0fdf4;border:1px solid #22c55e;padding:12px;border-radius:8px;margin:16px 0;">
+                    <p style="margin:0;font-size:14px;">Your Unique Code</p>
+                    <p style="margin:4px 0 0;font-size:24px;font-weight:bold;color:#16a34a;letter-spacing:2px;">${uniqueCode}</p>
+                </div>
+
+                <h3>Your Events</h3>
+                <table style="width:100%;border-collapse:collapse;margin:8px 0;">
+                    <thead>
+                        <tr style="background:#f8fafc;">
+                            <th style="padding:8px 12px;border:1px solid #ddd;text-align:left;">Event</th>
+                            <th style="padding:8px 12px;border:1px solid #ddd;text-align:left;">Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>${eventRows}</tbody>
+                </table>
+
+                <p><strong>Amount Paid:</strong> ₹${amount}</p>
+
+                ${submissionReminder}
+
+                <div style="background:#dcfce7;border:1px solid #22c55e;padding:12px;border-radius:8px;margin-top:16px;text-align:center;">
+                    <p style="margin:0;font-size:14px;font-weight:bold;">💬 Join the GUSTO '26 WhatsApp Group</p>
+                    <p style="margin:4px 0 8px;font-size:12px;color:#6b7280;">Stay updated and connect with other participants</p>
+                    <a href="https://chat.whatsapp.com/PLACEHOLDER_GROUP_LINK" style="display:inline-block;background:#25D366;color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:13px;">Join WhatsApp Group</a>
+                </div>
+
+                <p style="margin-top:20px;color:#6b7280;font-size:13px;">
+                    Please keep your unique code safe. You'll need it for check-in on event day.
+                </p>
+            </div>
+        </div>
+    `;
+
+  await transporter.sendMail({
+    from: `"GUSTO '26" <${process.env.SMTP_EMAIL}>`,
+    to,
+    subject: `Registration Confirmed — ${uniqueCode} | GUSTO '26`,
+    html,
+  });
 }
 
-export async function sendRegistrationEmail(
-    to: string,
-    name: string,
-    regCode: string,
-    passTier: string,
-    events: EventDetail[]
-): Promise<void> {
-    const eventRows = events
-        .map(
-            (e) => `
-        <tr>
-          <td style="padding: 10px 14px; border-bottom: 1px solid #eee; font-weight: 600;">${e.title}</td>
-          <td style="padding: 10px 14px; border-bottom: 1px solid #eee;">${e.date}</td>
-          <td style="padding: 10px 14px; border-bottom: 1px solid #eee;">${e.time}</td>
-          <td style="padding: 10px 14px; border-bottom: 1px solid #eee;">${e.venue}</td>
-        </tr>`
-        )
-        .join("");
+interface AbstractRejectionData {
+  to: string;
+  name: string;
+  originalEvent: string;
+  fallbackEvent: string;
+}
 
-    const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="margin:0; padding:0; background:#f4f4f7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-  <div style="max-width:600px; margin:0 auto; padding:24px;">
-    <div style="background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.08);">
-      
-      <!-- Header -->
-      <div style="background: linear-gradient(135deg, #F54E00, #FF6B2B); padding:32px 24px; text-align:center;">
-        <h1 style="margin:0; color:#fff; font-size:24px; font-weight:700;">GUSTO'26</h1>
-        <p style="margin:6px 0 0; color:rgba(255,255,255,0.9); font-size:14px;">Registration Confirmed ✅</p>
-      </div>
-      
-      <!-- Body -->
-      <div style="padding:28px 24px;">
-        <p style="margin:0 0 16px; color:#333; font-size:15px;">Hi <strong>${name}</strong>,</p>
-        <p style="margin:0 0 20px; color:#555; font-size:14px; line-height:1.6;">
-          Thank you for registering for GUSTO'26! Your registration has been received and is being processed.
-        </p>
+export async function sendAbstractRejectionEmail(data: AbstractRejectionData) {
+  const { to, name, originalEvent, fallbackEvent } = data;
 
-        <!-- Registration Code -->
-        <div style="background:#FFF5F0; border:2px solid #F54E00; border-radius:10px; padding:20px; text-align:center; margin:0 0 24px;">
-          <p style="margin:0 0 6px; color:#666; font-size:12px; text-transform:uppercase; letter-spacing:1px; font-weight:600;">Your Registration Code</p>
-          <p style="margin:0; color:#F54E00; font-size:28px; font-weight:800; letter-spacing:3px;">${regCode}</p>
-          <p style="margin:8px 0 0; color:#888; font-size:11px;">Bring this code on the event day for check-in</p>
+  const html = `
+        <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;">
+            <div style="background:linear-gradient(135deg,#ef4444,#f97316);padding:24px;border-radius:12px 12px 0 0;">
+                <h1 style="color:#fff;margin:0;">Abstract Review Update</h1>
+                <p style="color:#fee2e2;margin:4px 0 0;">GUSTO '26 — Government College of Engineering, Erode</p>
+            </div>
+            <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px;">
+                <p>Hi <strong>${name}</strong>,</p>
+                <p>Unfortunately, your abstract for <strong>${originalEvent}</strong> was not shortlisted.</p>
+
+                <div style="background:#fef3c7;border:1px solid #f59e0b;padding:12px;border-radius:8px;margin:16px 0;">
+                    <p style="margin:0;"><strong>Good news!</strong> You've been automatically registered for your fallback event:</p>
+                    <p style="margin:8px 0 0;font-size:18px;font-weight:bold;color:#d97706;">${fallbackEvent}</p>
+                </div>
+
+                <p style="color:#6b7280;font-size:13px;">
+                    No action is needed on your part. Your registration remains valid.
+                </p>
+            </div>
         </div>
+    `;
 
-        <!-- Pass Info -->
-        <p style="margin:0 0 16px; color:#333; font-size:14px;">
-          <strong>Pass:</strong> ${passTier}
-        </p>
-
-        <!-- Events Table -->
-        <h3 style="margin:0 0 12px; color:#333; font-size:15px;">Your Registered Events</h3>
-        <table style="width:100%; border-collapse:collapse; font-size:13px; color:#444;">
-          <thead>
-            <tr style="background:#f8f8f8;">
-              <th style="padding:10px 14px; text-align:left; border-bottom:2px solid #eee;">Event</th>
-              <th style="padding:10px 14px; text-align:left; border-bottom:2px solid #eee;">Date</th>
-              <th style="padding:10px 14px; text-align:left; border-bottom:2px solid #eee;">Time</th>
-              <th style="padding:10px 14px; text-align:left; border-bottom:2px solid #eee;">Venue</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${eventRows}
-          </tbody>
-        </table>
-
-        <!-- Footer note -->
-        <div style="margin:24px 0 0; padding:16px; background:#f9f9fb; border-radius:8px; border-left:4px solid #F54E00;">
-          <p style="margin:0; color:#555; font-size:13px; line-height:1.5;">
-            📌 <strong>Important:</strong> Please carry your registration code and a valid college ID card on the event day.
-            Report to the registration desk for check-in.
-          </p>
-        </div>
-      </div>
-      
-      <!-- Footer -->
-      <div style="background:#f8f8f8; padding:16px 24px; text-align:center; border-top:1px solid #eee;">
-        <p style="margin:0; color:#999; font-size:12px;">
-          Government College of Engineering, Erode — Department of Information Technology
-        </p>
-        <p style="margin:4px 0 0; color:#bbb; font-size:11px;">gustogcee@gmail.com</p>
-      </div>
-    </div>
-  </div>
-</body>
-</html>`;
-
-    const mail = getTransporter();
-    await mail.sendMail({
-        from: `"GUSTO'26" <${process.env.SMTP_EMAIL}>`,
-        to,
-        subject: `Registration Confirmed — GUSTO'26 [${regCode}]`,
-        html,
-    });
+  await transporter.sendMail({
+    from: `"GUSTO '26" <${process.env.SMTP_EMAIL}>`,
+    to,
+    subject: `Abstract Update — ${originalEvent} | GUSTO '26`,
+    html,
+  });
 }
