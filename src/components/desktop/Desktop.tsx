@@ -193,15 +193,14 @@ export function Desktop() {
               try {
                 const el = document.documentElement;
                 if (!document.fullscreenElement && el.requestFullscreen) {
-                  el.requestFullscreen().catch(() => { });
+                  el.requestFullscreen().catch(() => {});
                 }
-              } catch { }
+              } catch {}
             }}
           />
         )}
       </AnimatePresence>
 
-      <DesktopWidgets />
       <MenuBar />
 
       <div
@@ -220,6 +219,8 @@ export function Desktop() {
           ))}
         </div>
       </div>
+
+      <DesktopWidgets />
 
       <WindowManager />
       <Dock />

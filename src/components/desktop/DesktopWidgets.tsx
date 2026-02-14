@@ -35,7 +35,7 @@ function pad(n: number): string {
 }
 
 export function DesktopWidgets() {
-  const { state } = useDesktop();
+  const { state, openApp } = useDesktop();
   const { isMobile } = useIsMobile();
   const [mounted, setMounted] = useState(false);
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
@@ -147,11 +147,21 @@ export function DesktopWidgets() {
             transition={{ duration: 0.8, delay: 0.3 }}
           >
             <div className="relative w-24 h-24 drop-shadow-2xl filter brightness-110">
-              <Image src="/logos/GCEE/white.png" alt="GCEE" fill className="object-contain" />
+              <Image
+                src="/logos/GCEE/white.png"
+                alt="GCEE"
+                fill
+                className="object-contain"
+              />
             </div>
             <div className="h-16 w-[2px] bg-white/20 rounded-full"></div>
             <div className="relative w-24 h-24 drop-shadow-2xl filter brightness-110">
-              <Image src="/logos/AIT/silver.png" alt="AIT" fill className="object-contain" />
+              <Image
+                src="/logos/AIT/silver.png"
+                alt="AIT"
+                fill
+                className="object-contain"
+              />
             </div>
           </motion.div>
           <motion.div
@@ -160,7 +170,9 @@ export function DesktopWidgets() {
             transition={{ duration: 0.8, delay: 0.5 }}
             className="flex flex-col items-center gap-1"
           >
-            <h2 className={`font-black uppercase tracking-[0.2em] ${textColor} text-base drop-shadow-lg max-w-[600px] text-center leading-relaxed whitespace-nowrap`}>
+            <h2
+              className={`font-black uppercase tracking-[0.2em] ${textColor} text-base drop-shadow-lg max-w-[600px] text-center leading-relaxed whitespace-nowrap`}
+            >
               Government College of Engineering, Erode
             </h2>
             <h3 className="text-[#FF6B35] text-sm font-black uppercase tracking-[0.3em] drop-shadow-md text-center">
@@ -219,7 +231,10 @@ export function DesktopWidgets() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
           >
-            <EventPromoWidget variant="desktop" />
+            <EventPromoWidget
+              variant="desktop"
+              onEventClick={() => openApp("events")}
+            />
           </motion.div>
         </div>
       )}

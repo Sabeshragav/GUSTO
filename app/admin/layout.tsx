@@ -14,19 +14,17 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body
-        className={inter.className}
-        style={{
-          margin: 0,
-          fontFamily: "'Inter', -apple-system, sans-serif",
-          background: "#0f1117",
-          color: "#e4e4e7",
-          minHeight: "100vh",
-        }}
-      >
-        {children}
-      </body>
-    </html>
+    <div
+      className={inter.className}
+      style={{
+        margin: 0,
+        fontFamily: "'Inter', -apple-system, sans-serif",
+        background: "#0f1117",
+        color: "#e4e4e7",
+        minHeight: "100vh",
+      }}
+    >
+      {children}
+    </div>
   );
 }
