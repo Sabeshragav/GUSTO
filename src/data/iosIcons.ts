@@ -12,6 +12,7 @@ const iosIconMap: Record<string, string> = {
     contact: "Contacts.svg",
     transport: "Maps.svg",
     register: "Freeform.svg",
+    browser: "Safari.svg",
 
     // ── Utilities ──
     terminal: "Terminal.svg",

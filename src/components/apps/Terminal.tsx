@@ -386,34 +386,56 @@ Available Commands:
 
   return (
     <div
-      className="h-full bg-[#1e1e1e] text-[#f0f0f0] font-mono text-sm p-4 overflow-auto"
+      className="h-full bg-[#1e1e1e] text-[#f0f0f0] font-mono text-sm flex flex-col"
       ref={containerRef}
       onClick={() => inputRef.current?.focus()}
     >
-      {lines.map((line, i) => (
-        <div
-          key={i}
-          className={`${line.type === 'input' ? 'text-warm-400' : 'text-warm-300'} ${
-            line.isAscii ? 'whitespace-pre' : 'whitespace-pre-wrap'
-          } leading-relaxed`}
-        >
-          {line.content}
-        </div>
-      ))}
-      <div className="flex items-center">
-        <span className="text-warm-500 mr-2">{getPrompt()}</span>
+      <div className="flex-1 overflow-auto p-4">
+        {lines.map((line, i) => (
+          <div
+            key={i}
+            className={`${line.type === 'input' ? 'text-warm-400' : 'text-warm-300'} ${
+              line.isAscii ? 'whitespace-pre' : 'whitespace-pre-wrap'
+            } leading-relaxed`}
+          >
+            {line.content}
+          </div>
+        ))}
+      </div>
+      <form
+        className="flex items-center gap-2 px-3 py-2 bg-[#151515] border-t border-white/10"
+        onSubmit={(e) => { e.preventDefault(); handleCommand(input); }}
+      >
+        <span className="text-warm-500 text-xs shrink-0 hidden sm:inline">{getPrompt()}</span>
+        <span className="text-warm-500 text-xs shrink-0 sm:hidden">$</span>
         <input
           ref={inputRef}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent outline-none text-warm-200 caret-warm-400"
+          onFocus={() => {
+            setTimeout(() => {
+              inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 300);
+          }}
+          className="flex-1 bg-transparent outline-none text-warm-200 caret-warm-400 min-w-0 text-base"
           autoFocus
           spellCheck={false}
+          autoCapitalize="off"
+          autoCorrect="off"
+          autoComplete="off"
+          enterKeyHint="send"
+          placeholder="Type a command..."
         />
-        <span className="w-2 h-5 bg-warm-400 animate-cursor-blink ml-0.5" />
-      </div>
+        <button
+          type="submit"
+          className="shrink-0 px-3 py-1.5 bg-warm-700 hover:bg-warm-600 active:bg-warm-500 text-warm-200 text-xs font-semibold rounded-lg transition-colors"
+        >
+          Run
+        </button>
+      </form>
     </div>
   );
 }
+

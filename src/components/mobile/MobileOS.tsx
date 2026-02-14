@@ -9,6 +9,7 @@ import { MobileStatusBar } from "./MobileStatusBar";
 import { IOSHomeIndicator } from "./IOSHomeIndicator";
 import { MobileAppDrawer, type MobileApp } from "./MobileAppDrawer";
 import { MobileRecentApps } from "./MobileRecentApps";
+import { MobileOnboarding } from "./MobileOnboarding";
 import { BootScreen } from "../system/BootScreen";
 
 import { useDesktop } from "../../contexts/DesktopContext";
@@ -65,7 +66,7 @@ const PAGE_1_APPS: MobileApp[] = [
   { id: "transport", name: "Transport", icon: "map" },
   { id: "calendar", name: "Calendar", icon: "calendarDays" },
   { id: "achievements", name: "Achievements", icon: "trophy" },
-  { id: "snake", name: "Snake", icon: "gamepad2" },
+  { id: "browser", name: "Browser", icon: "globe" },
   { id: "minesweeper", name: "Minesweeper", icon: "bomb" },
 ];
 
@@ -74,7 +75,7 @@ const PAGE_2_APPS: MobileApp[] = [
   { id: "team", name: "Team", icon: "users" },
   { id: "sponsors", name: "Sponsors", icon: "gem" },
   { id: "faq", name: "FAQ", icon: "help-circle" },
-  { id: "store", name: "Store", icon: "shopping-bag" },
+  { id: "snake", name: "Snake", icon: "gamepad2" },
   { id: "feedback", name: "Feedback", icon: "message-square" },
   { id: "about", name: "About", icon: "info" },
   { id: "register", name: "Register", icon: "user-plus" },
@@ -104,6 +105,7 @@ function IOSAppIcon({
   const iconUrl = getIOSIcon(app.id);
   return (
     <button
+      id={`app-icon-${app.id}`}
       onClick={() => onOpen(app.id)}
       className="flex flex-col items-center gap-1 active:scale-90 transition-transform duration-150"
     >
@@ -226,6 +228,7 @@ function renderApp(appId: string, data?: unknown) {
     case "spotify":
       return <Spotify />;
     case "register":
+    case "browser":
       return <RegisterPage data={data} />;
     default:
       return <PlaceholderApp name={appId} />;
@@ -435,6 +438,7 @@ function MobileOSContent() {
         {isBooting && <BootScreen onComplete={handleBootComplete} />}
       </AnimatePresence>
       <MobileStatusBar />
+      <MobileOnboarding isReady={!isBooting && !activeApp} />
 
       <AnimatePresence mode="wait">
         {activeApp ? (
@@ -453,6 +457,7 @@ function MobileOSContent() {
           >
             <div className="sticky top-0 z-10 h-11 min-h-[44px] flex items-center justify-between px-4 bg-[var(--surface-bg)]/95 backdrop-blur-md border-b border-[var(--border-color)]">
               <button
+                id="mobile-back-btn"
                 onClick={handleGoBack}
                 className="flex items-center gap-1 text-[#007AFF] text-sm font-medium active:opacity-50 transition-opacity"
               >
@@ -462,6 +467,7 @@ function MobileOSContent() {
                 {ALL_APPS.find((a) => a.id === activeApp)?.name ?? activeApp}
               </h1>
               <button
+                id="mobile-minimize-btn"
                 onClick={handleGoHome}
                 className="text-[#007AFF] active:opacity-50 transition-opacity"
                 aria-label="Minimize"
