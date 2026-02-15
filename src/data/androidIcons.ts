@@ -31,5 +31,5 @@ const androidIconMap: Record<string, string> = {
  */
 export function getAndroidIcon(appId: string): string | null {
     const filename = androidIconMap[appId];
-    return filename ? `/Android os icons/${filename}` : null;
+    return filename ? `/android_os_icons/${filename}` : null;
 }
