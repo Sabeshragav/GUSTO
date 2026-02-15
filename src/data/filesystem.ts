@@ -29,6 +29,18 @@ export const fileSystem: FileNode = {
       type: 'app',
       icon: 'map',
     },
+    {
+      id: 'gallery-app',
+      name: 'Gallery',
+      type: 'app',
+      icon: 'image',
+    },
+    {
+      id: 'about-app',
+      name: 'About',
+      type: 'app',
+      icon: 'info',
+    },
   ],
 };
 

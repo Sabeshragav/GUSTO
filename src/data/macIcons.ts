@@ -26,6 +26,10 @@ const macIconMap: Record<string, string> = {
     minesweeper: "Chess.svg",
     snake: "Swift Playgrounds.svg",
 
+    // ── Extra ──
+    gallery: "Photos.svg",
+    about: "System Information.svg",
+
     // ── System ──
     trash: "Trash Empty.svg",
     trashFull: "Trash Full.svg",

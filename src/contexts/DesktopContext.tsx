@@ -683,6 +683,18 @@ export function DesktopProvider({ children }: { children: ReactNode }) {
           width: 700,
           height: 650,
         },
+        gallery: {
+          id: "gallery",
+          title: "Gallery",
+          width: 700,
+          height: 550,
+        },
+        about: {
+          id: "about",
+          title: "About — GUSTO'26",
+          width: 500,
+          height: 600,
+        },
       };
 
       const config = appConfigs[appId];
