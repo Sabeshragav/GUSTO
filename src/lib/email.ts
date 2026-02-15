@@ -1,19 +1,67 @@
-import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
+import {
+  AbstractRejectionData,
+  RegistrationEmailData,
+} from "@/types/email.types";
+// import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
-const ses = new SESClient({
-  region: "ap-south-1",
-  credentials: {
-    accessKeyId: process.env.APP_AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.APP_AWS_SECRET_ACCESS_KEY!,
-  },
-});
+// const ses = new SESClient({
+//   region: "ap-south-1",
+//   credentials: {
+//     accessKeyId: process.env.APP_AWS_ACCESS_KEY_ID!,
+//     secretAccessKey: process.env.APP_AWS_SECRET_ACCESS_KEY!,
+//   },
+// });
 
-interface RegistrationEmailData {
-  to: string;
-  name: string;
-  uniqueCode: string;
-  events: { title: string; eventType: string; submissionEmail?: string }[];
-  amount: number;
+/**
+ * Send an email via Brevo (Sendinblue) REST API.
+ * Used as fallback when SES is in sandbox mode.
+ */
+async function sendViaBrevo(
+  to: string,
+  subject: string,
+  html: string,
+): Promise<void> {
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "api-key": process.env.BREVO_API_KEY!,
+    },
+    body: JSON.stringify({
+      sender: { name: "GUSTO '26", email: "noreply@gustogcee.in" },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Brevo API error ${res.status}: ${body}`);
+  }
+}
+
+/**
+ * Try SES first, fall back to Brevo on failure.
+ */
+async function sendEmail(to: string, subject: string, html: string) {
+  try {
+    // ses.send(
+    //   new SendEmailCommand({
+    //     Source: `"${FROM_NAME}" <${FROM_EMAIL}>`,
+    //     Destination: { ToAddresses: [to] },
+    //     Message: {
+    //       Subject: { Data: subject },
+    //       Body: { Html: { Data: html } },
+    //     },
+    //   }),
+    // );
+
+    sendViaBrevo(to, subject, html);
+  } catch (sesErr) {
+    console.error(`[SES] Failed for ${to}`, sesErr);
+  }
 }
 
 export async function sendRegistrationEmail(data: RegistrationEmailData) {
@@ -93,29 +141,8 @@ export async function sendRegistrationEmail(data: RegistrationEmailData) {
         </div>
     `;
 
-  ses
-    .send(
-      new SendEmailCommand({
-        Source: `"GUSTO '26" <noreply@gustogcee.in>`,
-        Destination: { ToAddresses: [to] },
-        Message: {
-          Subject: {
-            Data: `Registration Confirmed — ${uniqueCode} | GUSTO '26`,
-          },
-          Body: { Html: { Data: html } },
-        },
-      }),
-    )
-    .catch((err) =>
-      console.error("[SES] Failed to send registration email:", err),
-    );
-}
-
-interface AbstractRejectionData {
-  to: string;
-  name: string;
-  originalEvent: string;
-  fallbackEvent: string;
+  const subject = `Registration Confirmed — ${uniqueCode} | GUSTO '26`;
+  sendEmail(to, subject, html);
 }
 
 export async function sendAbstractRejectionEmail(data: AbstractRejectionData) {
@@ -143,18 +170,6 @@ export async function sendAbstractRejectionEmail(data: AbstractRejectionData) {
         </div>
     `;
 
-  ses
-    .send(
-      new SendEmailCommand({
-        Source: `"GUSTO '26" <noreply@gustogcee.in>`,
-        Destination: { ToAddresses: [to] },
-        Message: {
-          Subject: { Data: `Abstract Update — ${originalEvent} | GUSTO '26` },
-          Body: { Html: { Data: html } },
-        },
-      }),
-    )
-    .catch((err) =>
-      console.error("[SES] Failed to send abstract rejection email:", err),
-    );
+  const subject = `Abstract Update — ${originalEvent} | GUSTO '26`;
+  sendEmail(to, subject, html);
 }

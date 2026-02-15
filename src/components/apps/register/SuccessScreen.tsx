@@ -30,16 +30,16 @@ export function SuccessScreen({
         textArea.focus();
         textArea.select();
         try {
-          document.execCommand('copy');
+          document.execCommand("copy");
           setCopied(true);
         } catch (err) {
-          console.error('Fallback: Oops, unable to copy', err);
+          console.error("Fallback: Oops, unable to copy", err);
         }
         document.body.removeChild(textArea);
       }
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      console.error("Failed to copy text: ", err);
     }
   };
 
@@ -129,7 +129,7 @@ export function SuccessScreen({
 
         {/* WhatsApp Group Link */}
         <motion.a
-          href="https://chat.whatsapp.com/PLACEHOLDER_GROUP_LINK"
+          href="https://chat.whatsapp.com/IPTk81aEyoIEiiNOsRhc6g?mode=gi_t"
           target="_blank"
           rel="noopener noreferrer"
           initial={{ opacity: 0, y: 10 }}
