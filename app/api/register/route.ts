@@ -180,10 +180,34 @@ export async function POST(req: NextRequest) {
         } finally {
             client.release();
         }
-    } catch (err) {
+    } catch (err: any) {
         console.error('Registration error:', err);
+
+        // Build a verbose error response
+        const errorMessage = err?.message || 'Unknown error';
+        const errorCode = err?.code || null;
+
+        let detail = 'An unexpected error occurred during registration.';
+        if (errorCode === 'ECONNREFUSED' || errorCode === 'ENOTFOUND') {
+            detail = 'Unable to connect to the database. Please try again later.';
+        } else if (errorCode === '23505') {
+            detail = 'A duplicate record was detected. You may already be registered.';
+        } else if (errorCode === '23503') {
+            detail = 'A referenced record (e.g., event) was not found. Please refresh and try again.';
+        } else if (errorMessage.includes('S3') || errorMessage.includes('upload') || errorMessage.includes('putObject')) {
+            detail = 'Failed to upload payment screenshot. Please check the file and try again.';
+        } else if (errorMessage.includes('timeout') || errorMessage.includes('Timeout')) {
+            detail = 'The request timed out. Please check your connection and try again.';
+        } else if (errorMessage.includes('email') || errorMessage.includes('SMTP')) {
+            detail = 'Registration was saved but the confirmation email could not be sent. Please contact support.';
+        }
+
         return NextResponse.json(
-            { error: 'Registration failed. Please try again.' },
+            {
+                error: 'Registration failed.',
+                detail,
+                reason: errorMessage,
+            },
             { status: 500 }
         );
     }

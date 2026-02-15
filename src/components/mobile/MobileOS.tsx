@@ -73,11 +73,6 @@ const PAGE_1_APPS: MobileApp[] = [
 
 const PAGE_2_APPS: MobileApp[] = [
   { id: "gallery", name: "Gallery", icon: "image" },
-  { id: "team", name: "Team", icon: "users" },
-  { id: "sponsors", name: "Sponsors", icon: "gem" },
-  { id: "faq", name: "FAQ", icon: "help-circle" },
-  { id: "snake", name: "Snake", icon: "gamepad2" },
-  { id: "feedback", name: "Feedback", icon: "message-square" },
   { id: "about", name: "About", icon: "info" },
   { id: "register", name: "Register", icon: "user-plus" },
 ];
