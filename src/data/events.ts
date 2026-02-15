@@ -38,7 +38,7 @@ export const EVENTS: Event[] = [
     eventType: "ABSTRACT",
     date: "2026-03-06",
     time: "10:15 AM",
-    venue: "Main Auditorium",
+    venue: "Seminar Hall & HOD lab",
     description:
       "Present your innovative ideas and research work. Submit your abstract via email for shortlisting.",
     team_size: "1-3",
@@ -82,7 +82,7 @@ export const EVENTS: Event[] = [
     eventType: "DIRECT",
     date: "2026-03-06",
     time: "10:15 AM",
-    venue: "TBD",
+    venue: "Hardware lab & IT-lab 2",
     description:
       "Analyse, interpret, and correct code with precision — approach problems from a compiler's perspective.",
     team_size: "1",
@@ -91,6 +91,7 @@ export const EVENTS: Event[] = [
       "No devices allowed.",
       "Manual code analysis only.",
       "Two rounds: Think + Flip the Code.",
+      "Average time of the event is 50 mins"
     ],
     track: "B",
     timeSlot: "SLOT_1015",
@@ -102,7 +103,7 @@ export const EVENTS: Event[] = [
     eventType: "DIRECT",
     date: "2026-03-06",
     time: "11:00 AM",
-    venue: "TBD",
+    venue: "IT-lab 1 & IT-lab 3",
     description:
       "A two-stage programming challenge: blind coding + hunt debugging under time pressure.",
     team_size: "1",
@@ -122,7 +123,7 @@ export const EVENTS: Event[] = [
     eventType: "DIRECT",
     date: "2026-03-06",
     time: "11:00 AM",
-    venue: "TBD",
+    venue: "AD-21 IT department ",
     description:
       "AI-based prompt engineering competition — recreate images and replicate web pages using AI tools.",
     team_size: "1",

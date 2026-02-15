@@ -46,8 +46,8 @@ export const eventDetails = {
                 "name": "PRAVEENRAJ V",
                 "phone": "8838828045"
             },
-            "time": "10:30 AM",
-            "venue": "Main Auditorium",
+            "time": "10:15 AM",
+            "venue": "Seminar Hall & HOD lab",
             "submission_name": "Abstract Submission Email",
             "submission_Email": paperPresentationEmail
         },
@@ -127,15 +127,19 @@ export const eventDetails = {
                 }
             },
             "coordinator1": {
-                "name": "TBD",
+                "name": "S.Nandhakumar",
                 "phone": "0000000000"
             },
             "coordinator2": {
-                "name": "TBD",
+                "name": "B.Ganga",
                 "phone": "0000000000"
             },
-            "time": "TBD",
-            "venue": "TBD",
+            "coordinator3": {
+                "name": "M.Manisha",
+                "phone": "0000000000"
+            },
+            "time": "10:15 AM",
+            "venue": "Hardware lab & IT-lab 2",
             "registrationLink": thinkCompilerRegLink
         },
         {
@@ -178,15 +182,19 @@ export const eventDetails = {
                 }
             },
             "coordinator1": {
-                "name": "TBD",
+                "name": "A.Sanuktha",
                 "phone": "0000000000"
             },
             "coordinator2": {
-                "name": "TBD",
+                "name": "K.Divyasri",
                 "phone": "0000000000"
             },
-            "time": "TBD",
-            "venue": "TBD",
+            "coordinator3":{
+                "name":"P.Surya",
+                "phone":"0000000000"
+            },
+            "time": "11:00 AM",
+            "venue": "IT-lab 1 & IT-lab 3",
             "registrationLink": codeChaosRegLink
         },
         {
@@ -236,15 +244,19 @@ export const eventDetails = {
                 }
             },
             "coordinator1": {
-                "name": "TBD",
+                "name": "C.SanjayKanth",
                 "phone": "0000000000"
             },
             "coordinator2": {
-                "name": "TBD",
+                "name": "M.Rasiga",
                 "phone": "0000000000"
             },
-            "time": "TBD",
-            "venue": "TBD",
+            "coordinator3": {
+                "name": "M.Swetha",
+                "phone": "0000000000"
+            },
+            "time": "11:00 AM",
+            "venue": "AD-21 IT department",
             "registrationLink": promptXRegLink
         }
     ],
@@ -320,11 +332,11 @@ export const eventDetails = {
                 "The organizing committee reserves the right to modify rules if necessary."
             ],
             "coordinator1": {
-                "name": "TBD",
+                "name": "M.Deepak",
                 "phone": "0000000000"
             },
             "coordinator2": {
-                "name": "TBD",
+                "name": "S.Mari Sangeeth",
                 "phone": "0000000000"
             },
             "time": "Online Event",
@@ -372,15 +384,15 @@ export const eventDetails = {
                 }
             },
             "coordinator1": {
-                "name": "TBD",
+                "name": "P.Santhosh kumar",
                 "phone": "0000000000"
             },
             "coordinator2": {
-                "name": "TBD",
+                "name": "B.Kanimozhi",
                 "phone": "0000000000"
             },
-            "time": "TBD",
-            "venue": "TBD",
+            "time": "10:15 AM",
+            "venue": "AD-22 IT department",
             "registrationLink": iconIQRegLink
         }
     ]
