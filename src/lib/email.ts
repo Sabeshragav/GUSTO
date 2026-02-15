@@ -1,10 +1,10 @@
-import nodemailer from 'nodemailer';
+import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASSWORD,
+const ses = new SESClient({
+  region: "ap-south-2",
+  credentials: {
+    accessKeyId: process.env.APP_AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.APP_AWS_SECRET_ACCESS_KEY!,
   },
 });
 
@@ -25,20 +25,22 @@ export async function sendRegistrationEmail(data: RegistrationEmailData) {
         `<tr>
                     <td style="padding:8px 12px;border:1px solid #ddd;">${e.title}</td>
                     <td style="padding:8px 12px;border:1px solid #ddd;">${e.eventType}</td>
-                </tr>`
+                </tr>`,
     )
-    .join('');
+    .join("");
 
   // Build submission reminder section
-  const submissionEvents = events.filter((e) => e.eventType === 'ABSTRACT' || e.eventType === 'SUBMISSION');
-  let submissionReminder = '';
+  const submissionEvents = events.filter(
+    (e) => e.eventType === "ABSTRACT" || e.eventType === "SUBMISSION",
+  );
+  let submissionReminder = "";
   if (submissionEvents.length > 0) {
     const items = submissionEvents
       .map(
         (e) =>
-          `<li><strong>${e.title}</strong> → Send to: <a href="mailto:${e.submissionEmail}">${e.submissionEmail}</a></li>`
+          `<li><strong>${e.title}</strong> → Send to: <a href="mailto:${e.submissionEmail}">${e.submissionEmail}</a></li>`,
       )
-      .join('');
+      .join("");
     submissionReminder = `
             <div style="background:#fff3cd;border:1px solid #ffc107;padding:12px;border-radius:6px;margin-top:16px;">
                 <strong>⚠️ Submission Reminder</strong>
@@ -91,12 +93,22 @@ export async function sendRegistrationEmail(data: RegistrationEmailData) {
         </div>
     `;
 
-  await transporter.sendMail({
-    from: `"GUSTO '26" <${process.env.SMTP_EMAIL}>`,
-    to,
-    subject: `Registration Confirmed — ${uniqueCode} | GUSTO '26`,
-    html,
-  });
+  ses
+    .send(
+      new SendEmailCommand({
+        Source: `"GUSTO '26" <noreply@gustogcee.in>`,
+        Destination: { ToAddresses: [to] },
+        Message: {
+          Subject: {
+            Data: `Registration Confirmed — ${uniqueCode} | GUSTO '26`,
+          },
+          Body: { Html: { Data: html } },
+        },
+      }),
+    )
+    .catch((err) =>
+      console.error("[SES] Failed to send registration email:", err),
+    );
 }
 
 interface AbstractRejectionData {
@@ -131,10 +143,18 @@ export async function sendAbstractRejectionEmail(data: AbstractRejectionData) {
         </div>
     `;
 
-  await transporter.sendMail({
-    from: `"GUSTO '26" <${process.env.SMTP_EMAIL}>`,
-    to,
-    subject: `Abstract Update — ${originalEvent} | GUSTO '26`,
-    html,
-  });
+  ses
+    .send(
+      new SendEmailCommand({
+        Source: `"GUSTO '26" <noreply@gustogcee.in>`,
+        Destination: { ToAddresses: [to] },
+        Message: {
+          Subject: { Data: `Abstract Update — ${originalEvent} | GUSTO '26` },
+          Body: { Html: { Data: html } },
+        },
+      }),
+    )
+    .catch((err) =>
+      console.error("[SES] Failed to send abstract rejection email:", err),
+    );
 }
