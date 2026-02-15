@@ -25,6 +25,10 @@ const iosIconMap: Record<string, string> = {
     // ── Games ──
     minesweeper: "Chess.svg",
     snake: "Swift Playgrounds.svg",
+
+    // ── Extra ──
+    gallery: "Photos.svg",
+    about: "System Information.svg",
 };
 
 /**

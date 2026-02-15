@@ -20,6 +20,8 @@ import { ContactSection } from "../apps/ContactSection";
 import { TransportInfo } from "../apps/TransportInfo";
 import { RegisterPage } from "../apps/register/RegisterPage";
 import { BrowserChrome } from "../apps/register/BrowserChrome";
+import { Gallery } from "../apps/Gallery";
+import { About } from "../apps/About";
 
 export function WindowManager() {
   const { state } = useDesktop();
@@ -60,6 +62,10 @@ export function WindowManager() {
         return <ContactSection />;
       case "transport":
         return <TransportInfo />;
+      case "gallery":
+        return <Gallery />;
+      case "about":
+        return <About />;
       case "register":
         return <RegisterPage data={windowState.data} />;
       default:

@@ -32,6 +32,8 @@ import { Minesweeper } from "../apps/Minesweeper";
 import { SystemPreferences } from "../apps/SystemPreferences";
 import { Achievements } from "../apps/Achievements";
 import { Spotify } from "../apps/Spotify";
+import { Gallery } from "../apps/Gallery";
+import { About } from "../apps/About";
 import { RegisterPage } from "../apps/register/RegisterPage";
 import { BrowserChrome } from "../apps/register/BrowserChrome";
 
@@ -223,6 +225,10 @@ function renderApp(appId: string, data?: unknown) {
       return <Achievements />;
     case "spotify":
       return <Spotify />;
+    case "gallery":
+      return <Gallery />;
+    case "about":
+      return <About />;
     case "register":
     case "browser":
       return (
@@ -288,7 +294,7 @@ function MobileOSContent() {
   const reEnterFullscreen = useCallback(() => {
     setTimeout(() => {
       if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen?.().catch(() => {});
+        document.documentElement.requestFullscreen?.().catch(() => { });
       }
     }, 150);
   }, []);
@@ -305,7 +311,7 @@ function MobileOSContent() {
       } else if (!allowExitRef.current) {
         setTimeout(() => {
           if (!document.fullscreenElement && !allowExitRef.current) {
-            document.documentElement.requestFullscreen?.().catch(() => {});
+            document.documentElement.requestFullscreen?.().catch(() => { });
           }
         }, 200);
       }
@@ -319,8 +325,8 @@ function MobileOSContent() {
     setIsBooting(false);
     try {
       if (!document.fullscreenElement)
-        document.documentElement.requestFullscreen?.().catch(() => {});
-    } catch {}
+        document.documentElement.requestFullscreen?.().catch(() => { });
+    } catch { }
   }, []);
 
   const handleOpenApp = useCallback(
@@ -375,7 +381,7 @@ function MobileOSContent() {
         // Second press — intentionally exit fullscreen
         allowExitRef.current = true;
         if (document.fullscreenElement)
-          document.exitFullscreen?.().catch(() => {});
+          document.exitFullscreen?.().catch(() => { });
         return 0;
       });
     }
@@ -622,9 +628,8 @@ function MobileOSContent() {
               {HOME_PAGES.map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === currentPage ? "w-4 bg-white" : "w-1.5 bg-white/30"
-                  }`}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${i === currentPage ? "w-4 bg-white" : "w-1.5 bg-white/30"
+                    }`}
                 />
               ))}
             </div>

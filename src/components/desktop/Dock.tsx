@@ -37,6 +37,8 @@ const dockItems: DockItem[] = [
   },
   { id: "snake", name: "Snake", iconName: "gamepad", appId: "snake" },
   { id: "spotify", name: "Spotify", iconName: "music", appId: "spotify" },
+  { id: "gallery", name: "Gallery", iconName: "image", appId: "gallery" },
+  { id: "about", name: "About", iconName: "info", appId: "about" },
   {
     id: "register",
     name: "Register",
@@ -54,7 +56,7 @@ export function Dock() {
 
   // Auto-hide logic
   const [isVisible, setIsVisible] = useState(true);
-  
+
   // Check if any window is open and NOT minimized
   const hasOpenWindows = state.windows.some(w => !w.isMinimized);
 
@@ -79,7 +81,7 @@ export function Dock() {
       // If mouse at bottom, show
       if (e.clientY >= screenHeight - threshold) {
         setIsVisible(true);
-      } 
+      }
       // If mouse moves up, hide
       else if (e.clientY < screenHeight - hideThreshold) {
         setIsVisible(false);
@@ -88,11 +90,11 @@ export function Dock() {
 
     // Initial check when windows open/close or hover state changes
     if (!isHovered && hasOpenWindows) {
-        // We don't force hide immediately to avoid jarring UX, 
-        // but we start listening to mouse to decide when to hide.
-        // Actually, if we just switched to having open windows, we might want to default to hidden 
-        // unless mouse is already at bottom. 
-        // For simplicity, let's just attach listener.
+      // We don't force hide immediately to avoid jarring UX, 
+      // but we start listening to mouse to decide when to hide.
+      // Actually, if we just switched to having open windows, we might want to default to hidden 
+      // unless mouse is already at bottom. 
+      // For simplicity, let's just attach listener.
     }
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -269,9 +271,8 @@ function DockIcon({
 
       {/* Active Indicator */}
       <div
-        className={`w-1 h-1 rounded-full bg-[var(--text-primary)] transition-opacity ${
-          isOpen ? "opacity-100" : "opacity-0"
-        }`}
+        className={`w-1 h-1 rounded-full bg-[var(--text-primary)] transition-opacity ${isOpen ? "opacity-100" : "opacity-0"
+          }`}
       />
     </div>
   );

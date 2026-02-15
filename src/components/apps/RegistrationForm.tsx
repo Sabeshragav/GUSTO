@@ -120,7 +120,7 @@ export function RegistrationForm({ data }: { data?: unknown }) {
       setTimeout(() => {
         const el = document.documentElement;
         if (!document.fullscreenElement && el.requestFullscreen) {
-          el.requestFullscreen().catch(() => {});
+          el.requestFullscreen().catch(() => { });
         }
       }, 100);
     },
@@ -440,11 +440,10 @@ export function RegistrationForm({ data }: { data?: unknown }) {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className={`w-full px-3 py-3 text-xs font-bold border-2 border-dashed transition-colors ${
-                  screenshot
+                className={`w-full px-3 py-3 text-xs font-bold border-2 border-dashed transition-colors ${screenshot
                     ? "border-[#F54E00] bg-[#F54E00]/5 text-[#F54E00]"
                     : "border-[var(--border-color)] bg-[var(--surface-secondary)] text-[var(--text-muted)] hover:border-[var(--text-muted)]"
-                }`}
+                  }`}
                 style={{ borderRadius: "4px" }}
               >
                 {screenshot
@@ -496,11 +495,10 @@ export function RegistrationForm({ data }: { data?: unknown }) {
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className={`w-full px-4 py-3 text-sm font-bold border-2 transition-all duration-200 active:translate-y-[1px] ${
-              isSubmitting
+            className={`w-full px-4 py-3 text-sm font-bold border-2 transition-all duration-200 active:translate-y-[1px] ${isSubmitting
                 ? "bg-[var(--surface-secondary)] text-[var(--text-muted)] border-[var(--border-color)] cursor-wait"
                 : "bg-[#F54E00] text-white border-[#F54E00] hover:bg-[#D64000] hover:border-[#D64000]"
-            }`}
+              }`}
             style={{ borderRadius: "4px" }}
           >
             {isSubmitting ? (
