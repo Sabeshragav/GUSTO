@@ -55,22 +55,6 @@ export function MenuBar() {
   }, []);
 
   const handleLogoClick = () => {
-    setLogoClickCount((prev) => {
-      const newCount = prev + 1;
-      if (newCount >= 5) {
-        document.body.classList.toggle('dark-theme');
-        return 0;
-      }
-      return newCount;
-    });
-
-    if (logoClickTimer.current) {
-      clearTimeout(logoClickTimer.current);
-    }
-    logoClickTimer.current = setTimeout(() => {
-      setLogoClickCount(0);
-    }, 2000);
-
     setShowAppleMenu((prev) => !prev);
   };
 

@@ -29,12 +29,12 @@ function FormField({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wide">
+      <label className="text-sm font-bold text-[var(--text-secondary)] uppercase tracking-wide">
         {label}
       </label>
       {children}
       {error && (
-        <p className="text-[11px] text-red-400 font-medium mt-0.5">{error}</p>
+        <p className="text-xs text-red-400 font-medium mt-0.5">{error}</p>
       )}
     </div>
   );
@@ -46,15 +46,15 @@ export function TeamLeaderForm({
   isMobile,
 }: TeamLeaderFormProps) {
   const inputClass =
-    "w-full px-3 py-2.5 text-sm bg-[var(--surface-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-color)] rounded focus:outline-none focus:border-[var(--accent-color)] transition-colors placeholder:text-[var(--text-muted)]";
+    "w-full px-3 py-2.5 text-base bg-[var(--surface-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-color)] rounded focus:outline-none focus:border-[var(--accent-color)] transition-colors placeholder:text-[var(--text-muted)]";
 
   return (
     <div className="space-y-4">
       <div className="pb-2 border-b border-[var(--border-color)]">
-        <h3 className="text-sm font-bold text-[var(--text-primary)]">
+        <h3 className="text-base font-bold text-[var(--text-primary)]">
           👤 Your Details
         </h3>
-        <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
+        <p className="text-xs text-[var(--text-muted)] mt-0.5">
           Fill in your details to register for GUSTO &apos;26
         </p>
       </div>

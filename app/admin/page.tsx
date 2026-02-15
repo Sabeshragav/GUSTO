@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import * as XLSX from "xlsx";
 
 // ─── Types ───
 interface EventRegistration {
@@ -30,6 +32,7 @@ interface Registration {
   checked_in: boolean;
   check_in_time: string | null;
   created_at: string;
+  food_preference?: "VEG" | "NON_VEG";
   events: EventRegistration[];
   payment: Payment[] | null;
 }
@@ -38,6 +41,8 @@ interface Stats {
   total: number;
   checked_in: number;
   payment_verified: number;
+  veg_count: number;
+  non_veg_count: number;
   abstracts_pending: number;
 }
 
@@ -52,6 +57,20 @@ const EVENT_NAMES: Record<string, string> = {
   "short-film": "Short Film",
   "icon-iq": "Icon IQ",
 };
+
+// ─── Hooks ───
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
+}
 
 // ─── Styles ───
 const styles = {
@@ -132,11 +151,55 @@ const styles = {
   } as React.CSSProperties,
 };
 
+// ─── Toast Notification ───
+interface ToastMsg {
+  id: string;
+  type: "success" | "error";
+  message: string;
+}
+
+function Toast({ toast, onClose }: { toast: ToastMsg; onClose: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div
+      style={{
+        background: toast.type === "success" ? "#22c55e" : "#ef4444",
+        color: "white",
+        padding: "10px 16px",
+        borderRadius: "8px",
+        boxShadow: "0 4px 6px rgba(0,0,0,0.3)",
+        marginBottom: "10px",
+        fontSize: "13px",
+        fontWeight: 500,
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        animation: "fadeIn 0.3s ease-out",
+      }}
+    >
+      <span>{toast.type === "success" ? "✓" : "✕"}</span>
+      {toast.message}
+    </div>
+  );
+}
+
 // ─── Login Screen ───
 function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const [passkey, setPasskey] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Only auto-fill for convenience, but authentic source of truth is the cookie
+    const saved = localStorage.getItem("admin_passkey");
+    if (saved) {
+      setPasskey(saved);
+    }
+  }, []);
 
   const handleLogin = async () => {
     if (!passkey.trim()) {
@@ -153,6 +216,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
       });
       const data = await res.json();
       if (data.success) {
+        localStorage.setItem("admin_passkey", passkey);
         onLogin();
       } else {
         setError(data.message || "Invalid passkey");
@@ -226,19 +290,16 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   );
 }
 
+interface Stats {
+  total: number;
+  checked_in: number;
+  payment_verified: number;
+  veg_count: number;
+  non_veg_count: number;
+}
+
 // ─── Stats Bar ───
 function StatsBar({ stats }: { stats: Stats }) {
-  const items = [
-    { label: "Total", value: stats.total, color: "#818cf8" },
-    { label: "Checked In", value: stats.checked_in, color: "#22c55e" },
-    { label: "Paid ✓", value: stats.payment_verified, color: "#60a5fa" },
-    {
-      label: "Abstracts Pending",
-      value: stats.abstracts_pending,
-      color: "#fbbf24",
-    },
-  ];
-
   return (
     <div
       style={{
@@ -248,7 +309,13 @@ function StatsBar({ stats }: { stats: Stats }) {
         marginBottom: "20px",
       }}
     >
-      {items.map((item) => (
+      {[
+        { label: "Total Registrations", value: stats.total, color: "#fff" },
+        { label: "Checked In", value: stats.checked_in, color: "#22c55e" },
+        { label: "Payments Verified", value: stats.payment_verified, color: "#a855f7" },
+        { label: "Veg Count 🥬", value: stats.veg_count || 0, color: "#22c55e" },
+        { label: "Non-Veg Count 🍗", value: stats.non_veg_count || 0, color: "#ef4444" },
+      ].map((item) => (
         <div key={item.label} style={styles.card}>
           <div
             style={{
@@ -285,21 +352,38 @@ function RegistrationDetail({
 }: {
   reg: Registration;
   onClose: () => void;
-  onRefresh: () => void;
+  onRefresh: () => Promise<void>;
 }) {
   const [updating, setUpdating] = useState<string | null>(null);
+  const [toasts, setToasts] = useState<ToastMsg[]>([]);
+
+  const addToast = (type: "success" | "error", message: string) => {
+    const id = Math.random().toString(36).substring(7);
+    setToasts((prev) => [...prev, { id, type, message }]);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
 
   const handleCheckin = async () => {
     setUpdating("checkin");
     try {
-      await fetch("/api/admin/checkin", {
+      const res = await fetch("/api/admin/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uniqueCode: reg.unique_code }),
+        body: JSON.stringify({ 
+          code: reg.unique_code,
+          action: "checkin" 
+        }),
       });
-      onRefresh();
-    } catch {
-      // ignore
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Check-in failed");
+      
+      addToast("success", "User checked in successfully");
+      await onRefresh();
+    } catch (err: any) {
+      addToast("error", err.message || "Failed to check in");
     } finally {
       setUpdating(null);
     }
@@ -308,7 +392,7 @@ function RegistrationDetail({
   const handleEventAttendance = async (eventId: string, status: string) => {
     setUpdating(eventId);
     try {
-      await fetch("/api/admin/event-status", {
+      const res = await fetch("/api/admin/event-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -317,9 +401,13 @@ function RegistrationDetail({
           status,
         }),
       });
-      onRefresh();
-    } catch {
-      // ignore
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Update failed");
+
+      addToast("success", "Attendance updated");
+      await onRefresh();
+    } catch (err: any) {
+      addToast("error", err.message || "Failed to update attendance");
     } finally {
       setUpdating(null);
     }
@@ -331,7 +419,7 @@ function RegistrationDetail({
   ) => {
     setUpdating(`abstract-${eventId}`);
     try {
-      await fetch("/api/admin/abstract-review", {
+      const res = await fetch("/api/admin/abstract-review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -340,9 +428,36 @@ function RegistrationDetail({
           action,
         }),
       });
-      onRefresh();
-    } catch {
-      // ignore
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Review failed");
+      
+      addToast("success", `Abstract ${action.toLowerCase()}`);
+      await onRefresh();
+    } catch (err: any) {
+      addToast("error", err.message || "Failed to review abstract");
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handlePaymentStatus = async (status: "VERIFIED" | "REJECTED") => {
+    setUpdating("payment");
+    try {
+      const res = await fetch("/api/admin/payment-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: reg.id,
+          status,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Payment update failed");
+      
+      addToast("success", `Payment ${status.toLowerCase()}`);
+      await onRefresh();
+    } catch (err: any) {
+      addToast("error", err.message || "Failed to update payment");
     } finally {
       setUpdating(null);
     }
@@ -378,9 +493,33 @@ function RegistrationDetail({
           maxHeight: "85vh",
           overflow: "auto",
           margin: 0,
+          position: "relative",
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Toast Container */}
+        <div
+          style={{
+            position: "absolute",
+            top: "20px",
+            right: "20px",
+            left: "20px",
+            zIndex: 10,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            pointerEvents: "none",
+          }}
+        >
+          {toasts.map((toast) => (
+            <Toast
+              key={toast.id}
+              toast={toast}
+              onClose={() => removeToast(toast.id)}
+            />
+          ))}
+        </div>
+
         {/* Header */}
         <div
           style={{
@@ -391,21 +530,46 @@ function RegistrationDetail({
           }}
         >
           <div>
-            <h2
-              style={{ margin: "0 0 4px", fontSize: "18px", fontWeight: 700 }}
-            >
+            <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "4px" }}>
               {reg.name}
             </h2>
+            <div style={{ color: "#a1a1aa", fontSize: "13px" }}>
+              {reg.email} · {reg.mobile}
+            </div>
+            <div style={{ color: "#71717a", fontSize: "12px", marginTop: "2px" }}>
+              {reg.college} · {reg.year}
+            </div>
+            {reg.food_preference && (
+              <div 
+                style={{ 
+                  marginTop: "6px", 
+                  display: "inline-block",
+                  padding: "2px 8px",
+                  borderRadius: "4px",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  backgroundColor: reg.food_preference === "VEG" ? "#22c55e20" : "#ef444420",
+                  color: reg.food_preference === "VEG" ? "#22c55e" : "#ef4444",
+                  border: `1px solid ${reg.food_preference === "VEG" ? "#22c55e40" : "#ef444440"}`
+                }}
+              >
+                Food: {reg.food_preference === "VEG" ? "Veg 🥬" : "Non-Veg 🍗"}
+              </div>
+            )}
+          </div>
+          <div style={{ textAlign: "right" }}>
             <div
               style={{
-                fontFamily: "monospace",
-                fontSize: "16px",
-                fontWeight: 800,
-                color: "#F54E00",
-                letterSpacing: "2px",
+                fontSize: "24px",
+                fontWeight: 700,
+                color: "#fff",
+                letterSpacing: "1px",
               }}
             >
               {reg.unique_code}
+            </div>
+            <div style={{ fontSize: "11px", color: "#71717a" }}>
+              Registered on {new Date(reg.created_at).toLocaleDateString()}
             </div>
           </div>
           <button
@@ -516,7 +680,6 @@ function RegistrationDetail({
           )}
         </div>
 
-        {/* Payment */}
         {payment && (
           <div style={{ marginBottom: "20px" }}>
             <div
@@ -537,6 +700,7 @@ function RegistrationDetail({
                 alignItems: "center",
                 gap: "8px",
                 flexWrap: "wrap",
+                marginBottom: "8px",
               }}
             >
               <span
@@ -584,6 +748,42 @@ function RegistrationDetail({
                 </a>
               )}
             </div>
+            
+            {/* Payment Actions */}
+            {payment.status !== "VERIFIED" && (
+                <div style={{ display: "flex", gap: "8px" }}>
+                  {payment.status !== "VERIFIED" && (
+                     <button
+                        onClick={() => handlePaymentStatus("VERIFIED")}
+                        disabled={updating === "payment"}
+                        style={{
+                          ...styles.btn,
+                          ...styles.btnSuccess,
+                          padding: "4px 12px",
+                          fontSize: "11px",
+                          opacity: updating === "payment" ? 0.6 : 1,
+                        }}
+                      >
+                        {updating === "payment" ? "..." : "Verify Payment"}
+                      </button>
+                  )}
+                  {payment.status !== "REJECTED" && (
+                      <button
+                        onClick={() => handlePaymentStatus("REJECTED")}
+                        disabled={updating === "payment"}
+                        style={{
+                          ...styles.btn,
+                          ...styles.btnDanger,
+                          padding: "4px 12px",
+                          fontSize: "11px",
+                          opacity: updating === "payment" ? 0.6 : 1,
+                        }}
+                      >
+                        {updating === "payment" ? "..." : "Reject Payment"}
+                      </button>
+                  )}
+                </div>
+            )}
           </div>
         )}
 
@@ -761,20 +961,77 @@ function RegistrationDetail({
 }
 
 // ─── Dashboard ───
-function Dashboard() {
+function Dashboard({ onLogout }: { onLogout: () => void }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [searchCode, setSearchCode] = useState("");
-  const [searchResult, setSearchResult] = useState<Registration | null>(null);
-  const [searchError, setSearchError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 300);
+  const [suggestions, setSuggestions] = useState<Registration[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  
   const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
+
+  // Search Effect
+  useEffect(() => {
+    if (!debouncedSearch || debouncedSearch.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    const fetchSuggestions = async () => {
+      try {
+        const res = await fetch(`/api/admin/search?q=${encodeURIComponent(debouncedSearch)}`);
+        const data = await res.json();
+        if (data.results) {
+          setSuggestions(data.results);
+          setShowSuggestions(true);
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    fetchSuggestions();
+  }, [debouncedSearch]);
+
+  const selectUser = async (uniqueCode: string) => {
+    setShowSuggestions(false);
+    setSearchQuery("");
+    try {
+      const res = await fetch(`/api/admin/search?code=${encodeURIComponent(uniqueCode)}`);
+      const data = await res.json();
+      if (data.user) {
+        const merged = mergeSearchResult(data);
+        setSelectedReg(merged);
+      }
+    } catch {
+       // err
+    }
+  };
+
+  // Initialize filter from URL params
   const [filter, setFilter] = useState({
-    event: "",
-    paymentStatus: "",
-    checkedIn: "",
-    abstractStatus: "",
+    event: searchParams.get("event") || "",
+    paymentStatus: searchParams.get("paymentStatus") || "",
+    checkedIn: searchParams.get("checkedIn") || "",
+    abstractStatus: searchParams.get("abstractStatus") || "",
   });
+
+  // Update URL when filter changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (filter.event) params.set("event", filter.event);
+    if (filter.paymentStatus) params.set("paymentStatus", filter.paymentStatus);
+    if (filter.checkedIn) params.set("checkedIn", filter.checkedIn);
+    if (filter.abstractStatus) params.set("abstractStatus", filter.abstractStatus);
+    
+    router.replace(`${pathname}?${params.toString()}`);
+  }, [filter, pathname, router]);
   const [page, setPage] = useState(1);
   const PER_PAGE = 30;
 
@@ -795,13 +1052,65 @@ function Dashboard() {
       if (data.registrations) {
         setRegistrations(data.registrations);
         setStats(data.stats);
+        return data.registrations as Registration[];
       }
+      return [];
     } catch {
       // ignore
+      return [];
     } finally {
       setLoading(false);
     }
-  }, [filter]);
+  }, [
+    filter.event,
+    filter.paymentStatus,
+    filter.checkedIn,
+    filter.abstractStatus,
+  ]);
+
+  const handleExport = () => {
+    if (registrations.length === 0) return;
+
+    const data = registrations.map(reg => {
+       const payment = reg.payment?.[0];
+       // Flatten events for CSV? Or just list them.
+       // Let's create a row per registration.
+       const eventNames = reg.events.map(e => e.event_title).join(", ");
+       
+       return {
+         "Unique Code": reg.unique_code,
+         "Name": reg.name,
+         "Email": reg.email,
+         "Mobile": reg.mobile,
+         "College": reg.college,
+         "Year": reg.year,
+         "Checked In": reg.checked_in ? "Yes" : "No",
+         "Check In Time": reg.check_in_time ? new Date(reg.check_in_time).toLocaleString() : "",
+         "Payment Status": payment?.status || "N/A",
+         "Amount": payment?.amount || 0,
+         "Transaction ID": payment?.transaction_id || "",
+         "Events": eventNames,
+         "Registered At": new Date(reg.created_at).toLocaleString(),
+       };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
+    
+    // Format: GUSTO26_Registrations_DD-MM-YYYY_HH-MM.xlsx
+    const now = new Date();
+    const timestamp = now.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).replace(/[\/\,\s\:]/g, "-").replace(/--/g, "_");
+
+    XLSX.writeFile(workbook, `GUSTO26_Registrations_${timestamp}.xlsx`);
+  };
 
   useEffect(() => {
     fetchRegistrations();
@@ -818,41 +1127,35 @@ function Dashboard() {
       payment: data.payment ? [data.payment] : null,
     }) as unknown as Registration;
 
-  const handleSearch = async () => {
-    if (!searchCode.trim()) return;
-    setSearchError("");
-    setSearchResult(null);
 
-    try {
-      const res = await fetch(
-        `/api/admin/search?code=${encodeURIComponent(searchCode.trim())}`,
-      );
-      const data = await res.json();
 
-      if (res.ok && data.user) {
-        setSearchResult(mergeSearchResult(data));
+  const handleRefresh = async () => {
+    // 1. Re-fetch the main list
+    const newRegs = await fetchRegistrations(); 
+
+    // 2. If we have a selected registration, we must update it
+    if (selectedReg) {
+      // Try to find it in the new list first (saves a network call)
+      const found = newRegs?.find(r => r.id === selectedReg.id);
+      
+      if (found) {
+        setSelectedReg(found);
       } else {
-        setSearchError(data.error || "Not found");
-      }
-    } catch {
-      setSearchError("Network error");
-    }
-  };
-
-  const handleRefresh = () => {
-    fetchRegistrations();
-    if (searchResult) {
-      fetch(
-        `/api/admin/search?code=${encodeURIComponent(searchResult.unique_code)}`,
-      )
-        .then((r) => r.json())
-        .then((data) => {
+        // If not found (maybe pagination?), re-fetch individual
+        // logic similar to search refresh
+        try {
+          const r = await fetch(
+            `/api/admin/search?code=${encodeURIComponent(selectedReg.unique_code)}`,
+          );
+          const data = await r.json();
           if (data.user) {
-            const merged = mergeSearchResult(data);
-            setSearchResult(merged);
-            setSelectedReg(merged);
+             const merged = mergeSearchResult(data);
+             setSelectedReg(merged);
           }
-        });
+        } catch {
+          // ignore
+        }
+      }
     }
   };
 
@@ -874,110 +1177,111 @@ function Dashboard() {
           marginBottom: "24px",
         }}
       >
-        <div>
-          <h1 style={{ margin: "0 0 4px", fontSize: "22px", fontWeight: 700 }}>
-            GUSTO&apos;26 Admin
-          </h1>
-          <p style={{ margin: 0, color: "#71717a", fontSize: "13px" }}>
-            Event Management Dashboard
-          </p>
+        <h1 style={{ fontSize: "24px", fontWeight: 700, margin: 0 }}>
+          Admin Dashboard
+        </h1>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            onClick={fetchRegistrations}
+            style={{ ...styles.btn, ...styles.btnSecondary }}
+          >
+            ↻ Refresh
+          </button>
+          <button
+            onClick={handleExport}
+            style={{ ...styles.btn, background: "#22c55e", color: "white" }}
+          >
+            ↓ Export Excel
+          </button>
+          <button
+            onClick={onLogout}
+            style={{ ...styles.btn, ...styles.btnDanger }}
+          >
+            Logout
+          </button>
         </div>
-        <button
-          onClick={fetchRegistrations}
-          style={{ ...styles.btn, ...styles.btnSecondary }}
-        >
-          ↻ Refresh
-        </button>
       </div>
 
       {/* Stats */}
       {stats && <StatsBar stats={stats} />}
 
-      {/* Search Bar */}
       <div
         style={{
           ...styles.card,
-          display: "flex",
-          gap: "10px",
-          alignItems: "center",
+          position: "relative",
+          zIndex: 50,
         }}
       >
-        <div style={{ fontSize: "18px" }}>🔍</div>
-        <input
-          type="text"
-          value={searchCode}
-          onChange={(e) => setSearchCode(e.target.value.toUpperCase())}
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-          placeholder="Search by unique code (e.g. GST-A3X9K2)"
-          style={{
-            ...styles.input,
-            border: "none",
-            padding: "8px 0",
-            fontSize: "15px",
-            flex: 1,
-          }}
-        />
-        <button
-          onClick={handleSearch}
-          style={{ ...styles.btn, ...styles.btnPrimary }}
-        >
-          Search
-        </button>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+           <div style={{ fontSize: "18px" }}>🔍</div>
+           <input
+             type="text"
+             value={searchQuery}
+             onChange={(e) => setSearchQuery(e.target.value)}
+             placeholder="Search by name, email, mobile or code..."
+             style={{
+               ...styles.input,
+               border: "none",
+               padding: "8px 0",
+               fontSize: "15px",
+               flex: 1,
+             }}
+             onFocus={() => {
+                if(suggestions.length > 0) setShowSuggestions(true);
+             }}
+           />
+        </div>
+        
+        {/* Suggestions Dropdown */}
+        {showSuggestions && suggestions.length > 0 && (
+          <div
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: 0,
+              right: 0,
+              background: "#1f2028",
+              border: "1px solid #2a2b35",
+              borderRadius: "0 0 8px 8px",
+              marginTop: "4px",
+              maxHeight: "300px",
+              overflowY: "auto",
+              boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
+            }}
+          >
+            {suggestions.map(s => (
+               <div
+                 key={s.id}
+                 onClick={() => selectUser(s.unique_code)}
+                 style={{
+                   padding: "10px 14px",
+                   borderBottom: "1px solid #2a2b35",
+                   cursor: "pointer",
+                   display: "flex",
+                   justifyContent: "space-between",
+                   alignItems: "center"
+                 }}
+                 onMouseEnter={(e) => (e.currentTarget.style.background = "#2a2b35")}
+                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+               >
+                 <div>
+                   <div style={{fontWeight: 600, fontSize: "14px"}}>{s.name}</div>
+                   <div style={{fontSize: "12px", color: "#71717a"}}>{s.email} · {s.unique_code}</div>
+                 </div>
+                 <div style={{fontSize: "12px", color: s.checked_in ? "#22c55e" : "#ef4444"}}>
+                    {s.checked_in ? "Checked In" : ""}
+                 </div>
+               </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Search Result */}
-      {searchError && (
-        <div
-          style={{
-            ...styles.card,
-            background: "#ef444415",
-            borderColor: "#ef444430",
-            color: "#ef4444",
-            fontSize: "13px",
-            padding: "12px 16px",
-          }}
-        >
-          {searchError}
-        </div>
-      )}
+      {/* Remove old search result UI since we use modal now */}
+      {/* Search Result - REMOVED */}
 
-      {searchResult && (
-        <div
-          style={{
-            ...styles.card,
-            background: "#22c55e10",
-            borderColor: "#22c55e30",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            cursor: "pointer",
-          }}
-          onClick={() => setSelectedReg(searchResult)}
-        >
-          <div>
-            <div style={{ fontWeight: 600, fontSize: "14px" }}>
-              {searchResult.name}
-            </div>
-            <div style={{ color: "#71717a", fontSize: "12px" }}>
-              {searchResult.unique_code} · {searchResult.college}
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <span
-              style={{
-                ...styles.badge,
-                background: searchResult.checked_in ? "#22c55e20" : "#ef444420",
-                color: searchResult.checked_in ? "#22c55e" : "#ef4444",
-              }}
-            >
-              {searchResult.checked_in ? "Checked In" : "Not Checked In"}
-            </span>
-            <span style={{ color: "#71717a", fontSize: "12px" }}>
-              Click to view →
-            </span>
-          </div>
-        </div>
-      )}
+      {/* Search Result */}
+
 
       {/* Filters */}
       <div
@@ -1267,13 +1571,39 @@ function Dashboard() {
 }
 
 // ─── Main Page ───
+// ─── Main Page ───
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    // Check if session cookie is valid
+    fetch("/api/admin/me")
+      .then((res) => {
+        if (res.ok) {
+          setAuthenticated(true);
+        }
+      })
+      .finally(() => setChecking(false));
+  }, []);
+
+  if (checking) {
+    return (
+      <div style={{ ...styles.page, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ color: "#71717a" }}>Verifying session...</div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.page}>
       {authenticated ? (
-        <Dashboard />
+        <Suspense fallback={<div style={{padding: 20}}>Loading dashboard...</div>}>
+          <Dashboard onLogout={() => {
+            localStorage.removeItem("admin_passkey");
+            setAuthenticated(false);
+          }} />
+        </Suspense>
       ) : (
         <LoginScreen onLogin={() => setAuthenticated(true)} />
       )}

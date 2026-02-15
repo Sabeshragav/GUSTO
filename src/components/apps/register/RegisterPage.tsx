@@ -7,7 +7,7 @@ import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from "lucide-react";
 
-import { useIsMobile } from "../../../hooks/useIsMobile";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { useEventValidation } from "../../../hooks/useEventValidation";
 import { EVENTS, REGISTRATION_PRICE, type Event } from "../../../data/events";
 import {
@@ -54,6 +54,11 @@ const registrationSchema = z.object({
     .string()
     .min(1, "Transaction ID is required")
     .min(4, "Enter a valid transaction ID"),
+    
+  // Food Preference
+  foodPreference: z.enum(["VEG", "NON_VEG"], {
+    message: "Please choose Veg or Non-Veg properly",
+  }),
 
   // Teammates (dynamic)
   teammates: z.array(teammateSchema),
@@ -72,7 +77,7 @@ interface RegisterPageProps {
   data?: unknown;
 }
 
-import { useSEO } from "../../../hooks/useSEO";
+import { useSEO } from "@/hooks/useSEO";
 
 export function RegisterPage({ data }: RegisterPageProps) {
   useSEO("register");
@@ -128,6 +133,7 @@ export function RegisterPage({ data }: RegisterPageProps) {
       leaderCollege: "",
       leaderYear: "",
       transactionId: "",
+      // foodPreference: "VEG", // Removed to force selection
       teammates: [],
     },
   });
@@ -258,6 +264,7 @@ export function RegisterPage({ data }: RegisterPageProps) {
         );
         fd.append("fallbackSelections", JSON.stringify(fallbackSelections));
         fd.append("transactionId", txId);
+        fd.append("foodPreference", formData.foodPreference);
         fd.append("screenshot", screenshotFile);
 
         // Append teammate data as JSON

@@ -131,70 +131,19 @@ export function SystemPreferences() {
           <div className="space-y-6">
             <div>
               <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-4">Theme Mode</h3>
-              <div className="grid grid-cols-1 gap-3">
-                {/* Auto Option */}
-                <button
-                   onClick={handleAutoTheme}
-                   className={`relative p-4 rounded text-left transition-all border-2 ${
-                     isAuto
-                       ? 'bg-[var(--surface-primary)] border-[var(--ph-orange)]'
-                       : 'bg-[var(--surface-primary)] border-transparent hover:border-[var(--border-color)]'
-                   }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded bg-[var(--surface-secondary)]">
-                        <Smartphone size={20} className="text-[var(--text-primary)]" />
-                      </div>
-                      <div>
-                        <div className="font-bold text-[var(--text-primary)]">Auto (System)</div>
-                        <div className="text-xs text-[var(--text-secondary)] mt-0.5">Sync with system settings</div>
-                      </div>
-                    </div>
-                    {isAuto && (
-                      <div className="w-5 h-5 rounded-full bg-[var(--ph-orange)] flex items-center justify-center">
-                        <Check size={12} className="text-white" />
-                      </div>
-                    )}
+              <div className="p-4 rounded bg-[var(--surface-secondary)] border border-[var(--border-color)]">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded bg-[var(--surface-primary)]">
+                    <Moon size={20} className="text-[var(--text-primary)]" />
                   </div>
-                </button>
-
-                {availableThemes.map((theme: Theme) => {
-                  const isSelected = !isAuto && state.theme.id === theme.id;
-                  const Icon = theme.id === 'ph-light' ? Sun : Moon;
-                  
-                  return (
-                    <button
-                      key={theme.id}
-                      onClick={() => handleManualTheme(theme)}
-                      className={`relative p-4 rounded text-left transition-all border-2 ${
-                        isSelected
-                          ? 'bg-[var(--surface-primary)] border-[var(--ph-orange)]'
-                          : 'bg-[var(--surface-primary)] border-transparent hover:border-[var(--border-color)]'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                           <div className="p-2 rounded bg-[var(--surface-secondary)]">
-                            <Icon size={20} className="text-[var(--text-primary)]" />
-                          </div>
-                          <div>
-                            <div className="font-bold text-[var(--text-primary)]">{theme.name}</div>
-                            <div className="text-xs text-[var(--text-secondary)] mt-0.5">{theme.description}</div>
-                          </div>
-                        </div>
-                        {isSelected && (
-                          <div className="w-5 h-5 rounded-full bg-[var(--ph-orange)] flex items-center justify-center">
-                            <Check size={12} className="text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-2 mt-3 pl-[44px]">
-                        <ThemePreviewChip themeId={theme.id} />
-                      </div>
-                    </button>
-                  );
-                })}
+                  <div>
+                    <div className="font-bold text-[var(--text-primary)]">Dark Mode Active</div>
+                    <div className="text-xs text-[var(--text-secondary)] mt-0.5">Gusto OS is optimized for dark mode.</div>
+                  </div>
+                  <div className="ml-auto w-5 h-5 rounded-full bg-[var(--ph-orange)] flex items-center justify-center">
+                    <Check size={12} className="text-white" />
+                  </div>
+                </div>
               </div>
             </div>
 

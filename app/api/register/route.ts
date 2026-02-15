@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
             (formData.get('fallbackSelections') as string) || '{}'
         ) as Record<string, string>;
         const transactionId = formData.get('transactionId') as string;
+        const foodPreference = (formData.get('foodPreference') as string) || 'VEG';
         const screenshot = formData.get('screenshot') as File;
 
         // ── Basic validation ──
@@ -109,10 +110,10 @@ export async function POST(req: NextRequest) {
 
             // Insert user
             const userResult = await client.query(
-                `INSERT INTO users (name, email, mobile, college, year, unique_code)
-                 VALUES ($1, $2, $3, $4, $5, $6)
+                `INSERT INTO users (name, email, mobile, college, year, unique_code, food_preference)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7)
                  RETURNING id`,
-                [name, email, mobile, college, year, uniqueCode]
+                [name, email, mobile, college, year, uniqueCode, foodPreference]
             );
             const userId = userResult.rows[0].id;
 

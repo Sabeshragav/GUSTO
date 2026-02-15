@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Image from "next/image";
 import { useDesktop } from "../../contexts/DesktopContext";
@@ -46,31 +46,109 @@ const dockItems: DockItem[] = [
 ];
 
 export function Dock() {
-  const { state, openApp, focusWindow } = useDesktop();
+  const { state, openApp, focusWindow, minimizeWindow } = useDesktop();
   // const { isMobile } = useIsMobile(); // Removed
   const mouseX = useMotionValue<number | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const dockRef = useRef<HTMLDivElement>(null);
+
+  // Auto-hide logic
+  const [isVisible, setIsVisible] = useState(true);
+  
+  // Check if any window is open and NOT minimized
+  const hasOpenWindows = state.windows.some(w => !w.isMinimized);
+
+  useEffect(() => {
+    // If no windows are overlapping the desktop area, keep dock visible
+    if (!hasOpenWindows) {
+      setIsVisible(true);
+      return;
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const screenHeight = window.innerHeight;
+      const threshold = 20; // Distance from bottom to trigger show
+      const hideThreshold = 100; // Distance from bottom to trigger hide (hysteresis)
+
+      // If hovering dock, always show
+      if (isHovered) {
+        setIsVisible(true);
+        return;
+      }
+
+      // If mouse at bottom, show
+      if (e.clientY >= screenHeight - threshold) {
+        setIsVisible(true);
+      } 
+      // If mouse moves up, hide
+      else if (e.clientY < screenHeight - hideThreshold) {
+        setIsVisible(false);
+      }
+    };
+
+    // Initial check when windows open/close or hover state changes
+    if (!isHovered && hasOpenWindows) {
+        // We don't force hide immediately to avoid jarring UX, 
+        // but we start listening to mouse to decide when to hide.
+        // Actually, if we just switched to having open windows, we might want to default to hidden 
+        // unless mouse is already at bottom. 
+        // For simplicity, let's just attach listener.
+    }
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [isHovered, hasOpenWindows]);
+
 
   const handleAppClick = (appId: string) => {
+    // 1. Handle Mail specifically
+    if (appId === "email") {
+      window.open("mailto:gustoreg25gcee@gmail.com?subject=Gusto '26 Query", "_self");
+      return;
+    }
+
     const existingWindow = state.windows.find(
-      (w) => w.appId === appId && !w.isMinimized,
+      (w) => w.appId === appId
     );
 
     if (existingWindow) {
-      focusWindow(existingWindow.id);
+      // 2. If window is already focused and not minimized, minimize it
+      if (state.activeWindowId === existingWindow.id && !existingWindow.isMinimized) {
+        minimizeWindow(existingWindow.id);
+      } else {
+        // 3. Otherwise (minimized or background), bring to front
+        focusWindow(existingWindow.id);
+      }
     } else {
+      // 4. Not open -> open it
       openApp(appId);
     }
   };
 
   const handleTrashClick = () => {
-    openApp("trash");
+    const trashWindow = state.windows.find((w) => w.appId === "trash");
+    if (trashWindow) {
+      if (state.activeWindowId === trashWindow.id && !trashWindow.isMinimized) {
+        minimizeWindow(trashWindow.id);
+      } else {
+        focusWindow(trashWindow.id);
+      }
+    } else {
+      openApp("trash");
+    }
   };
 
   return (
     <motion.div
+      ref={dockRef}
       onMouseMove={(e) => mouseX.set(e.pageX)}
       onMouseLeave={() => mouseX.set(null)}
-      className="fixed left-1/2 -translate-x-1/2 z-[9998] bottom-10"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseOut={() => setIsHovered(false)}
+      initial={{ x: "-50%", y: 0 }}
+      animate={{ x: "-50%", y: isVisible ? 0 : 100 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="fixed left-1/2 z-[9998] bottom-4"
     >
       <div
         className="dock-container flex items-end shadow-dock gap-3 px-3 py-3"

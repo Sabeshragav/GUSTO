@@ -61,7 +61,7 @@ export function WindowManager() {
       case "transport":
         return <TransportInfo />;
       case "register":
-        return <BrowserChrome><RegisterPage data={windowState.data} /></BrowserChrome>;
+        return <RegisterPage data={windowState.data} />;
       default:
         return (
           <div className="p-4 text-[var(--text-muted)]">

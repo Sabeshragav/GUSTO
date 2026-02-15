@@ -3,6 +3,8 @@ import { validateAdmin } from '../auth';
 import { query } from '@/lib/db';
 import { EVENTS } from '@/data/events';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     const authError = validateAdmin(req);
     if (authError) return authError;
@@ -26,14 +28,22 @@ export async function GET(req: NextRequest) {
     if (abstractFilter) {
         conditions.push(`er.status = $${paramIndex++}`);
         params.push(abstractFilter);
+        // Only consider abstract-based events for this filter
+        conditions.push(`er.event_id IN ('paper-presentation', 'project-presentation')`);
     }
     if (paymentFilter) {
         conditions.push(`p.status = $${paramIndex++}`);
         params.push(paymentFilter);
     }
     if (checkinFilter !== null && checkinFilter !== undefined && checkinFilter !== '') {
-        conditions.push(`u.checked_in = $${paramIndex++}`);
-        params.push(checkinFilter === 'true');
+        // Handle NULL as false for not checked in
+        if (checkinFilter === 'false') {
+             conditions.push(`(u.checked_in = $${paramIndex++} OR u.checked_in IS NULL)`);
+             params.push(false);
+        } else {
+             conditions.push(`u.checked_in = $${paramIndex++}`);
+             params.push(true);
+        }
     }
     if (attendanceFilter) {
         conditions.push(`er.attendance_status = $${paramIndex++}`);
@@ -42,11 +52,10 @@ export async function GET(req: NextRequest) {
 
     const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
 
-    // Fetch registrations with events and payments
-    const result = await query(
+        const result = await query(
         `SELECT
             u.id, u.name, u.email, u.mobile, u.college, u.year,
-            u.unique_code, u.checked_in, u.check_in_time, u.created_at,
+            u.unique_code, u.checked_in, u.check_in_time, u.created_at, u.food_preference,
             COALESCE(
                 json_agg(
                     DISTINCT jsonb_build_object(
@@ -92,11 +101,9 @@ export async function GET(req: NextRequest) {
             COUNT(DISTINCT u.id) as total,
             COUNT(DISTINCT CASE WHEN u.checked_in = true THEN u.id END) as checked_in,
             COUNT(DISTINCT CASE WHEN p.status = 'VERIFIED' THEN u.id END) as payment_verified,
-            COUNT(CASE WHEN er.status = 'CONFIRMED' AND EXISTS (
-                SELECT 1 FROM event_registrations er2
-                WHERE er2.user_id = u.id AND er2.fallback_event_id IS NOT NULL
-                AND er2.status = 'CONFIRMED'
-            ) THEN 1 END) as abstracts_pending
+            COUNT(DISTINCT CASE WHEN u.food_preference = 'VEG' THEN u.id END) as veg_count,
+            COUNT(DISTINCT CASE WHEN u.food_preference = 'NON_VEG' THEN u.id END) as non_veg_count,
+            COUNT(DISTINCT CASE WHEN er.status = 'CONFIRMED' AND er.event_id IN ('paper-presentation', 'project-presentation') THEN u.id END) as abstracts_count
         FROM users u
         LEFT JOIN event_registrations er ON u.id = er.user_id
         LEFT JOIN payments p ON u.id = p.user_id

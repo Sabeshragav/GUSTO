@@ -122,152 +122,185 @@ export function Finder({ windowId, data }: FinderProps) {
   };
 
   return (
-    <div className="flex h-full">
-      <div className="hidden md:flex w-48 bg-desktop-surface/50 border-r border-warm-800/30 flex-col">
-        <div className="p-3">
-          <p className="text-xs text-warm-400 uppercase tracking-wider mb-2 font-medium ml-2">
+    <div className="flex h-full bg-[var(--surface-primary)]/80 backdrop-blur-2xl text-[var(--text-primary)]">
+      {/* Sidebar - Translucent & Blur */}
+      <div className="hidden md:flex w-52 flex-col pt-4 pb-4 px-2 border-r border-[var(--border-color)] bg-[var(--surface-secondary)]/30 backdrop-blur-xl">
+        <div className="mb-2 px-2">
+          <p className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2 opacity-70">
             Favorites
           </p>
-          {sidebarItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentFolder.id === item.folder.id;
-            return (
-              <button
-                key={item.id}
-                className={`w-full flex items-center gap-2 px-2 py-2 rounded-md text-left text-sm transition-colors ${
-                  isActive
-                    ? "bg-[var(--ph-orange)] text-white font-medium shadow-sm"
-                    : "text-warm-300 hover:bg-white/5 hover:text-white"
-                }`}
-                onClick={() => navigateTo(item.folder)}
-              >
-                <Icon size={18} />
-                <span className="truncate">{item.name}</span>
-              </button>
-            );
-          })}
+          <div className="space-y-0.5">
+            {sidebarItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentFolder.id === item.folder.id;
+              return (
+                <button
+                  key={item.id}
+                  className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? "bg-[var(--ph-orange)]/10 text-[var(--ph-orange)]"
+                      : "text-[var(--text-secondary)] hover:bg-[var(--surface-secondary)] hover:text-[var(--text-primary)]"
+                  }`}
+                  onClick={() => navigateTo(item.folder)}
+                >
+                  <Icon size={16} strokeWidth={isActive ? 2.5 : 2} className={isActive ? "text-[var(--ph-orange)]" : "text-[var(--text-tertiary)]"} />
+                  <span className="truncate tracking-tight">{item.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        
+        <div className="mt-auto px-4 pb-2">
+          <div className="h-[1px] bg-[var(--border-color)]/50 mb-4 w-full" />
+          <div className="flex items-center gap-2 text-[var(--text-tertiary)]">
+            <div className="w-2 h-2 rounded-full bg-green-500/50 animate-pulse" />
+            <span className="text-[10px] font-medium uppercase tracking-wider">Connected</span>
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col">
-        <div className="h-10 flex items-center justify-between px-3 border-b border-warm-800/30 bg-desktop-surface/30">
-          <div className="flex items-center gap-1">
-            <button
-              className={`p-1 rounded hover:bg-warm-700/30 ${
-                historyIndex <= 0
-                  ? "opacity-30 cursor-not-allowed"
-                  : "text-warm-300"
-              }`}
-              onClick={goBack}
-              disabled={historyIndex <= 0}
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <button
-              className={`p-1 rounded hover:bg-warm-700/30 ${
-                historyIndex >= history.length - 1
-                  ? "opacity-30 cursor-not-allowed"
-                  : "text-warm-300"
-              }`}
-              onClick={goForward}
-              disabled={historyIndex >= history.length - 1}
-            >
-              <ChevronRight size={18} />
-            </button>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col bg-[var(--surface-bg)]/50">
+        {/* Toolbar */}
+        <div className="h-12 flex items-center justify-between px-4 border-b border-[var(--border-color)] bg-[var(--surface-primary)]/40 backdrop-blur-md">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-[var(--surface-secondary)]/50 p-0.5 rounded-lg border border-[var(--border-color)]/50">
+              <button
+                className={`p-1.5 rounded-md hover:bg-[var(--surface-elevated)] transition-colors ${
+                  historyIndex <= 0
+                    ? "opacity-30 cursor-not-allowed text-[var(--text-secondary)]"
+                    : "text-[var(--text-primary)]"
+                }`}
+                onClick={goBack}
+                disabled={historyIndex <= 0}
+              >
+                <ChevronLeft size={16} strokeWidth={2.5} />
+              </button>
+              <button
+                className={`p-1.5 rounded-md hover:bg-[var(--surface-elevated)] transition-colors ${
+                  historyIndex >= history.length - 1
+                    ? "opacity-30 cursor-not-allowed text-[var(--text-secondary)]"
+                    : "text-[var(--text-primary)]"
+                }`}
+                onClick={goForward}
+                disabled={historyIndex >= history.length - 1}
+              >
+                <ChevronRight size={16} strokeWidth={2.5} />
+              </button>
+            </div>
+            
+            <span className="text-[var(--text-primary)] font-bold text-sm ml-2 hidden sm:block">
+              {currentFolder.name}
+            </span>
           </div>
 
-          <div className="flex items-center gap-1 text-sm text-warm-400">
-            {breadcrumbs.map((crumb, index) => (
-              <span key={index} className="flex items-center">
-                {index > 0 && <ChevronRight size={14} className="mx-1" />}
-                <span
-                  className={
-                    index === breadcrumbs.length - 1 ? "text-warm-200" : ""
-                  }
-                >
-                  {crumb}
-                </span>
-              </span>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2 bg-[var(--surface-secondary)]/50 p-0.5 rounded-lg border border-[var(--border-color)]/50">
             <button
-              className={`p-1 rounded hover:bg-white/10 transition-colors ${
-                viewMode === "grid" ? "text-white bg-white/10" : "text-warm-400"
+              className={`p-1.5 rounded-md transition-all ${
+                viewMode === "grid" 
+                  ? "bg-[var(--surface-elevated)] text-[var(--text-primary)] shadow-sm" 
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
               onClick={() => setViewMode("grid")}
             >
-              <LayoutGrid size={16} />
+              <LayoutGrid size={15} />
             </button>
             <button
-              className={`p-1 rounded hover:bg-white/10 transition-colors ${
-                viewMode === "list" ? "text-white bg-white/10" : "text-warm-400"
+              className={`p-1.5 rounded-md transition-all ${
+                viewMode === "list" 
+                  ? "bg-[var(--surface-elevated)] text-[var(--text-primary)] shadow-sm" 
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
               onClick={() => setViewMode("list")}
             >
-              <List size={16} />
+              <List size={15} />
             </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto p-4">
+        {/* Content */}
+        <div className="flex-1 overflow-auto p-4 md:p-6 custom-scrollbar">
+          {/* Breadcrumbs */}
+          <div className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)] mb-6 px-1">
+             <Home size={12} className="opacity-50" />
+             {breadcrumbs.map((crumb, index) => (
+              <span key={index} className="flex items-center gap-1.5">
+                 <ChevronRight size={10} className="opacity-30" />
+                 <span className={index === breadcrumbs.length - 1 ? "font-semibold text-[var(--text-primary)]" : "hover:text-[var(--text-primary)] transition-colors cursor-pointer"}>
+                   {crumb}
+                 </span>
+              </span>
+             ))}
+          </div>
+
           {currentFolder.children && currentFolder.children.length > 0 ? (
             viewMode === "grid" ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <motion.div 
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+              >
                 {currentFolder.children.map((item) => {
                   const Icon = getItemIcon(item);
                   const isSelected = selectedItem === item.id;
                   return (
-                    // ...
-
                     <motion.button
                       key={item.id}
-                      className={`flex flex-col items-center p-3 rounded-lg transition-colors ${
-                        isSelected ? "bg-warm-700/40" : "hover:bg-warm-700/20"
+                      className={`group flex flex-col items-center p-3 rounded-xl transition-all duration-200 border ${
+                        isSelected 
+                          ? "bg-[var(--ph-orange)]/10 border-[var(--ph-orange)]/30 backdrop-blur-sm shadow-sm" 
+                          : "bg-transparent border-transparent hover:bg-[var(--surface-secondary)]/50 hover:border-[var(--border-color)]/30"
                       }`}
                       onClick={() => handleItemClick(item)}
                       onDoubleClick={() => handleItemDoubleClick(item)}
-                      whileHover={{
-                        scale: 1.08,
-                        backgroundColor: "rgba(255,255,255,0.05)",
-                      }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 400,
-                        damping: 15,
-                      }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      {item.type === "folder" ? (
-                        <MacFolder size={48} />
-                      ) : (
-                        <div className="scale-125 origin-bottom">
-                          <FilePreview
-                            type={item.type || "file"}
-                            name={item.name}
-                          />
-                        </div>
-                      )}
-                      <span className="text-xs text-[var(--text-primary)] mt-3 text-center leading-tight max-w-full font-medium">
+                      <div className="relative mb-3 drop-shadow-md transition-transform duration-200 group-hover:-translate-y-1">
+                        {item.type === "folder" ? (
+                          <MacFolder size={56} />
+                        ) : (
+                          <div className="mt-1">
+                             <Icon size={48} strokeWidth={1} className={
+                                item.type === "image" ? "text-purple-400" :
+                                item.type === "pdf" ? "text-red-400" :
+                                "text-[var(--text-secondary)]"
+                             } />
+                          </div>
+                        )}
+                      </div>
+                      <span className={`text-[11px] md:text-xs font-medium text-center leading-tight max-w-full px-1 line-clamp-2 ${
+                        isSelected ? "text-[var(--ph-orange)]" : "text-[var(--text-primary)]"
+                      }`}>
                         {item.name}
                       </span>
                     </motion.button>
                   );
                 })}
-              </div>
+              </motion.div>
             ) : (
-              <div className="space-y-1">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex flex-col gap-0.5"
+              >
+                <div className="flex px-4 py-2 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--border-color)] mb-1">
+                  <span className="flex-1">Name</span>
+                  <span className="w-24">Kind</span>
+                  <span className="w-24 text-right">Size</span>
+                </div>
                 {currentFolder.children.map((item) => {
                   const Icon = getItemIcon(item);
                   const isSelected = selectedItem === item.id;
                   return (
                     <button
                       key={item.id}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors border border-transparent ${
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-left transition-colors border border-transparent group ${
                         isSelected
-                          ? "bg-[var(--ph-orange)]/20 border-[var(--ph-orange)]/30"
-                          : "hover:bg-white/5 hover:border-white/10"
+                          ? "bg-[var(--ph-orange)]/10 border-[var(--ph-orange)]/20"
+                          : "hover:bg-[var(--surface-secondary)]/50 border-transparent hover:border-[var(--border-color)]/30"
                       }`}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -281,23 +314,28 @@ export function Finder({ windowId, data }: FinderProps) {
                       {item.type === "folder" ? (
                         <MacFolder size={20} />
                       ) : (
-                        <Icon size={20} className="text-warm-200" />
+                        <Icon size={20} className="text-[var(--text-secondary)]" />
                       )}
-                      <span className="text-sm text-warm-100 font-medium">
+                      <span className={`text-sm font-medium flex-1 ${isSelected ? "text-[var(--ph-orange)]" : "text-[var(--text-primary)]"}`}>
                         {item.name}
                       </span>
-                      <span className="text-xs text-warm-500 ml-auto capitalize">
+                      <span className="text-xs text-[var(--text-muted)] w-24 capitalize opacity-70">
                         {item.type}
+                      </span>
+                      <span className="text-xs text-[var(--text-tertiary)] w-24 text-right font-mono opacity-50">
+                        --
                       </span>
                     </button>
                   );
                 })}
-              </div>
+              </motion.div>
             )
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-warm-500">
-              <Folder size={48} strokeWidth={1} />
-              <p className="mt-2 text-sm">This folder is empty</p>
+            <div className="flex flex-col items-center justify-center h-64 text-[var(--text-muted)] animate-fade-in">
+              <div className="p-4 rounded-full bg-[var(--surface-secondary)]/50 mb-3">
+                 <Folder size={32} strokeWidth={1.5} className="opacity-50" />
+              </div>
+              <p className="text-sm font-medium">Empty Folder</p>
             </div>
           )}
         </div>

@@ -22,10 +22,10 @@ export function FallbackStep({
   return (
     <div className="space-y-4">
       <div className="pb-2 border-b border-[var(--border-color)]">
-        <h3 className="text-sm font-bold text-[var(--text-primary)]">
+        <h3 className="text-base font-bold text-[var(--text-primary)]">
           🔄 Fallback Events
         </h3>
-        <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
+        <p className="text-xs text-[var(--text-muted)] mt-0.5">
           Choose a fallback event for each abstract-based event. If your
           abstract is not shortlisted, you&apos;ll be auto-registered for the
           fallback.
@@ -34,7 +34,7 @@ export function FallbackStep({
 
       {abstractEvents.length === 0 ? (
         <div className="p-4 rounded-lg border border-[var(--border-color)] bg-[var(--surface-secondary)] text-center">
-          <p className="text-[11px] text-[var(--text-muted)]">
+          <p className="text-sm text-[var(--text-muted)]">
             ✅ No abstract events selected — no fallbacks needed. You can
             proceed to the next step.
           </p>
@@ -53,17 +53,17 @@ export function FallbackStep({
                 key={ae.id}
                 className="p-3 rounded-lg bg-purple-500/5 border border-[var(--border-color)]"
               >
-                <p className="text-[11px] text-purple-300 font-semibold mb-1">
+                <p className="text-xs text-purple-300 font-semibold mb-1">
                   ⚠️ Fallback for &quot;{ae.title}&quot;
                 </p>
-                <p className="text-[9px] text-[var(--text-muted)] mb-2">
+                <p className="text-[10px] text-[var(--text-muted)] mb-2">
                   If your abstract is rejected, you&apos;ll be auto-registered
                   for this event instead:
                 </p>
                 <select
                   value={fallbackSelections[ae.id] || ""}
                   onChange={(e) => onFallbackChange(ae.id, e.target.value)}
-                  className="w-full text-[11px] px-2 py-1.5 rounded border border-[var(--border-color)] bg-[var(--surface-primary)] text-[var(--text-primary)]"
+                  className="w-full text-base px-2 py-2 rounded border border-[var(--border-color)] bg-[var(--surface-primary)] text-[var(--text-primary)] cursor-pointer"
                 >
                   <option value="">Select fallback event...</option>
                   {validFallbacks.map((e) => (
