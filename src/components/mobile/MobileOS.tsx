@@ -33,7 +33,7 @@ import { SystemPreferences } from "../apps/SystemPreferences";
 import { Achievements } from "../apps/Achievements";
 import { Spotify } from "../apps/Spotify";
 import { RegisterPage } from "../apps/register/RegisterPage";
-import { BrowserChrome } from "../apps/register/BrowserChrome";
+// import { BrowserChrome } from "../apps/register/BrowserChrome"; // Removed
 
 // ── Constants ──
 
@@ -225,11 +225,7 @@ function renderApp(appId: string, data?: unknown) {
       return <Spotify />;
     case "register":
     case "browser":
-      return (
-        <BrowserChrome>
-          <RegisterPage data={data} />
-        </BrowserChrome>
-      );
+      return <RegisterPage data={data} />;
     default:
       return <PlaceholderApp name={appId} />;
   }

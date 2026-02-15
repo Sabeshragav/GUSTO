@@ -223,7 +223,7 @@ export function Desktop() {
       <DesktopWidgets />
 
       <WindowManager />
-      <Dock />
+      {!isBooting && <Dock />}
 
       <DesktopOnboarding isReady={!isBooting} />
 

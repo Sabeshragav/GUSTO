@@ -5,31 +5,31 @@
 @tailwind utilities;
 
 :root {
-  --window-radius: 4px; 
+  --window-radius: 4px;
   --dock-radius: 4px;
   --button-radius: 2px;
-  
-  --font-display: 'Inter', system-ui, sans-serif;
-  --font-mono: 'SF Mono', Menlo, Monaco, monospace;
+
+  --font-display: "Inter", system-ui, sans-serif;
+  --font-mono: "SF Mono", Menlo, Monaco, monospace;
 }
 
 /*   Light Mode */
 .theme-ph-light {
-  --ph-beige: #EEEFE9;
-  --ph-orange: #F54E00;
+  --ph-beige: #eeefe9;
+  --ph-orange: #f54e00;
   --ph-black: #151515;
 
-  --surface-primary: #FDFDFD;
-  --surface-secondary: #E5E7E0;
-  --surface-elevated: #FFFFFF;
-  --surface-bg: #EEEFE9;
+  --surface-primary: #fdfdfd;
+  --surface-secondary: #e5e7e0;
+  --surface-elevated: #ffffff;
+  --surface-bg: #eeefe9;
 
   --text-primary: #151515;
   --text-secondary: #636363;
-  --text-muted: #8D8D8D;
+  --text-muted: #8d8d8d;
 
-  --accent-color: #F54E00;
-  --accent-hover: #D64000;
+  --accent-color: #f54e00;
+  --accent-hover: #d64000;
 
   --border-color: #151515;
 
@@ -40,8 +40,8 @@
 
 /*   Dark Mode */
 .theme-ph-dark {
-  --ph-beige: #EEEFE9; /* Keep for ref, but inverted usage */
-  --ph-orange: #F54E00;
+  --ph-beige: #eeefe9; /* Keep for ref, but inverted usage */
+  --ph-orange: #f54e00;
   --ph-black: #151515;
 
   --surface-primary: #1d1d1d;
@@ -49,12 +49,12 @@
   --surface-elevated: #2a2a2a;
   --surface-bg: #151515;
 
-  --text-primary: #EEEFE9;
+  --text-primary: #eeefe9;
   --text-secondary: #9e9e9e;
   --text-muted: #6e6e6e;
 
-  --accent-color: #F54E00;
-  --accent-hover: #D64000;
+  --accent-color: #f54e00;
+  --accent-hover: #d64000;
 
   --border-color: #333333;
 
@@ -67,8 +67,8 @@
 .theme-dark {
   --surface-bg: #151515;
   --surface-primary: #1d1d1d;
-  --text-primary: #EEEFE9;
-  --border-color: #EEEFE9;
+  --text-primary: #eeefe9;
+  --border-color: #eeefe9;
   --shadow-window: 4px 4px 0px 0px rgba(238, 239, 233, 0.2);
 }
 
@@ -84,8 +84,6 @@ body,
   width: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
-  user-select: none;
 }
 
 body {
@@ -114,9 +112,10 @@ body {
 .desktop-wallpaper {
   background-color: var(--surface-bg);
   /* Optional: Dot grid pattern for extra "engineering" feel */
-  background-image: radial-gradient(#D0D1C9 1px, transparent 1px);
+  background-image: radial-gradient(#d0d1c9 1px, transparent 1px);
   background-size: 20px 20px;
   position: relative;
+  user-select: none;
 }
 
 /* Removing the noise texture for the clean vector look */

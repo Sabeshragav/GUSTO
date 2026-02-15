@@ -1,11 +1,12 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Image from "next/image";
 import { useDesktop } from "../../contexts/DesktopContext";
 import { ThemedIcon } from "../ui/ThemedIcon";
-// import { useIsMobile } from "../../hooks/useIsMobile"; // Removed
+import { useIsMobile } from "../../hooks/useIsMobile";
 import { getAppColor } from "../../data/appColors";
 import { getMacIcon } from "../../data/macIcons";
 
@@ -47,7 +48,7 @@ const dockItems: DockItem[] = [
 
 export function Dock() {
   const { state, openApp, focusWindow, minimizeWindow } = useDesktop();
-  // const { isMobile } = useIsMobile(); // Removed
+  const { isMobile } = useIsMobile();
   const mouseX = useMotionValue<number | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const dockRef = useRef<HTMLDivElement>(null);
@@ -138,7 +139,16 @@ export function Dock() {
     }
   };
 
-  return (
+  // Use portal to ensure Dock is always on top (outside Desktop stacking context)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+  if (isMobile) return null; // Don't show dock on mobile (MobileOS has its own)
+
+  return createPortal(
     <motion.div
       ref={dockRef}
       onMouseMove={(e) => mouseX.set(e.pageX)}
@@ -148,7 +158,7 @@ export function Dock() {
       initial={{ x: "-50%", y: 0 }}
       animate={{ x: "-50%", y: isVisible ? 0 : 100 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="fixed left-1/2 z-[9998] bottom-4"
+      className="fixed left-1/2 z-[9999] bottom-4"
     >
       <div
         className="dock-container flex items-end shadow-dock gap-3 px-3 py-3"
@@ -190,7 +200,8 @@ export function Dock() {
           hasItems={state.trashedItems.length > 0}
         />
       </div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 }
 

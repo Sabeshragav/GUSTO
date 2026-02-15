@@ -23,9 +23,13 @@ export async function POST(req: NextRequest) {
         const token = generateAdminToken();
 
         const response = NextResponse.json({ success: true });
+        
+        // Allow running production build locally (npm start) without https
+        const isLocal = req.nextUrl.hostname === "localhost" || req.nextUrl.hostname === "127.0.0.1";
+
         response.cookies.set("admin_token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: process.env.NODE_ENV === "production" && !isLocal,
             sameSite: "strict",
             maxAge: 60 * 60 * 24, // 24 hours
             path: "/",

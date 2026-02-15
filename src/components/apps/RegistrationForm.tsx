@@ -53,7 +53,7 @@ export function RegistrationForm({ data }: { data?: unknown }) {
 
   const regData = data as RegistrationData | undefined;
   const tier = regData?.tier;
-  const events = regData?.events ?? [];
+  const events = useMemo(() => regData?.events ?? [], [regData]);
 
   const [fields, setFields] = useState<FormFields>({
     name: "",

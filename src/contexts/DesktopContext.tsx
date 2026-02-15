@@ -339,7 +339,9 @@ function desktopReducer(
         ...state,
         activeWindowId: action.payload,
         windows: state.windows.map((w) =>
-          w.id === action.payload ? { ...w, zIndex: state.nextZIndex } : w,
+          w.id === action.payload
+            ? { ...w, isMinimized: false, zIndex: state.nextZIndex }
+            : w,
         ),
         nextZIndex: state.nextZIndex + 1,
       };

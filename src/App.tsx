@@ -16,12 +16,12 @@ function AppContent() {
   return (
     <AchievementsProvider openAchievementsWindow={openAchievementsWindow}>
       {/* Desktop layout: visible only on lg (≥1024px) */}
-      <div className="hidden lg:block w-full h-full">
+      <div className="hidden lg:block fixed inset-0 w-screen h-screen overflow-hidden">
         <Desktop />
       </div>
 
       {/* Mobile layout: visible only below lg (<1024px) */}
-      <div className="lg:hidden w-full h-full">
+      <div className="lg:hidden fixed inset-0 w-screen h-screen overflow-hidden">
         <MobileOS />
       </div>
 

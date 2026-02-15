@@ -2,6 +2,28 @@ import type { Event } from './events';
 
 export const REGISTRATION_PRICE = 250;
 
+export interface Pass {
+    id: string;
+    name: string;
+    price: number;
+    description: string;
+    maxTech: number;
+    maxNonTech: number;
+    maxTotal: number;
+}
+
+export const PASSES: Pass[] = [
+    {
+        id: 'general',
+        name: 'General Pass',
+        price: 250,
+        description: 'Participate in up to 3 events (Max 2 Technical + Max 2 Non-Technical).',
+        maxTech: 2,
+        maxNonTech: 2,
+        maxTotal: 3
+    }
+];
+
 /**
  * Validate event selection: exactly 3 events, 2T+1N or 1T+2N, no duplicate time slots.
  */
@@ -44,9 +66,23 @@ export function validateEventSelection(
 /**
  * Get count breakdown of selected events.
  */
-export function getSelectionCounts(events: Event[]) {
+export function getSelectionCounts(events: Event[]): { tech: number; nonTech: number; total: number };
+export function getSelectionCounts(events: Event[], pass: Pass): { tech: number; nonTech: number; total: number; maxTech: number; maxNonTech: number; maxTotal: number };
+export function getSelectionCounts(events: Event[], pass?: Pass) {
     const tech = events.filter((e) => e.type === 'Technical').length;
     const nonTech = events.filter((e) => e.type === 'Non-Technical').length;
+    
+    if (pass) {
+        return {
+            tech,
+            nonTech,
+            total: events.length,
+            maxTech: pass.maxTech,
+            maxNonTech: pass.maxNonTech,
+            maxTotal: pass.maxTotal,
+        };
+    }
+
     return {
         tech,
         nonTech,

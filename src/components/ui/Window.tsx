@@ -171,8 +171,18 @@ export function Window({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest(".traffic-light")) return;
+    
+    // Only focus if not already the active window to prevent unnecessary renders
+    // We check via a ref or context, but context is cleanest:
+    // Actually, focusWindow updates Z-index too, so we might want to call it 
+    // to bring to front even if active? 
+    // Yes, but if it is already top, we might save a render.
+    // simpler: allow focusWindow.
     focusWindow(win.id);
+    
     if (isMobile || isTouchDevice) return;
+    
+    e.preventDefault(); // Prevent text selection/native drag
     setIsDragging(true);
     dragOffset.current = {
       x: e.clientX - win.x,

@@ -92,7 +92,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-black overflow-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-black`}
         suppressHydrationWarning
       >
         {children}

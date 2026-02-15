@@ -61,7 +61,7 @@ export function usePassValidation(
                 (e) =>
                     e.track === event.track &&
                     e.timeSlot === event.timeSlot &&
-                    e.timeSlot !== "Online"
+                    e.timeSlot !== "ONLINE"
             );
             if (trackConflict) {
                 return {
