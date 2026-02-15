@@ -83,7 +83,7 @@ export async function sendRegistrationEmail(data: RegistrationEmailData) {
                 <div style="background:#dcfce7;border:1px solid #22c55e;padding:12px;border-radius:8px;margin-top:16px;text-align:center;">
                     <p style="margin:0;font-size:14px;font-weight:bold;">💬 Join the GUSTO '26 WhatsApp Group</p>
                     <p style="margin:4px 0 8px;font-size:12px;color:#6b7280;">Stay updated and connect with other participants</p>
-                    <a href="https://chat.whatsapp.com/PLACEHOLDER_GROUP_LINK" style="display:inline-block;background:#25D366;color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:13px;">Join WhatsApp Group</a>
+                    <a href="https://chat.whatsapp.com/IPTk81aEyoIEiiNOsRhc6g?mode=gi_t" style="display:inline-block;background:#25D366;color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:13px;">Join WhatsApp Group</a>
                 </div>
 
                 <p style="margin-top:20px;color:#6b7280;font-size:13px;">
