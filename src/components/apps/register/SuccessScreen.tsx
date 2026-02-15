@@ -15,11 +15,32 @@ export function SuccessScreen({
 }: SuccessScreenProps) {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(registrationId).then(() => {
-      setCopied(true);
+  const handleCopy = async () => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(registrationId);
+        setCopied(true);
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement("textarea");
+        textArea.value = registrationId;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          setCopied(true);
+        } catch (err) {
+          console.error('Fallback: Oops, unable to copy', err);
+        }
+        document.body.removeChild(textArea);
+      }
       setTimeout(() => setCopied(false), 2000);
-    });
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
   };
 
   return (

@@ -72,7 +72,10 @@ interface RegisterPageProps {
   data?: unknown;
 }
 
+import { useSEO } from "../../../hooks/useSEO";
+
 export function RegisterPage({ data }: RegisterPageProps) {
+  useSEO("register");
   const { isMobile } = useIsMobile();
   const scrollRef = useRef<HTMLDivElement>(null);
 

@@ -10,7 +10,10 @@ import { ContactModal } from "./contact/ContactModal";
 import { useAchievements } from "../../contexts/AchievementsContext";
 import { gustoMail, instagram, youtube } from "../../data/details/fullData";
 
+import { useSEO } from "../../hooks/useSEO";
+
 export function ContactSection() {
+  useSEO("contact");
   const { isMobile } = useIsMobile();
   const { query, setQuery, filteredContacts } = useContactSearch(CONTACTS);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);

@@ -86,32 +86,54 @@ export function EventCard({
       {isExpanded && (
         <div className="border-t-2 border-[var(--border-color)] p-4 bg-[var(--surface-bg)] animate-in fade-in slide-in-from-top-2 duration-200">
 
-          {/* Rules Section */}
-          <div className="mb-6">
-            <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-widest mb-2 border-b border-[var(--border-color)] pb-1 flex items-center gap-2">
-              <span className="text-[var(--accent-color)]">📜</span> Rules & Guidelines
-            </h4>
-
-            {Array.isArray(event.rules) ? (
-              <ul className="list-disc pl-5 space-y-1.5 text-sm text-[var(--text-secondary)] marker:text-[var(--accent-color)]">
-                {event.rules.map((rule: string, idx: number) => (
-                  <li key={idx} className="leading-snug">{rule}</li>
+          {/* Rules Section — Mini Editor Style */}
+          <div className="mb-6 border border-[var(--border-color)] rounded overflow-hidden">
+            {/* Mini editor toolbar */}
+            <div className="flex items-center gap-1 px-2 py-1 bg-[var(--surface-secondary)] border-b border-[var(--border-color)]">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] mr-2 flex items-center gap-1">
+                <span className="text-[var(--accent-color)]">📜</span> Rules & Guidelines
+              </span>
+              <div className="flex-1" />
+              <div className="flex items-center gap-0.5">
+                {["B", "I", "U"].map((btn) => (
+                  <span
+                    key={btn}
+                    className={`w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] hover:bg-[var(--surface-primary)] transition-colors cursor-default ${
+                      btn === "B" ? "font-bold" : btn === "I" ? "italic" : "underline"
+                    }`}
+                  >
+                    {btn}
+                  </span>
                 ))}
-              </ul>
-            ) : (
-              <div className="space-y-4">
-                {Object.entries(event.rules).map(([key, round]: [string, any]) => (
-                  <div key={key} className="bg-[var(--surface-secondary)]/50 p-3 rounded border border-[var(--border-color)]">
-                    <h5 className="font-bold text-xs uppercase text-[var(--text-primary)] mb-2">{round.title || key}</h5>
-                    <ul className="list-disc pl-4 space-y-1 text-sm text-[var(--text-secondary)] marker:text-[var(--accent-color)]">
-                      {round.rules.map((r: string, i: number) => (
-                        <li key={i}>{r}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+                <div className="w-px h-3 bg-[var(--border-color)] mx-0.5" />
+                <span className="w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] cursor-default">≡</span>
+                <span className="w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] cursor-default">#</span>
               </div>
-            )}
+            </div>
+
+            {/* Rules content */}
+            <div className="p-3 bg-[var(--surface-bg)]">
+              {Array.isArray(event.rules) ? (
+                <ul className="list-disc pl-5 space-y-1.5 text-sm text-[var(--text-secondary)] marker:text-[var(--accent-color)]">
+                  {event.rules.map((rule: string, idx: number) => (
+                    <li key={idx} className="leading-snug">{rule}</li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="space-y-4">
+                  {Object.entries(event.rules).map(([key, round]: [string, any]) => (
+                    <div key={key} className="bg-[var(--surface-secondary)]/50 p-3 rounded border border-[var(--border-color)]">
+                      <h5 className="font-bold text-xs uppercase text-[var(--text-primary)] mb-2">{round.title || key}</h5>
+                      <ul className="list-disc pl-4 space-y-1 text-sm text-[var(--text-secondary)] marker:text-[var(--accent-color)]">
+                        {round.rules.map((r: string, i: number) => (
+                          <li key={i}>{r}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Coordinators Section */}

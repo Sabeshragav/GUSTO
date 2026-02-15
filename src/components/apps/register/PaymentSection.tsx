@@ -6,7 +6,6 @@ import { Upload, X, Image as ImageIcon, AlertCircle, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 import type { RegistrationFormData } from "./RegisterPage";
 import { REGISTRATION_PRICE, type Event } from "../../../data/events";
-import Image from "next/image";
 
 interface PaymentSectionProps {
   register: UseFormRegister<RegistrationFormData>;
@@ -125,7 +124,7 @@ export function PaymentSection({
 
       {/* QR Code */}
       <div className="flex flex-col items-center gap-2 py-2">
-        <Image
+        <img
           src="/placeholder/payment_qrcode.jpeg"
           alt={`Scan QR to pay ₹${REGISTRATION_PRICE}`}
           width={200}

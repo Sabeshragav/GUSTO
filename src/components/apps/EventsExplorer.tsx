@@ -19,7 +19,10 @@ type CategoryFilter = "All" | "Technical" | "Non-Technical";
 
 const CATEGORIES: CategoryFilter[] = ["All", "Technical", "Non-Technical"];
 
+import { useSEO } from "../../hooks/useSEO";
+
 export function EventsExplorer({ initialEventId }: { initialEventId?: string }) {
+  useSEO("events");
   const { isMobile } = useIsMobile();
   const { openApp } = useDesktop();
 
@@ -54,10 +57,7 @@ export function EventsExplorer({ initialEventId }: { initialEventId?: string }) 
   }, []);
 
   const handleRegister = useCallback(() => {
-    // Open Register app
-    setTimeout(() => {
-      openApp("register");
-    }, 0);
+    openApp("register");
   }, [openApp]);
 
   return (
@@ -95,7 +95,10 @@ export function EventsExplorer({ initialEventId }: { initialEventId?: string }) 
 
           {/* Register Button */}
           <button
-            onClick={handleRegister}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRegister();
+            }}
             className="flex-shrink-0 px-4 py-1.5 text-xs font-bold border border-[var(--accent-color)] bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)] transition-all duration-200 active:translate-y-[1px] rounded-full shadow-md hover:shadow-lg"
           >
             Register Now →

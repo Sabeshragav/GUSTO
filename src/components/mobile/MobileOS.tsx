@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import Image from "next/image";
 import { ChevronLeft, Circle, Square, Minus, Construction } from "lucide-react";
 
 import { MobileStatusBar } from "./MobileStatusBar";
@@ -33,6 +32,7 @@ import { SystemPreferences } from "../apps/SystemPreferences";
 import { Achievements } from "../apps/Achievements";
 import { Spotify } from "../apps/Spotify";
 import { RegisterPage } from "../apps/register/RegisterPage";
+import { BrowserChrome } from "../apps/register/BrowserChrome";
 
 // ── Constants ──
 
@@ -114,13 +114,11 @@ function IOSAppIcon({
         style={{ width: size, height: size }}
       >
         {iconUrl ? (
-          <Image
+          <img
             src={iconUrl}
             alt={app.name}
-            fill
-            className="object-cover"
+            className="object-cover w-full h-full"
             draggable={false}
-            sizes={`${size}px`}
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
@@ -229,7 +227,7 @@ function renderApp(appId: string, data?: unknown) {
       return <Spotify />;
     case "register":
     case "browser":
-      return <RegisterPage data={data} />;
+      return <BrowserChrome><RegisterPage data={data} /></BrowserChrome>;
     default:
       return <PlaceholderApp name={appId} />;
   }
@@ -504,6 +502,9 @@ function MobileOSContent() {
               <span className="text-white/[0.07] text-lg font-bold tracking-[0.5em] mt-2 uppercase">
                 2026
               </span>
+              <span className="text-white/[0.07] text-[10px] font-bold tracking-[0.2em] mt-1 uppercase">
+                Let's meet on March 6th!
+              </span>
             </div>
 
             {/* Page Content with Drag Animation */}
@@ -530,20 +531,18 @@ function MobileOSContent() {
                       <div className="flex flex-col items-center justify-center pt-4 pb-2">
                         <div className="flex items-center gap-5 mb-3">
                           <div className="relative w-16 h-16 drop-shadow-xl filter brightness-110">
-                            <Image
+                            <img
                               src="/logos/GCEE/white.png"
                               alt="GCEE Logo"
-                              fill
-                              className="object-contain"
+                              className="object-contain w-full h-full"
                             />
                           </div>
                           <div className="h-10 w-[1.5px] bg-white/20 rounded-full"></div>
                           <div className="relative w-16 h-16 drop-shadow-xl filter brightness-110">
-                            <Image
+                            <img
                               src="/logos/AIT/silver.png"
                               alt="AIT Logo"
-                              fill
-                              className="object-contain"
+                              className="object-contain w-full h-full"
                             />
                           </div>
                         </div>
