@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { useDesktop } from "../../contexts/DesktopContext";
 import type { DesktopItem } from "../../types";
 import { findFileById } from "../../data/filesystem";
@@ -90,7 +91,11 @@ export function DesktopIcon({ item }: DesktopIconProps) {
     return getAppColor(item.id).color;
   };
 
-  const positionStyle: React.CSSProperties = { position: "absolute", left: item.x, top: item.y };
+  const positionStyle: React.CSSProperties = {
+    position: "absolute",
+    left: item.x,
+    top: item.y,
+  };
 
   const isFolder = item.type === "folder" || item.icon === "folder";
   const isApp = item.type === "app";
@@ -139,9 +144,11 @@ export function DesktopIcon({ item }: DesktopIconProps) {
         style={!isFolder && !isApp ? undefined : { color: getIconColor() }}
       >
         {isFolder ? (
-          <img
-            src={getMacFolderIcon()}
+          <Image
+            src={getMacFolderIcon()!}
             alt={item.name}
+            width={56}
+            height={56}
             className="w-14 h-14 object-contain pointer-events-none"
             draggable={false}
           />
@@ -152,9 +159,11 @@ export function DesktopIcon({ item }: DesktopIconProps) {
               item.icon === "trash" && state.trashedItems.length > 0,
             );
             return macSrc ? (
-              <img
+              <Image
                 src={macSrc}
                 alt={item.name}
+                width={56}
+                height={56}
                 className="w-14 h-14 object-contain pointer-events-none"
                 draggable={false}
               />

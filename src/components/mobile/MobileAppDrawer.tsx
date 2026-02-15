@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
+import Image from "next/image";
 import { getIOSIcon } from "../../data/iosIcons";
 
 export interface MobileApp {
@@ -68,9 +69,11 @@ function DrawerAppIcon({
     >
       <div className="relative w-14 h-14 rounded-[22%] overflow-hidden shadow-md shadow-black/20">
         {iconUrl ? (
-          <img
+          <Image
             src={iconUrl}
             alt={app.name}
+            width={56}
+            height={56}
             className="object-cover w-full h-full"
             draggable={false}
           />

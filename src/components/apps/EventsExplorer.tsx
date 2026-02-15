@@ -10,9 +10,21 @@ import { useMobileAppPersistence } from "../../hooks/useMobileAppPersistence";
 
 // Flatten and categorize events from the detailed data source
 const EVENTS = [
-  ...eventDetails.technicalEvents.map((e) => ({ ...e, type: "Technical", category: "Paper/Project" })),
-  ...eventDetails.technicalIndividualEvents.map((e) => ({ ...e, type: "Technical", category: "Individual" })),
-  ...eventDetails.nonTechnicalEvents.map((e) => ({ ...e, type: "Non-Technical", category: "Fun" })),
+  ...eventDetails.technicalEvents.map((e) => ({
+    ...e,
+    type: "Technical",
+    category: "Paper/Project",
+  })),
+  ...eventDetails.technicalIndividualEvents.map((e) => ({
+    ...e,
+    type: "Technical",
+    category: "Individual",
+  })),
+  ...eventDetails.nonTechnicalEvents.map((e) => ({
+    ...e,
+    type: "Non-Technical",
+    category: "Fun",
+  })),
 ];
 
 type CategoryFilter = "All" | "Technical" | "Non-Technical";
@@ -21,14 +33,22 @@ const CATEGORIES: CategoryFilter[] = ["All", "Technical", "Non-Technical"];
 
 import { useSEO } from "../../hooks/useSEO";
 
-export function EventsExplorer({ initialEventId }: { initialEventId?: string }) {
+export function EventsExplorer({
+  initialEventId,
+}: {
+  initialEventId?: string;
+}) {
   useSEO("events");
   const { isMobile } = useIsMobile();
   const { openApp } = useDesktop();
 
   // Persist category selection and expanded event
-  const [activeCategory, setActiveCategory] = useMobileAppPersistence<CategoryFilter>("events-category", "All");
-  const [expandedId, setExpandedId] = useMobileAppPersistence<string | null>("events-expanded", null);
+  const [activeCategory, setActiveCategory] =
+    useMobileAppPersistence<CategoryFilter>("events-category", "All");
+  const [expandedId, setExpandedId] = useMobileAppPersistence<string | null>(
+    "events-expanded",
+    null,
+  );
 
   // Handle deep linking from widget
   useEffect(() => {
@@ -42,19 +62,22 @@ export function EventsExplorer({ initialEventId }: { initialEventId?: string }) 
         }
       }
     }
-  }, [initialEventId]);
+  }, [initialEventId, activeCategory, setActiveCategory, setExpandedId]);
 
   const filteredEvents = useMemo(
     () =>
       activeCategory === "All"
         ? EVENTS
         : EVENTS.filter((e) => e.type === activeCategory),
-    [activeCategory]
+    [activeCategory],
   );
 
-  const handleToggleExpand = useCallback((id: string) => {
-    setExpandedId((prev) => (prev === id ? null : id));
-  }, []);
+  const handleToggleExpand = useCallback(
+    (id: string) => {
+      setExpandedId((prev) => (prev === id ? null : id));
+    },
+    [setExpandedId],
+  );
 
   const handleRegister = useCallback(() => {
     openApp("register");
@@ -82,10 +105,11 @@ export function EventsExplorer({ initialEventId }: { initialEventId?: string }) 
                     setActiveCategory(cat);
                     setExpandedId(null);
                   }}
-                  className={`px-3 py-1.5 text-xs font-bold border transition-colors active:translate-y-[1px] rounded-full shadow-sm ${activeCategory === cat
-                    ? "bg-[var(--accent-color)] text-white border-[var(--accent-color)]"
-                    : "bg-[var(--surface-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[var(--accent-color)]"
-                    }`}
+                  className={`px-3 py-1.5 text-xs font-bold border transition-colors active:translate-y-[1px] rounded-full shadow-sm ${
+                    activeCategory === cat
+                      ? "bg-[var(--accent-color)] text-white border-[var(--accent-color)]"
+                      : "bg-[var(--surface-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[var(--accent-color)]"
+                  }`}
                 >
                   {label}
                 </button>
@@ -109,8 +133,11 @@ export function EventsExplorer({ initialEventId }: { initialEventId?: string }) 
       {/* Events Grid - Always Visible */}
       <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-[var(--border-color)] hover:scrollbar-thumb-[var(--accent-color)]/50">
         <div
-          className={`grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-            }`}
+          className={`grid gap-4 ${
+            isMobile
+              ? "grid-cols-1"
+              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          }`}
         >
           {filteredEvents.map((event) => (
             <EventCard

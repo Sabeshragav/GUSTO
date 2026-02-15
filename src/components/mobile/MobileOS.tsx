@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ChevronLeft, Circle, Square, Minus, Construction } from "lucide-react";
+import Image from "next/image";
 
 import { MobileStatusBar } from "./MobileStatusBar";
 import { IOSHomeIndicator } from "./IOSHomeIndicator";
@@ -114,9 +115,11 @@ function IOSAppIcon({
         style={{ width: size, height: size }}
       >
         {iconUrl ? (
-          <img
+          <Image
             src={iconUrl}
             alt={app.name}
+            width={size}
+            height={size}
             className="object-cover w-full h-full"
             draggable={false}
           />
@@ -227,7 +230,11 @@ function renderApp(appId: string, data?: unknown) {
       return <Spotify />;
     case "register":
     case "browser":
-      return <BrowserChrome><RegisterPage data={data} /></BrowserChrome>;
+      return (
+        <BrowserChrome>
+          <RegisterPage data={data} />
+        </BrowserChrome>
+      );
     default:
       return <PlaceholderApp name={appId} />;
   }
@@ -309,7 +316,8 @@ function MobileOSContent() {
       }
     };
     document.addEventListener("fullscreenchange", onFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
   }, [isBooting]);
 
   const handleBootComplete = useCallback(() => {
@@ -320,16 +328,6 @@ function MobileOSContent() {
     } catch {}
   }, []);
 
-  useEffect(() => {
-    const registerWindow = desktopState.windows.find(
-      (w) => w.appId === "register",
-    );
-    if (registerWindow && activeApp !== "register") {
-      handleOpenApp("register", registerWindow.data);
-      closeWindow(registerWindow.id);
-    }
-  }, [desktopState.windows, activeApp, closeWindow]);
-
   const handleOpenApp = useCallback(
     (appId: string, data?: unknown) => {
       setShowRecents(false);
@@ -339,6 +337,16 @@ function MobileOSContent() {
     },
     [openApp],
   );
+
+  useEffect(() => {
+    const registerWindow = desktopState.windows.find(
+      (w) => w.appId === "register",
+    );
+    if (registerWindow && activeApp !== "register") {
+      handleOpenApp("register", registerWindow.data);
+      closeWindow(registerWindow.id);
+    }
+  }, [desktopState.windows, activeApp, closeWindow, handleOpenApp]);
 
   const handleGoHome = useCallback(() => {
     if (showRecents) setShowRecents(false);
@@ -351,15 +359,19 @@ function MobileOSContent() {
   }, [showRecents, showDrawer, activeApp, goHome, reEnterFullscreen]);
 
   const handleGoBack = useCallback(() => {
-    if (showRecents) { setShowRecents(false); setBackPressCount(0); }
-    else if (showDrawer) { setShowDrawer(false); setBackPressCount(0); }
-    else if (activeApp) {
+    if (showRecents) {
+      setShowRecents(false);
+      setBackPressCount(0);
+    } else if (showDrawer) {
+      setShowDrawer(false);
+      setBackPressCount(0);
+    } else if (activeApp) {
       goHome();
       reEnterFullscreen();
       setBackPressCount(0);
     } else {
       // Home screen: require two presses to exit fullscreen
-      setBackPressCount(prev => {
+      setBackPressCount((prev) => {
         if (prev === 0) {
           if (backTimerRef.current) clearTimeout(backTimerRef.current);
           backTimerRef.current = setTimeout(() => setBackPressCount(0), 2000);
@@ -367,7 +379,8 @@ function MobileOSContent() {
         }
         // Second press — intentionally exit fullscreen
         allowExitRef.current = true;
-        if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+        if (document.fullscreenElement)
+          document.exitFullscreen?.().catch(() => {});
         return 0;
       });
     }
@@ -503,7 +516,7 @@ function MobileOSContent() {
                 2026
               </span>
               <span className="text-white/[0.07] text-[10px] font-bold tracking-[0.2em] mt-1 uppercase">
-                Let's meet on March 6th!
+                Let&apos;s meet on March 6th!
               </span>
             </div>
 
@@ -531,17 +544,21 @@ function MobileOSContent() {
                       <div className="flex flex-col items-center justify-center pt-4 pb-2">
                         <div className="flex items-center gap-5 mb-3">
                           <div className="relative w-16 h-16 drop-shadow-xl filter brightness-110">
-                            <img
+                            <Image
                               src="/logos/GCEE/white.png"
                               alt="GCEE Logo"
+                              width={64}
+                              height={64}
                               className="object-contain w-full h-full"
                             />
                           </div>
                           <div className="h-10 w-[1.5px] bg-white/20 rounded-full"></div>
                           <div className="relative w-16 h-16 drop-shadow-xl filter brightness-110">
-                            <img
+                            <Image
                               src="/logos/AIT/silver.png"
                               alt="AIT Logo"
+                              width={64}
+                              height={64}
                               className="object-contain w-full h-full"
                             />
                           </div>
@@ -655,8 +672,15 @@ function MobileOSContent() {
 
       <AnimatePresence>
         {backPressCount === 1 && !activeApp && !showDrawer && !showRecents && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[400] px-4 py-2 rounded-full bg-black/70 backdrop-blur-sm">
-            <span className="text-white text-xs font-medium">Press back again to exit fullscreen</span>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[400] px-4 py-2 rounded-full bg-black/70 backdrop-blur-sm"
+          >
+            <span className="text-white text-xs font-medium">
+              Press back again to exit fullscreen
+            </span>
           </motion.div>
         )}
       </AnimatePresence>

@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import Image from "next/image";
 import { useDesktop } from "../../contexts/DesktopContext";
 import { ThemedIcon } from "../ui/ThemedIcon";
 // import { useIsMobile } from "../../hooks/useIsMobile"; // Removed
@@ -137,11 +138,7 @@ function DockIcon({
     return val ? val - bounds.x - bounds.width / 2 : Infinity;
   });
 
-  const widthSync = useTransform(
-    distance,
-    [-150, 0, 150],
-    [48, 80, 48],
-  );
+  const widthSync = useTransform(distance, [-150, 0, 150], [48, 80, 48]);
   const width = useSpring(widthSync, {
     mass: 0.1,
     stiffness: 150,
@@ -149,7 +146,10 @@ function DockIcon({
   });
 
   return (
-    <div id={`dock-icon-${item.id}`} className="flex flex-col items-center gap-1 group relative">
+    <div
+      id={`dock-icon-${item.id}`}
+      className="flex flex-col items-center gap-1 group relative"
+    >
       {/* Tooltip — outside motion.div so overflow doesn't clip it */}
       <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-[var(--surface-elevated)] text-[var(--text-primary)] text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-[var(--border-color)] shadow-lg z-50">
         {item.name}
@@ -169,10 +169,12 @@ function DockIcon({
         {(() => {
           const macSrc = getMacIcon(item.appId, isTrash && hasItems);
           return macSrc ? (
-            <img
+            <Image
               src={macSrc}
               alt={item.name}
-              className="object-contain w-full h-full pointer-events-none"
+              fill
+              sizes="80px"
+              className="object-contain pointer-events-none"
               draggable={false}
             />
           ) : (
@@ -189,8 +191,9 @@ function DockIcon({
 
       {/* Active Indicator */}
       <div
-        className={`w-1 h-1 rounded-full bg-[var(--text-primary)] transition-opacity ${isOpen ? "opacity-100" : "opacity-0"
-          }`}
+        className={`w-1 h-1 rounded-full bg-[var(--text-primary)] transition-opacity ${
+          isOpen ? "opacity-100" : "opacity-0"
+        }`}
       />
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import Image from "next/image";
 import { getIOSIcon } from "../../data/iosIcons";
 import type { MobileApp } from "./MobileAppDrawer";
 
@@ -44,7 +45,12 @@ function RecentCard({
       onDragEnd={(_, info) => {
         if (info.offset.y < -100) onRemove(app.id);
       }}
-      transition={{ type: "spring", stiffness: 300, damping: 30, delay: index * 0.05 }}
+      transition={{
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+        delay: index * 0.05,
+      }}
       className="shrink-0 w-[260px] snap-center"
     >
       <div className="relative bg-[#1c1c2e] rounded-3xl border border-white/10 overflow-hidden shadow-2xl shadow-black/40">
@@ -58,7 +64,10 @@ function RecentCard({
 
         {/* Card body — tap to reopen */}
         <div
-          onClick={() => { onOpen(app.id); onClose(); }}
+          onClick={() => {
+            onOpen(app.id);
+            onClose();
+          }}
           className="w-full block cursor-pointer"
           role="button"
           tabIndex={0}
@@ -75,7 +84,7 @@ function RecentCard({
               style={{
                 width: "375px",
                 height: "800px",
-                transform: "scale(0.693)", /* 260px / 375px ≈ 0.693 */
+                transform: "scale(0.693)" /* 260px / 375px ≈ 0.693 */,
               }}
             >
               <div className="w-full h-full overflow-hidden">
@@ -88,14 +97,25 @@ function RecentCard({
           <div className="flex items-center gap-3 px-4 py-2.5 bg-[#1c1c2e] border-t border-white/5">
             <div className="w-7 h-7 rounded-[22%] overflow-hidden shrink-0 relative">
               {iconUrl ? (
-                <img src={iconUrl} alt="" className="object-cover w-full h-full" draggable={false} />
+                <Image
+                  src={iconUrl}
+                  alt=""
+                  width={28}
+                  height={28}
+                  className="object-cover w-full h-full"
+                  draggable={false}
+                />
               ) : (
                 <div className="w-full h-full bg-white/10 flex items-center justify-center">
-                  <span className="text-white/60 text-xs font-bold">{app.name.charAt(0)}</span>
+                  <span className="text-white/60 text-xs font-bold">
+                    {app.name.charAt(0)}
+                  </span>
                 </div>
               )}
             </div>
-            <span className="text-white/80 text-sm font-semibold">{app.name}</span>
+            <span className="text-white/80 text-sm font-semibold">
+              {app.name}
+            </span>
           </div>
         </div>
       </div>
@@ -104,9 +124,18 @@ function RecentCard({
 }
 
 export function MobileRecentApps({
-  isOpen, onClose, recentApps, allApps, onAppOpen, onRemoveRecent, onClearAll, renderApp,
+  isOpen,
+  onClose,
+  recentApps,
+  allApps,
+  onAppOpen,
+  onRemoveRecent,
+  onClearAll,
+  renderApp,
 }: MobileRecentAppsProps) {
-  const apps = recentApps.map(id => allApps.find(a => a.id === id)).filter(Boolean) as MobileApp[];
+  const apps = recentApps
+    .map((id) => allApps.find((a) => a.id === id))
+    .filter(Boolean) as MobileApp[];
 
   return (
     <AnimatePresence>
@@ -119,17 +148,30 @@ export function MobileRecentApps({
           className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-xl"
           onClick={onClose}
         >
-          <div className="absolute inset-x-0 top-12 bottom-10 flex flex-col" onClick={e => e.stopPropagation()}>
+          <div
+            className="absolute inset-x-0 top-12 bottom-10 flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
             {apps.length === 0 ? (
               <div className="flex-1 flex items-center justify-center">
-                <p className="text-white/40 text-sm font-medium">No recent apps</p>
+                <p className="text-white/40 text-sm font-medium">
+                  No recent apps
+                </p>
               </div>
             ) : (
               <>
                 <div className="flex-1 flex items-center">
                   <div className="w-full overflow-x-auto overflow-y-hidden px-8 py-4 flex gap-5 snap-x snap-mandatory scrollbar-hide">
                     {apps.map((app, i) => (
-                      <RecentCard key={app.id} app={app} index={i} onOpen={onAppOpen} onClose={onClose} onRemove={onRemoveRecent} renderApp={renderApp} />
+                      <RecentCard
+                        key={app.id}
+                        app={app}
+                        index={i}
+                        onOpen={onAppOpen}
+                        onClose={onClose}
+                        onRemove={onRemoveRecent}
+                        renderApp={renderApp}
+                      />
                     ))}
                   </div>
                 </div>
@@ -141,7 +183,11 @@ export function MobileRecentApps({
                   className="flex justify-center pb-4 pt-2"
                 >
                   <button
-                    onClick={e => { e.stopPropagation(); onClearAll(); onClose(); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClearAll();
+                      onClose();
+                    }}
                     className="px-5 py-2.5 rounded-full bg-white/10 border border-white/10 text-xs font-bold uppercase tracking-wider text-white/90 active:bg-white/20 transition-colors"
                   >
                     Clear All
