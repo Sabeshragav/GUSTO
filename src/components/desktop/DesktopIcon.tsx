@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useDesktop } from "../../contexts/DesktopContext";
@@ -13,12 +12,11 @@ import { getMacIcon, getMacFolderIcon } from "../../data/macIcons";
 
 interface DesktopIconProps {
   item: DesktopItem;
-  isMobile?: boolean;
 }
 
 import { FilePreview } from "../ui/FilePreview";
 
-export function DesktopIcon({ item, isMobile = false }: DesktopIconProps) {
+export function DesktopIcon({ item }: DesktopIconProps) {
   const {
     state,
     selectDesktopItem,
@@ -61,13 +59,13 @@ export function DesktopIcon({ item, isMobile = false }: DesktopIconProps) {
     };
 
     const element = ref.current;
-    if (element && !isMobile) {
+    if (element) {
       element.addEventListener("dragstart", handleDragStart);
       return () => {
         element.removeEventListener("dragstart", handleDragStart);
       };
     }
-  }, [item.id, isMobile]);
+  }, [item.id]);
 
   const triggerJiggle = () => {
     setIsJiggling(true);
@@ -92,9 +90,7 @@ export function DesktopIcon({ item, isMobile = false }: DesktopIconProps) {
     return getAppColor(item.id).color;
   };
 
-  const positionStyle: React.CSSProperties = isMobile
-    ? {}
-    : { position: "absolute", left: item.x, top: item.y };
+  const positionStyle: React.CSSProperties = { position: "absolute", left: item.x, top: item.y };
 
   const isFolder = item.type === "folder" || item.icon === "folder";
   const isApp = item.type === "app";
@@ -102,14 +98,13 @@ export function DesktopIcon({ item, isMobile = false }: DesktopIconProps) {
   return (
     <motion.div
       ref={ref}
-      className={`desktop-icon flex flex-col items-center justify-center p-2 cursor-pointer ${isMobile ? "w-full" : "w-24"
-        } ${isSelected ? "bg-black/5 border border-[var(--border-color)]" : ""} ${isJiggling ? "animate-icon-jiggle" : ""}`}
+      className={`desktop-icon flex flex-col items-center justify-center p-2 cursor-pointer w-24 ${isSelected ? "bg-black/5 border border-[var(--border-color)]" : ""} ${isJiggling ? "animate-icon-jiggle" : ""}`}
       style={{
         ...positionStyle,
         borderRadius: "4px",
       }}
       onClick={handleClick}
-      draggable={!isMobile}
+      draggable={true}
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -140,55 +135,37 @@ export function DesktopIcon({ item, isMobile = false }: DesktopIconProps) {
       transition={{ type: "spring", stiffness: 300, damping: 15 }}
     >
       <div
-        className={`flex items-center justify-center ${isMobile ? "w-12 h-12" : "w-14"}`}
+        className="flex items-center justify-center w-14"
         style={!isFolder && !isApp ? undefined : { color: getIconColor() }}
       >
         {isFolder ? (
-          isMobile ? (
-            <MacFolder size={40} />
-          ) : (
-            <Image
-              src={getMacFolderIcon()}
-              alt={item.name}
-              width={56}
-              height={56}
-              className="w-14 h-14 object-contain pointer-events-none"
-              draggable={false}
-              unoptimized
-            />
-          )
+          <img
+            src={getMacFolderIcon()}
+            alt={item.name}
+            className="w-14 h-14 object-contain pointer-events-none"
+            draggable={false}
+          />
         ) : isApp ? (
-          isMobile ? (
-            <ThemedIcon
-              name={item.icon}
-              size={40}
-              style={{ color: getIconColor() }}
-            />
-          ) : (
-            (() => {
-              const macSrc = getMacIcon(
-                item.appId || item.id,
-                item.icon === "trash" && state.trashedItems.length > 0,
-              );
-              return macSrc ? (
-                <Image
-                  src={macSrc}
-                  alt={item.name}
-                  width={56}
-                  height={56}
-                  className="w-14 h-14 object-contain pointer-events-none"
-                  draggable={false}
-                  unoptimized
-                />
-              ) : (
-                <ThemedIcon
-                  name={item.icon}
-                  size={48}
-                  style={{ color: getIconColor() }}
-                />
-              );
-            })()
-          )
+          (() => {
+            const macSrc = getMacIcon(
+              item.appId || item.id,
+              item.icon === "trash" && state.trashedItems.length > 0,
+            );
+            return macSrc ? (
+              <img
+                src={macSrc}
+                alt={item.name}
+                className="w-14 h-14 object-contain pointer-events-none"
+                draggable={false}
+              />
+            ) : (
+              <ThemedIcon
+                name={item.icon}
+                size={48}
+                style={{ color: getIconColor() }}
+              />
+            );
+          })()
         ) : (
           <div className="scale-125 origin-bottom">
             <FilePreview type={item.type} name={item.name} />
@@ -196,7 +173,7 @@ export function DesktopIcon({ item, isMobile = false }: DesktopIconProps) {
         )}
       </div>
       <span
-        className={`text-center mt-3 leading-tight px-1 break-words font-medium ${isMobile ? "text-[10px]" : "text-xs"}`}
+        className="text-center mt-3 leading-tight px-1 break-words font-medium text-xs"
         style={{ color: "var(--text-primary)", textShadow: "none" }}
       >
         {item.name}

@@ -77,20 +77,20 @@ export function Terminal() {
       addOutput(`
 Available Commands:
   help          - Show this help message
-  about         - Learn about me
-  projects      - List all projects
-  open <name>   - Open a folder or app (finder, terminal, email, minesweeper)
+  about         - About Gusto '26
+  events        - List all symposium events
+  rules         - View event rules
+  register      - Register for events
+  transport     - Transport information
+  contact       - Contact the organizers
+  open <name>   - Open an app (events, rules, register, etc.)
   ls            - List contents of current directory
   cd <folder>   - Change directory
   cat <file>    - Display file contents
-  pwd           - Print working directory
-  whoami        - Who are you?
   clear         - Clear the terminal
-  cv            - Open my resume
-  email         - Open email client
   minesweeper   - Play a game
+  snake         - Play Snake
   neofetch      - Display system info
-  coffee        - Take a break
   matrix        - Enter the matrix
   party         - Celebrate!
   exit          - Close terminal
@@ -99,23 +99,42 @@ Available Commands:
     },
 
     about: () => {
-      const bioFile = findFileById('bio');
-      if (bioFile?.content) {
-        addOutput(bioFile.content);
-      } else {
-        addOutput('About information not found.');
-      }
+      addOutput(`
+Gusto '26 is a National Level Technical Symposium organized by the 
+Department of Information Technology at Government College of Engineering, Erode.
+
+Join us for a day of innovation, competition, and fun!
+      `);
+    },
+
+    events: () => {
+      openApp('events');
+      addOutput('Opening Events Explorer...');
+    },
+
+    rules: () => {
+      openApp('rules');
+      addOutput('Opening Rules...');
+    },
+
+    register: () => {
+      openApp('register');
+      addOutput('Opening Registration...');
+    },
+
+    transport: () => {
+      openApp('transport');
+      addOutput('Opening Transport Info...');
+    },
+
+    contact: () => {
+      openApp('contact');
+      addOutput('Opening Contact Info...');
     },
 
     projects: () => {
-      const projectsFolder = findFileById('projects');
-      if (projectsFolder?.children) {
-        addOutput('Projects:\n');
-        projectsFolder.children.forEach((project) => {
-          addOutput(`  - ${project.name}`);
-        });
-        addOutput('\nUse "open projects" to explore them in Finder.');
-      }
+      addOutput('Projects? We are building the future here at Gusto!');
+      addOutput('Check out our "events" to see what we are up to.');
     },
 
     open: (args) => {
@@ -132,7 +151,15 @@ Available Commands:
         mail: 'email',
         minesweeper: 'minesweeper',
         game: 'minesweeper',
+        snake: 'snake',
         trash: 'trash',
+        events: 'events',
+        rules: 'rules',
+        register: 'register',
+        transport: 'transport',
+        contact: 'contact',
+        spotify: 'spotify',
+        calendar: 'calendar',
       };
 
       if (appMap[target]) {
@@ -141,27 +168,8 @@ Available Commands:
         return;
       }
 
-      const folderMap: Record<string, string> = {
-        'about': 'about-me',
-        'about me': 'about-me',
-        'experience': 'experience',
-        'projects': 'projects',
-        'playground': 'playground',
-        'cv': 'cv',
-        'resume': 'cv',
-      };
-
-      const fileId = folderMap[target];
-      if (fileId) {
-        const file = findFileById(fileId);
-        if (file) {
-          openFile(file);
-          addOutput(`Opening ${file.name}...`);
-          return;
-        }
-      }
-
-      addOutput(`Cannot find "${target}". Try "ls" to see available items.`);
+      // Fallback for file system based opening if needed, or simple error
+      addOutput(`Cannot find app "${target}". Try "events", "rules", "register", etc.`);
     },
 
     ls: () => {
@@ -231,8 +239,7 @@ Available Commands:
     },
 
     whoami: () => {
-      addOutput("A curious visitor exploring Gusto OS.");
-      addOutput("Thanks for stopping by!");
+      addOutput("A participant of Gusto '26!");
     },
 
     clear: () => {
@@ -240,8 +247,13 @@ Available Commands:
     },
 
     cv: () => {
-      openApp('pdfViewer');
-      addOutput('Opening CV...');
+      addOutput('CV? You don\'t need a CV here, just your skills!');
+      addOutput('Try "register" to sign up for events.');
+    },
+
+    resume: () => {
+      addOutput('Resume? You don\'t need a resume here, just your skills!');
+      addOutput('Try "register" to sign up for events.');
     },
 
     email: () => {
@@ -252,6 +264,11 @@ Available Commands:
     minesweeper: () => {
       openApp('minesweeper');
       addOutput('Starting Minesweeper... Good luck!');
+    },
+
+    snake: () => {
+      openApp('snake');
+      addOutput('Starting Snake... Hiss!');
     },
 
     neofetch: () => {
@@ -275,15 +292,11 @@ Available Commands:
     },
 
     sudo: () => {
-      addOutput('Nice try! This  Gusto-2026 runs on good vibes, not root access.');
+      addOutput('Nice try! This Gusto-2026 runs on good vibes, not root access.');
     },
 
     rm: (args) => {
-      if (args.includes('-rf')) {
-        addOutput('I appreciate the chaos energy, but let\'s keep things constructive.');
-      } else {
-        addOutput('Permission denied. Only trashing desktop items is allowed.');
-      }
+        addOutput('Permission denied. Please be careful!');
     },
 
     exit: () => {
@@ -293,8 +306,7 @@ Available Commands:
 
     secret: () => {
       addOutput('There are hidden things here...');
-      addOutput('Try different commands, click around, maybe a konami code?');
-      addOutput('Hint: Some commands are more fun than others.');
+      addOutput('Try different commands, click around...');
     },
 
     hello: () => {
@@ -305,7 +317,7 @@ Available Commands:
  |  _  |  __/ | | (_) |_|
  |_| |_|\\___|_|_|\\___/(_)
 
- Welcome to my  Gusto-2026!
+ Welcome to Gusto '26!
       `, true);
     },
 
@@ -319,7 +331,6 @@ Available Commands:
 
     uptime: () => {
       addOutput('Gusto OS has been running since you opened this tab.');
-      addOutput('Time flies when you\'re exploring, doesn\'t it?');
     },
   };
 

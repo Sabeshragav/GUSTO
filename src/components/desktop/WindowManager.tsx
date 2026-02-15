@@ -19,6 +19,7 @@ import { RulesSection } from "../apps/RulesSection";
 import { ContactSection } from "../apps/ContactSection";
 import { TransportInfo } from "../apps/TransportInfo";
 import { RegisterPage } from "../apps/register/RegisterPage";
+import { BrowserChrome } from "../apps/register/BrowserChrome";
 
 export function WindowManager() {
   const { state } = useDesktop();
@@ -60,7 +61,7 @@ export function WindowManager() {
       case "transport":
         return <TransportInfo />;
       case "register":
-        return <RegisterPage data={windowState.data} />;
+        return <BrowserChrome><RegisterPage data={windowState.data} /></BrowserChrome>;
       default:
         return (
           <div className="p-4 text-[var(--text-muted)]">

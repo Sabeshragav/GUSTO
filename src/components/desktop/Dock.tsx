@@ -1,11 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useDesktop } from "../../contexts/DesktopContext";
 import { ThemedIcon } from "../ui/ThemedIcon";
-import { useIsMobile } from "../../hooks/useIsMobile";
+// import { useIsMobile } from "../../hooks/useIsMobile"; // Removed
 import { getAppColor } from "../../data/appColors";
 import { getMacIcon } from "../../data/macIcons";
 
@@ -47,7 +46,7 @@ const dockItems: DockItem[] = [
 
 export function Dock() {
   const { state, openApp, focusWindow } = useDesktop();
-  const { isMobile } = useIsMobile();
+  // const { isMobile } = useIsMobile(); // Removed
   const mouseX = useMotionValue<number | null>(null);
 
   const handleAppClick = (appId: string) => {
@@ -70,10 +69,10 @@ export function Dock() {
     <motion.div
       onMouseMove={(e) => mouseX.set(e.pageX)}
       onMouseLeave={() => mouseX.set(null)}
-      className={`fixed left-1/2 -translate-x-1/2 z-[9998] ${isMobile ? "bottom-2" : "bottom-4"}`}
+      className="fixed left-1/2 -translate-x-1/2 z-[9998] bottom-10"
     >
       <div
-        className={`dock-container flex items-end shadow-dock ${isMobile ? "gap-1 px-2 py-2" : "gap-3 px-3 py-3"}`}
+        className="dock-container flex items-end shadow-dock gap-3 px-3 py-3"
         style={{
           border: "1px solid var(--border-color)",
           backgroundColor: "var(--surface-primary)", //   theme color
@@ -88,13 +87,12 @@ export function Dock() {
             mouseX={mouseX}
             isOpen={state.windows.some((w) => w.appId === item.appId)}
             onClick={() => handleAppClick(item.appId)}
-            isMobile={isMobile}
           />
         ))}
 
         {/* Divider */}
         <div
-          className={`w-px self-center ${isMobile ? "h-6 mx-1" : "h-10 mx-2"}`}
+          className="w-px self-center h-10 mx-2"
           style={{ backgroundColor: "var(--border-color)" }}
         />
 
@@ -111,7 +109,6 @@ export function Dock() {
           onClick={handleTrashClick}
           isTrash={true}
           hasItems={state.trashedItems.length > 0}
-          isMobile={isMobile}
         />
       </div>
     </motion.div>
@@ -125,7 +122,6 @@ function DockIcon({
   onClick,
   isTrash,
   hasItems,
-  isMobile,
 }: {
   item: DockItem;
   mouseX: any;
@@ -133,7 +129,6 @@ function DockIcon({
   onClick: () => void;
   isTrash?: boolean;
   hasItems?: boolean;
-  isMobile: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -145,7 +140,7 @@ function DockIcon({
   const widthSync = useTransform(
     distance,
     [-150, 0, 150],
-    isMobile ? [40, 60, 40] : [48, 80, 48],
+    [48, 80, 48],
   );
   const width = useSpring(widthSync, {
     mass: 0.1,
@@ -154,7 +149,7 @@ function DockIcon({
   });
 
   return (
-    <div className="flex flex-col items-center gap-1 group relative">
+    <div id={`dock-icon-${item.id}`} className="flex flex-col items-center gap-1 group relative">
       {/* Tooltip — outside motion.div so overflow doesn't clip it */}
       <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-[var(--surface-elevated)] text-[var(--text-primary)] text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-[var(--border-color)] shadow-lg z-50">
         {item.name}
@@ -166,49 +161,30 @@ function DockIcon({
         style={{
           width,
           height: width,
-          backgroundColor: !isMobile
-            ? "transparent"
-            : getAppColor(item.appId).bg,
+          backgroundColor: "transparent",
         }}
         onClick={onClick}
         className="dock-item relative flex items-center justify-center rounded-xl border border-transparent transition-colors cursor-pointer shadow-sm"
       >
-        {!isMobile ? (
-          (() => {
-            const macSrc = getMacIcon(item.appId, isTrash && hasItems);
-            return macSrc ? (
-              <Image
-                src={macSrc}
-                alt={item.name}
-                fill
-                className="object-contain pointer-events-none"
-                draggable={false}
-                unoptimized
-              />
-            ) : (
-              <div className="w-3/5 h-3/5">
-                <ThemedIcon
-                  name={item.iconName}
-                  className="w-full h-full"
-                  style={{ color: getAppColor(item.appId).color }}
-                />
-              </div>
-            );
-          })()
-        ) : (
-          <div className="w-3/5 h-3/5">
-            <ThemedIcon
-              name={item.iconName}
-              className="w-full h-full"
-              style={{
-                color:
-                  isTrash && !hasItems
-                    ? "var(--text-secondary)"
-                    : getAppColor(item.appId).color,
-              }}
+        {(() => {
+          const macSrc = getMacIcon(item.appId, isTrash && hasItems);
+          return macSrc ? (
+            <img
+              src={macSrc}
+              alt={item.name}
+              className="object-contain w-full h-full pointer-events-none"
+              draggable={false}
             />
-          </div>
-        )}
+          ) : (
+            <div className="w-3/5 h-3/5">
+              <ThemedIcon
+                name={item.iconName}
+                className="w-full h-full"
+                style={{ color: getAppColor(item.appId).color }}
+              />
+            </div>
+          );
+        })()}
       </motion.div>
 
       {/* Active Indicator */}

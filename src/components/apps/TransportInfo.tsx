@@ -2,6 +2,7 @@
 
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { busRoutes } from "../../data/details/bus_timings";
+import { useSEO } from "../../hooks/useSEO";
 
 interface InfoCard {
   title: string;
@@ -72,6 +73,7 @@ function InfoSection({ card }: { card: InfoCard }) {
 }
 
 export function TransportInfo() {
+  useSEO("transport");
   const { isMobile } = useIsMobile();
 
   return (

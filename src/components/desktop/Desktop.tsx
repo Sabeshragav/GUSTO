@@ -12,8 +12,8 @@ import { ConfettiEffect } from "../effects/ConfettiEffect";
 import { Screensaver } from "../effects/Screensaver";
 import { BootScreen } from "../system/BootScreen";
 import { ContextMenu } from "../ui/ContextMenu";
+import { DesktopOnboarding } from "./DesktopOnboarding";
 import { useDesktop } from "../../contexts/DesktopContext";
-import { useIsMobile } from "../../hooks/useIsMobile";
 import type { DesktopItem } from "../../types";
 
 import { fileSystem } from "../../data/filesystem";
@@ -28,7 +28,7 @@ export function Desktop() {
     closeContextMenu,
     setWallpaper,
   } = useDesktop();
-  const { isMobile } = useIsMobile();
+  // const { isMobile } = useIsMobile(); // Removed
   const [isBooting, setIsBooting] = useState(true);
   const desktopRef = useRef<HTMLDivElement>(null);
   const konamiSequence = useRef<string[]>([]);
@@ -54,12 +54,12 @@ export function Desktop() {
           : child.type === "folder"
             ? "folder"
             : "file",
-      x: isMobile ? 0 : 20,
-      y: isMobile ? 0 : 20 + index * 100,
+      x: 20,
+      y: 20 + index * 100,
       fileId: child.type === "app" ? undefined : child.id,
       appId: child.type === "app" ? child.name.toLowerCase() : undefined,
     }));
-  }, [isMobile]);
+  }, []);
 
   const wallpaperStyle = useMemo((): React.CSSProperties => {
     const { wallpaper } = state;
@@ -204,17 +204,17 @@ export function Desktop() {
       <MenuBar />
 
       <div
-        className={`absolute inset-0 pt-16 pb-20 px-4 pointer-events-none ${isMobile ? "mobile-icons-container" : ""}`}
+        className="absolute inset-0 pt-16 pb-32 px-4 pointer-events-none"
       >
         <div
-          className={`pointer-events-auto ${isMobile ? "mobile-icons-grid" : ""}`}
+          className="pointer-events-auto"
         >
           {desktopItems.map((item) => (
             <div
               key={item.id}
               className={iconsJiggling ? "animate-icon-jiggle" : ""}
             >
-              <DesktopIcon item={item} isMobile={isMobile} />
+              <DesktopIcon item={item} />
             </div>
           ))}
         </div>
@@ -224,6 +224,8 @@ export function Desktop() {
 
       <WindowManager />
       <Dock />
+
+      <DesktopOnboarding isReady={!isBooting} />
 
       {state.isMatrixMode && (
         <MatrixEffect onComplete={() => setMatrixMode(false)} />

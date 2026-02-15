@@ -2,7 +2,6 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import Image from "next/image";
 import { getIOSIcon } from "../../data/iosIcons";
 import type { MobileApp } from "./MobileAppDrawer";
 
@@ -89,7 +88,7 @@ function RecentCard({
           <div className="flex items-center gap-3 px-4 py-2.5 bg-[#1c1c2e] border-t border-white/5">
             <div className="w-7 h-7 rounded-[22%] overflow-hidden shrink-0 relative">
               {iconUrl ? (
-                <Image src={iconUrl} alt="" fill className="object-cover" draggable={false} />
+                <img src={iconUrl} alt="" className="object-cover w-full h-full" draggable={false} />
               ) : (
                 <div className="w-full h-full bg-white/10 flex items-center justify-center">
                   <span className="text-white/60 text-xs font-bold">{app.name.charAt(0)}</span>

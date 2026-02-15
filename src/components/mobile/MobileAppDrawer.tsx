@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { Search } from "lucide-react";
 import { getIOSIcon } from "../../data/iosIcons";
 
@@ -69,13 +68,11 @@ function DrawerAppIcon({
     >
       <div className="relative w-14 h-14 rounded-[22%] overflow-hidden shadow-md shadow-black/20">
         {iconUrl ? (
-          <Image
+          <img
             src={iconUrl}
             alt={app.name}
-            fill
-            className="object-cover"
+            className="object-cover w-full h-full"
             draggable={false}
-            sizes="56px"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">

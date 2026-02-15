@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { useDesktop } from "../../contexts/DesktopContext";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { EventPromoWidget } from "../widgets/EventPromoWidget";
-import Image from "next/image";
 
 // GUSTO 2026 event date — March 7, 2026
 const TARGET_DATE = new Date("2026-03-04T23:59:59+05:30");
@@ -147,20 +146,18 @@ export function DesktopWidgets() {
             transition={{ duration: 0.8, delay: 0.3 }}
           >
             <div className="relative w-24 h-24 drop-shadow-2xl filter brightness-110">
-              <Image
+              <img
                 src="/logos/GCEE/white.png"
                 alt="GCEE"
-                fill
-                className="object-contain"
+                className="object-contain w-full h-full"
               />
             </div>
             <div className="h-16 w-[2px] bg-white/20 rounded-full"></div>
             <div className="relative w-24 h-24 drop-shadow-2xl filter brightness-110">
-              <Image
+              <img
                 src="/logos/AIT/silver.png"
                 alt="AIT"
-                fill
-                className="object-contain"
+                className="object-contain w-full h-full"
               />
             </div>
           </motion.div>
@@ -220,6 +217,14 @@ export function DesktopWidgets() {
           transition={{ delay: 1.5, duration: 2 }}
         >
           2026
+        </motion.div>
+        <motion.div
+          className={`text-sm font-bold tracking-[0.3em] mt-2 uppercase ${textColor}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.4 }}
+          transition={{ delay: 2, duration: 2 }}
+        >
+          Let's meet on March 6th!
         </motion.div>
       </div>
 
