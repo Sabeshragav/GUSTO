@@ -280,9 +280,10 @@ export function RegisterPage({ data }: RegisterPageProps) {
         const result = await response.json();
 
         if (!response.ok || !result.success) {
-          throw new Error(
-            result.error || "Registration failed. Please try again.",
-          );
+          const msg = result.detail
+            ? `${result.error} ${result.detail}`
+            : result.error || "Registration failed. Please try again.";
+          throw new Error(msg);
         }
 
         setRegistrationId(result.uniqueCode || "SUBMITTED");
