@@ -50,7 +50,6 @@ const LANDMARKS = [
   "Gobichettipalayam — 25 km",
 ];
 
-
 function InfoSection({ card }: { card: InfoCard }) {
   return (
     <div className="bg-[var(--surface-primary)] border-2 border-[var(--border-color)] p-4">
@@ -104,29 +103,49 @@ export function TransportInfo() {
             <span className="text-xl">🚍</span>
             Bus Timings to College
           </h3>
-          <div className={`grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-2"}`}>
+          <div
+            className={`grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-2"}`}
+          >
             {busRoutes.map((route, idx) => (
-              <div key={idx} className="bg-[var(--surface-primary)] border-2 border-[var(--border-color)] p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <div
+                key={idx}
+                className="bg-[var(--surface-primary)] border-2 border-[var(--border-color)] p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              >
                 <div className="flex justify-between items-start mb-2 border-b border-[var(--border-color)] pb-2">
                   <div>
-                    <h4 className="font-bold text-[var(--text-primary)] text-base">{route.location}</h4>
-                    <p className="text-[10px] text-[var(--text-secondary)] mt-0.5">Stop: {route.stopName}</p>
+                    <h4 className="font-bold text-[var(--text-primary)] text-base">
+                      {route.location}
+                    </h4>
+                    <p className="text-[10px] text-[var(--text-secondary)] mt-0.5">
+                      Stop: {route.stopName}
+                    </p>
                   </div>
                   <div className="text-right flex flex-col items-end">
                     <span className="text-[10px] font-bold bg-[var(--surface-secondary)] px-2 py-1 rounded border border-[var(--border-color)] mb-1 block w-fit">
                       {route.duration}
                     </span>
-                    <span className="text-[10px] text-[var(--text-muted)]">{route.distance}</span>
+                    <span className="text-[10px] text-[var(--text-muted)]">
+                      {route.distance}
+                    </span>
                   </div>
                 </div>
 
                 <div className="space-y-2 mt-3">
                   {route.buses.map((bus, busIdx) => (
-                    <div key={busIdx} className="flex justify-between items-center text-xs bg-[var(--surface-secondary)]/50 p-2 rounded">
-                      <span className="font-mono font-bold text-[var(--accent-color)] text-sm">{bus.time}</span>
+                    <div
+                      key={busIdx}
+                      className="flex justify-between items-center text-xs bg-[var(--surface-secondary)]/50 p-2 rounded"
+                    >
+                      <span className="font-mono font-bold text-[var(--accent-color)] text-sm">
+                        {bus.time}
+                      </span>
                       <div className="text-right">
-                        <div className="text-[var(--text-primary)] font-medium">{bus.type}</div>
-                        <div className="text-[10px] text-[var(--text-muted)] line-clamp-1">{bus.destination}</div>
+                        <div className="text-[var(--text-primary)] font-medium">
+                          {bus.type}
+                        </div>
+                        <div className="text-[10px] text-[var(--text-muted)] line-clamp-1">
+                          {bus.destination}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -167,7 +186,7 @@ export function TransportInfo() {
             Find Us on Map
           </h3>
           <a
-            href="https://maps.google.com/?q=Government+College+of+Engineering+Erode"
+            href="https://maps.app.goo.gl/Hf1at231BuFYeoDW6"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center px-4 py-2 text-sm font-bold bg-[var(--ph-orange)] text-white border-2 border-[var(--ph-orange)] hover:bg-[var(--accent-hover)] transition-colors active:translate-y-[1px] min-h-[44px]"
