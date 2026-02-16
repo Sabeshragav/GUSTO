@@ -62,11 +62,10 @@ function ToolbarButton({
   return (
     <button
       type="button"
-      className={`w-7 h-7 flex items-center justify-center rounded transition-colors ${
-        active
+      className={`w-7 h-7 flex items-center justify-center rounded transition-colors ${active
           ? "bg-[var(--accent-color)]/20 text-[var(--accent-color)]"
           : "text-[var(--text-muted)] hover:bg-[var(--surface-secondary)] hover:text-[var(--text-primary)]"
-      }`}
+        }`}
       onClick={(e) => e.preventDefault()}
     >
       {children}
@@ -229,12 +228,11 @@ export function RulesSection() {
       </div>
 
       {/* Document Area */}
-      <div className="flex-1 overflow-y-auto bg-[#e8e8e8] dark:bg-[#2a2a2a] p-4 flex justify-center">
+      <div className="flex-1 overflow-y-auto bg-[#e8e8e8] dark:bg-[#2a2a2a] p-4">
         {/* Page */}
         <div
-          className={`bg-white dark:bg-[var(--surface-primary)] shadow-lg border border-[var(--border-color)] ${
-            isMobile ? "w-full" : "w-full max-w-[680px]"
-          }`}
+          className={`bg-white dark:bg-[var(--surface-primary)] shadow-lg border border-[var(--border-color)] mx-auto ${isMobile ? "w-full" : "w-full max-w-[680px]"
+            }`}
           style={{
             minHeight: isMobile ? "auto" : "860px",
             padding: isMobile ? "24px 20px" : "48px 56px",
