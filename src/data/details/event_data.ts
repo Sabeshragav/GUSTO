@@ -140,7 +140,6 @@ export const eventDetails = {
             },
             "time": "10:15 AM",
             "venue": "Hardware lab & IT-lab 2",
-            "registrationLink": thinkCompilerRegLink
         },
         {
             "id": "tech-ind-2",
@@ -195,7 +194,6 @@ export const eventDetails = {
             },
             "time": "11:00 AM",
             "venue": "IT-lab 1 & IT-lab 3",
-            "registrationLink": codeChaosRegLink
         },
         {
             "id": "tech-ind-3",
@@ -257,7 +255,6 @@ export const eventDetails = {
             },
             "time": "11:00 AM",
             "venue": "AD-21 IT department",
-            "registrationLink": promptXRegLink
         }
     ],
     "nonTechnicalEvents": [
@@ -393,7 +390,6 @@ export const eventDetails = {
             },
             "time": "10:15 AM",
             "venue": "AD-22 IT department",
-            "registrationLink": iconIQRegLink
         }
     ]
 };

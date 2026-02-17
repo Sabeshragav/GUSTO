@@ -467,8 +467,8 @@ function MobileOSContent() {
               damping: 35,
               mass: 0.8,
             }}
-            className="absolute inset-0 pt-11 z-[50] bg-[var(--surface-bg)] overflow-hidden flex flex-col"
-            style={bottomPadStyle}
+            className="absolute left-0 right-0 top-0 pt-11 z-[50] bg-[var(--surface-bg)] overflow-hidden flex flex-col"
+            style={{ height: '100dvh', ...bottomPadStyle }}
           >
             <div className="sticky top-0 z-10 h-11 min-h-[44px] flex items-center justify-between px-4 bg-[var(--surface-bg)]/95 backdrop-blur-md border-b border-[var(--border-color)]">
               <button
@@ -501,8 +501,8 @@ function MobileOSContent() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="absolute inset-0 pt-11 flex flex-col"
-            style={bottomPadStyle}
+            className="absolute left-0 right-0 top-0 pt-11 flex flex-col"
+            style={{ height: '100dvh', ...bottomPadStyle }}
           >
             {/* GUSTO watermark */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
