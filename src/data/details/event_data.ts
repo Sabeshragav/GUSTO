@@ -128,15 +128,15 @@ export const eventDetails = {
             },
             "coordinator1": {
                 "name": "S.Nandhakumar",
-                "phone": "0000000000"
+                "phone": "7695966279"
             },
             "coordinator2": {
                 "name": "B.Ganga",
-                "phone": "0000000000"
+                "phone": "8072017045"
             },
             "coordinator3": {
                 "name": "M.Manisha",
-                "phone": "0000000000"
+                "phone": "9942011161"
             },
             "time": "10:15 AM",
             "venue": "Hardware lab & IT-lab 2",
@@ -183,15 +183,15 @@ export const eventDetails = {
             },
             "coordinator1": {
                 "name": "A.Sanuktha",
-                "phone": "0000000000"
+                "phone": "9361334075"
             },
             "coordinator2": {
                 "name": "K.Divyasri",
-                "phone": "0000000000"
+                "phone": "8667797100"
             },
-            "coordinator3":{
-                "name":"P.Surya",
-                "phone":"0000000000"
+            "coordinator3": {
+                "name": "P.Surya",
+                "phone": "6383150516"
             },
             "time": "11:00 AM",
             "venue": "IT-lab 1 & IT-lab 3",
@@ -245,15 +245,15 @@ export const eventDetails = {
             },
             "coordinator1": {
                 "name": "C.SanjayKanth",
-                "phone": "0000000000"
+                "phone": "7904546645"
             },
             "coordinator2": {
                 "name": "M.Rasiga",
-                "phone": "0000000000"
+                "phone": "9345128184"
             },
             "coordinator3": {
                 "name": "M.Swetha",
-                "phone": "0000000000"
+                "phone": "7418185974"
             },
             "time": "11:00 AM",
             "venue": "AD-21 IT department",
@@ -296,7 +296,7 @@ export const eventDetails = {
                 "Online Event",
                 "Only individual participation is permitted; no group entries.",
                 "Memes must be created only based on provided situations.",
-                "Created memes must be uploaded online before 20th April 2025 via meme submission email",
+                "Created memes must be uploaded online before 5th March 2026 via meme submission email",
                 "Winners will receive exciting prizes as rewards.",
                 "Theme can be related to General College Life, Students struggles, fun & fest themes (Eg : hostel life, monday mood, online vs offline classes, That one professor, college crush, Seniors advice be Like ) ",
                 "Memes containing adult content or depicting violence are strictly prohibited and will not be considered."
@@ -333,11 +333,11 @@ export const eventDetails = {
             ],
             "coordinator1": {
                 "name": "M.Deepak",
-                "phone": "0000000000"
+                "phone": "6374294597"
             },
             "coordinator2": {
                 "name": "S.Mari Sangeeth",
-                "phone": "0000000000"
+                "phone": "6383575163"
             },
             "time": "Online Event",
             "submission_name": "Short Film Submission Email",
@@ -385,11 +385,11 @@ export const eventDetails = {
             },
             "coordinator1": {
                 "name": "P.Santhosh kumar",
-                "phone": "0000000000"
+                "phone": "8637424695"
             },
             "coordinator2": {
                 "name": "B.Kanimozhi",
-                "phone": "0000000000"
+                "phone": "8220802872"
             },
             "time": "10:15 AM",
             "venue": "AD-22 IT department",
