@@ -173,29 +173,23 @@ export async function POST(req: NextRequest) {
 
             await client.query("COMMIT");
 
-            // Send confirmation email
+            // Send confirmation email (fire-and-forget — does not block response)
             const submissionEvents = getSubmissionEvents(
                 selectedEvents as typeof EVENTS,
             );
             const allNeedSubmission = [...abstractEvents, ...submissionEvents];
-            try {
-                await sendRegistrationEmail({
-                    to: email,
-                    name,
-                    uniqueCode,
-                    events: (selectedEvents as typeof EVENTS).map((e) => ({
-                        title: e.title,
-                        eventType: e.eventType,
-                        submissionEmail: e.submissionEmail,
-                    })),
-                    amount: REGISTRATION_PRICE,
-                });
-            } catch (emailErr) {
-                console.error(
-                    "Email send failed (registration still saved):",
-                    emailErr,
-                );
-            }
+            console.log(`[Register] Dispatching confirmation email to ${email}`);
+            sendRegistrationEmail({
+                to: email,
+                name,
+                uniqueCode,
+                events: (selectedEvents as typeof EVENTS).map((e) => ({
+                    title: e.title,
+                    eventType: e.eventType,
+                    submissionEmail: e.submissionEmail,
+                })),
+                amount: REGISTRATION_PRICE,
+            });
 
             return NextResponse.json({
                 success: true,

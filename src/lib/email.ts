@@ -21,6 +21,7 @@ async function sendViaBrevo(
   subject: string,
   html: string,
 ): Promise<void> {
+  console.log(`[Email/Brevo] Sending to ${to} | Subject: "${subject}"`);
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: {
@@ -38,30 +39,23 @@ async function sendViaBrevo(
 
   if (!res.ok) {
     const body = await res.text();
+    console.error(`[Email/Brevo] FAILED for ${to} | Status: ${res.status} | Body: ${body}`);
     throw new Error(`Brevo API error ${res.status}: ${body}`);
   }
+
+  console.log(`[Email/Brevo] SUCCESS for ${to}`);
 }
 
 /**
  * Try SES first, fall back to Brevo on failure.
  */
-async function sendEmail(to: string, subject: string, html: string) {
-  try {
-    // ses.send(
-    //   new SendEmailCommand({
-    //     Source: `"${FROM_NAME}" <${FROM_EMAIL}>`,
-    //     Destination: { ToAddresses: [to] },
-    //     Message: {
-    //       Subject: { Data: subject },
-    //       Body: { Html: { Data: html } },
-    //     },
-    //   }),
-    // );
+function sendEmail(to: string, subject: string, html: string) {
+  console.log(`[Email] Firing email to ${to} (fire-and-forget)`);
 
-    sendViaBrevo(to, subject, html);
-  } catch (sesErr) {
-    console.error(`[SES] Failed for ${to}`, sesErr);
-  }
+  // Fire-and-forget: do not await, catch errors asynchronously
+  sendViaBrevo(to, subject, html).catch((err) => {
+    console.error(`[Email] Fire-and-forget failed for ${to}:`, err);
+  });
 }
 
 export async function sendRegistrationEmail(data: RegistrationEmailData) {
