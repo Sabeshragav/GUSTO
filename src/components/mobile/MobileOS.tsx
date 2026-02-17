@@ -163,7 +163,10 @@ function ButtonNavBar({
   onRecent: () => void;
 }) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-12 z-[300] flex items-center justify-around bg-black/80 backdrop-blur-md border-t border-white/5">
+    <div
+      className="fixed bottom-0 left-0 right-0 z-[300] flex items-center justify-around bg-black/80 backdrop-blur-md border-t border-white/5"
+      style={{ height: 'calc(48px + env(safe-area-inset-bottom, 0px))', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+    >
       <button
         onClick={onBack}
         className="w-12 h-12 flex items-center justify-center text-white/60 active:text-white active:bg-white/10 rounded-full transition-all"
@@ -434,7 +437,10 @@ function MobileOSContent() {
     { label: "Sec", value: pad(timeLeft.seconds) },
   ];
 
-  const bottomPad = navMode === "buttons" ? "pb-14" : "pb-8";
+  // Use inline style for safe-area-aware bottom padding
+  const bottomPadStyle: React.CSSProperties = navMode === "buttons"
+    ? { paddingBottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }
+    : { paddingBottom: 'calc(32px + env(safe-area-inset-bottom, 0px))' };
 
   return (
     <div
@@ -461,7 +467,8 @@ function MobileOSContent() {
               damping: 35,
               mass: 0.8,
             }}
-            className={`absolute inset-0 pt-11 ${bottomPad} z-[50] bg-[var(--surface-bg)] overflow-hidden flex flex-col`}
+            className="absolute left-0 right-0 top-0 pt-11 z-[50] bg-[var(--surface-bg)] overflow-hidden flex flex-col"
+            style={{ height: '100dvh', ...bottomPadStyle }}
           >
             <div className="sticky top-0 z-10 h-11 min-h-[44px] flex items-center justify-between px-4 bg-[var(--surface-bg)]/95 backdrop-blur-md border-b border-[var(--border-color)]">
               <button
@@ -494,7 +501,8 @@ function MobileOSContent() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className={`absolute inset-0 pt-11 ${bottomPad} flex flex-col`}
+            className="absolute left-0 right-0 top-0 pt-11 flex flex-col"
+            style={{ height: '100dvh', ...bottomPadStyle }}
           >
             {/* GUSTO watermark */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">

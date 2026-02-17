@@ -21,7 +21,7 @@ function AppContent() {
       </div>
 
       {/* Mobile layout: visible only below lg (<1024px) */}
-      <div className="lg:hidden fixed inset-0 w-screen h-screen overflow-hidden">
+      <div className="lg:hidden fixed inset-0 w-screen overflow-hidden" style={{ height: '100dvh' }}>
         <MobileOS />
       </div>
 
