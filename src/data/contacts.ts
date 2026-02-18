@@ -13,13 +13,13 @@ const rawContacts = [
         "name": "SANTHAKUMARAN C",
         "role": "Secretary",
         "phone": "+91 9626202811",
-        "category": "overall"
+        "category": "Secretary"
     },
     {
         "name": "SORNA MALLIKA M",
         "role": "Secretary",
         "phone": "+91 8015754245",
-        "category": "overall"
+        "category": "Secretary"
     },
     // Registration Coordinators
     {

@@ -19,10 +19,13 @@ export function ContactSection() {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const { unlockAchievement } = useAchievements();
 
-  // Simple alphabetical sort for filtered contacts
-  const sortedContacts = [...filteredContacts].sort((a, b) =>
-    a.name.localeCompare(b.name),
-  );
+  // Sort: Secretary first, then registration; preserve data order within each group
+  const categoryOrder: Record<string, number> = { Secretary: 0, registration: 1 };
+  const sortedContacts = [...filteredContacts].sort((a, b) => {
+    const orderA = categoryOrder[a.category] ?? 99;
+    const orderB = categoryOrder[b.category] ?? 99;
+    return orderA - orderB;
+  });
 
   useEffect(() => {
     if (selectedContact) {

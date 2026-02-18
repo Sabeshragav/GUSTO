@@ -98,9 +98,8 @@ export function EventCard({
                 {["B", "I", "U"].map((btn) => (
                   <span
                     key={btn}
-                    className={`w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] hover:bg-[var(--surface-primary)] transition-colors cursor-default ${
-                      btn === "B" ? "font-bold" : btn === "I" ? "italic" : "underline"
-                    }`}
+                    className={`w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] hover:bg-[var(--surface-primary)] transition-colors cursor-default ${btn === "B" ? "font-bold" : btn === "I" ? "italic" : "underline"
+                      }`}
                   >
                     {btn}
                   </span>
@@ -161,7 +160,7 @@ export function EventCard({
               {event.submission_Email && (
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase">{event.submission_name || "Submission"}</span>
-                  <div className="flex items-center gap-2 text-sm break-all select-all">
+                  <div className="flex items-center gap-2 text-sm break-all select-all text-white">
                     <Mail size={14} className="shrink-0 text-[var(--accent-color)]" />
                     {event.submission_Email}
                   </div>

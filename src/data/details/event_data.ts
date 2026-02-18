@@ -49,7 +49,7 @@ export const eventDetails = {
             "time": "10:15 AM",
             "venue": "Seminar Hall & HOD lab",
             "submission_name": "Abstract Submission Email",
-            "submission_Email": paperPresentationEmail
+            "submission_Email": "subramanidhaya77@gmail.com"
         },
         {
             "id": "tech-2",
@@ -81,7 +81,7 @@ export const eventDetails = {
             "time": "10:30 AM",
             "venue": "IT Computer Lab 1",
             "submission_name": "Abstract Submission Email",
-            "submission_Email": projectPresentationEmail
+            "submission_Email": "kavikumarbalaganesan@gmail.com"
         }
     ],
     "technicalIndividualEvents": [
@@ -282,7 +282,7 @@ export const eventDetails = {
             },
             "time": "Online Event",
             "submission_name": "Photography Submission Email",
-            "submission_Email": photographyContestEmail
+            "submission_Email": "gr906344@gmail.com"
         },
         {
             "id": "non-tech-2",
@@ -308,7 +308,7 @@ export const eventDetails = {
             },
             "time": "Online Event",
             "submission_name": "Meme Submission Email",
-            "submission_Email": memeContestEmail
+            "submission_Email": "yoroim80@gmail.com"
         },
         {
             "id": "non-tech-3",
@@ -338,7 +338,7 @@ export const eventDetails = {
             },
             "time": "Online Event",
             "submission_name": "Short Film Submission Email",
-            "submission_Email": shortFilmEmail
+            "submission_Email": "adhithyav82005@gmail.com"
         },
         {
             "id": "non-tech-4",
