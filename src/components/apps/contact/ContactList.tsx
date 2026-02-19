@@ -25,7 +25,7 @@ export function ContactList({ contacts, onSelect }: ContactListProps) {
 
     // Derive categories dynamically
     const categories = Object.keys(grouped).sort((a, b) => {
-        const priority = ['overall', 'registration', 'Faculty Coordinator', 'Student Coordinator'];
+        const priority = ['Secretary', 'registration', 'Faculty Coordinator', 'Student Coordinator'];
         const indexA = priority.indexOf(a);
         const indexB = priority.indexOf(b);
 

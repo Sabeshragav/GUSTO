@@ -89,7 +89,6 @@ Available Commands:
   cat <file>    - Display file contents
   clear         - Clear the terminal
   minesweeper   - Play a game
-  snake         - Play Snake
   neofetch      - Display system info
   matrix        - Enter the matrix
   party         - Celebrate!
@@ -151,7 +150,6 @@ Join us for a day of innovation, competition, and fun!
         mail: 'email',
         minesweeper: 'minesweeper',
         game: 'minesweeper',
-        snake: 'snake',
         trash: 'trash',
         events: 'events',
         rules: 'rules',
@@ -266,10 +264,7 @@ Join us for a day of innovation, competition, and fun!
       addOutput('Starting Minesweeper... Good luck!');
     },
 
-    snake: () => {
-      openApp('snake');
-      addOutput('Starting Snake... Hiss!');
-    },
+
 
     neofetch: () => {
       addOutput(ASCII_NEOFETCH, true);
@@ -296,7 +291,7 @@ Join us for a day of innovation, competition, and fun!
     },
 
     rm: (args) => {
-        addOutput('Permission denied. Please be careful!');
+      addOutput('Permission denied. Please be careful!');
     },
 
     exit: () => {
@@ -405,9 +400,8 @@ Join us for a day of innovation, competition, and fun!
         {lines.map((line, i) => (
           <div
             key={i}
-            className={`${line.type === 'input' ? 'text-warm-400' : 'text-warm-300'} ${
-              line.isAscii ? 'whitespace-pre' : 'whitespace-pre-wrap'
-            } leading-relaxed`}
+            className={`${line.type === 'input' ? 'text-warm-400' : 'text-warm-300'} ${line.isAscii ? 'whitespace-pre' : 'whitespace-pre-wrap'
+              } leading-relaxed`}
           >
             {line.content}
           </div>
