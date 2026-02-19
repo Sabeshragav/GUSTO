@@ -18,6 +18,7 @@ import type {
 import type { ContextMenuItem } from "../components/ui/ContextMenu";
 import { fileSystem } from "../data/filesystem";
 import { themes } from "../data/themes";
+import { youtubeVideoId } from "../data/details/fullData";
 
 export const wallpapers: Wallpaper[] = [
   { id: "charcoal", name: "Charcoal", type: "solid", value: "#1a1a1a" },
@@ -694,6 +695,13 @@ export function DesktopProvider({ children }: { children: ReactNode }) {
           title: "About — GUSTO'26",
           width: 500,
           height: 600,
+        },
+        youtube: {
+          id: "youtube",
+          title: "YouTube Player",
+          width: 800,
+          height: 500,
+          data: { videoId: youtubeVideoId },
         },
       };
 

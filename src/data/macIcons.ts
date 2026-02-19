@@ -21,6 +21,7 @@ const macIconMap: Record<string, string> = {
     systemPreferences: "Settings.svg",
     achievements: "Reminders.svg",
     spotify: "Music.svg",
+    youtube: "TV.svg", // Using Apple TV icon as placeholder for YouTube
 
     // ── Games ──
     minesweeper: "Chess.svg",
