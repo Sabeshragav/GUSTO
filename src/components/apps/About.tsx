@@ -124,8 +124,8 @@ export function About() {
 
                     {/* Developer Credits */}
                     <div className="bg-[var(--surface-secondary)] rounded-2xl p-4 border border-[var(--border-color)]">
-                        <p className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] font-bold mb-2.5 text-center">
-                            Site Developed By
+                        <p className="text-[10px] tracking-widest text-[var(--text-muted)] font-bold mb-2.5 text-center">
+                            Cooked and served by
                         </p>
                         <div className="flex items-center justify-center gap-3 flex-wrap">
                             {[
