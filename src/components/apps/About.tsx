@@ -96,6 +96,7 @@ export function About() {
                             {[
                                 "Technical & Non-Technical Events",
                                 "Paper & Project Presentations",
+                                "Refresments and lunch will be provided ( veg/non-veg )",
                                 "AI & Coding Competitions",
                                 "Exciting Prizes & Certificates",
                                 "Networking & Fun Activities",
