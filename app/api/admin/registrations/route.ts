@@ -16,6 +16,11 @@ export async function GET(req: NextRequest) {
     const checkinFilter = url.searchParams.get('checkedIn');
     const attendanceFilter = url.searchParams.get('attendanceStatus');
 
+    // Pagination params
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+    const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '20', 10)));
+    const offset = (page - 1) * limit;
+
     // Build dynamic WHERE clauses
     const conditions: string[] = [];
     const params: unknown[] = [];
@@ -38,11 +43,11 @@ export async function GET(req: NextRequest) {
     if (checkinFilter !== null && checkinFilter !== undefined && checkinFilter !== '') {
         // Handle NULL as false for not checked in
         if (checkinFilter === 'false') {
-             conditions.push(`(u.checked_in = $${paramIndex++} OR u.checked_in IS NULL)`);
-             params.push(false);
+            conditions.push(`(u.checked_in = $${paramIndex++} OR u.checked_in IS NULL)`);
+            params.push(false);
         } else {
-             conditions.push(`u.checked_in = $${paramIndex++}`);
-             params.push(true);
+            conditions.push(`u.checked_in = $${paramIndex++}`);
+            params.push(true);
         }
     }
     if (attendanceFilter) {
@@ -52,7 +57,20 @@ export async function GET(req: NextRequest) {
 
     const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
 
-        const result = await query(
+    // Count total matching records (for pagination metadata)
+    const countResult = await query(
+        `SELECT COUNT(DISTINCT u.id) as total
+         FROM users u
+         LEFT JOIN event_registrations er ON u.id = er.user_id
+         LEFT JOIN payments p ON u.id = p.user_id
+         ${whereClause}`,
+        params
+    );
+    const total = parseInt(countResult.rows[0]?.total || '0', 10);
+    const totalPages = Math.ceil(total / limit);
+
+    // Fetch paginated registrations
+    const result = await query(
         `SELECT
             u.id, u.name, u.email, u.mobile, u.college, u.year,
             u.unique_code, u.checked_in, u.check_in_time, u.created_at, u.food_preference,
@@ -79,8 +97,9 @@ export async function GET(req: NextRequest) {
         LEFT JOIN payments p ON u.id = p.user_id
         ${whereClause}
         GROUP BY u.id
-        ORDER BY u.created_at DESC`,
-        params
+        ORDER BY u.created_at DESC
+        LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
+        [...params, limit, offset]
     );
 
     // Map event IDs to titles
@@ -95,27 +114,13 @@ export async function GET(req: NextRequest) {
         })),
     }));
 
-    // Stats
-    const statsResult = await query(`
-        SELECT
-            COUNT(DISTINCT u.id) as total,
-            COUNT(DISTINCT CASE WHEN u.checked_in = true THEN u.id END) as checked_in,
-            COUNT(DISTINCT CASE WHEN p.status = 'VERIFIED' THEN u.id END) as payment_verified,
-            COUNT(DISTINCT CASE WHEN u.food_preference = 'VEG' THEN u.id END) as veg_count,
-            COUNT(DISTINCT CASE WHEN u.food_preference = 'NON_VEG' THEN u.id END) as non_veg_count,
-            COUNT(DISTINCT CASE WHEN er.status = 'CONFIRMED' AND er.event_id IN ('paper-presentation', 'project-presentation') THEN u.id END) as abstracts_count
-        FROM users u
-        LEFT JOIN event_registrations er ON u.id = er.user_id
-        LEFT JOIN payments p ON u.id = p.user_id
-    `);
-
     return NextResponse.json({
         registrations,
-        stats: statsResult.rows[0] || {
-            total: 0,
-            checked_in: 0,
-            payment_verified: 0,
-            abstracts_pending: 0,
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPages,
         },
         eventList: EVENTS.map((e) => ({ id: e.id, title: e.title })),
     });

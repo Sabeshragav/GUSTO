@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
 
@@ -44,6 +44,13 @@ interface Stats {
   veg_count: number;
   non_veg_count: number;
   abstracts_pending: number;
+}
+
+interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
 }
 
 const EVENT_NAMES: Record<string, string> = {
@@ -290,12 +297,132 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-interface Stats {
-  total: number;
-  checked_in: number;
-  payment_verified: number;
-  veg_count: number;
-  non_veg_count: number;
+// ─── Pagination Component ───
+function Pagination({
+  pagination,
+  onPageChange,
+}: {
+  pagination: PaginationMeta;
+  onPageChange: (page: number) => void;
+}) {
+  const { page, totalPages, total, limit } = pagination;
+  if (totalPages <= 1) return null;
+
+  const getPageNumbers = () => {
+    const pages: (number | "ellipsis")[] = [];
+    const maxVisible = 7;
+
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (page > 3) pages.push("ellipsis");
+      const start = Math.max(2, page - 1);
+      const end = Math.min(totalPages - 1, page + 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (page < totalPages - 2) pages.push("ellipsis");
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+
+  const btnBase: React.CSSProperties = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: "36px",
+    height: "36px",
+    padding: "0 10px",
+    borderRadius: "8px",
+    border: "1px solid #2a2b35",
+    background: "transparent",
+    color: "#a1a1aa",
+    fontSize: "13px",
+    fontWeight: 500,
+    fontFamily: "inherit",
+    cursor: "pointer",
+    transition: "all 0.15s",
+  };
+
+  const from = (page - 1) * limit + 1;
+  const to = Math.min(page * limit, total);
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "10px",
+        marginTop: "20px",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+        {/* Previous */}
+        <button
+          onClick={() => onPageChange(page - 1)}
+          disabled={page === 1}
+          style={{
+            ...btnBase,
+            padding: "0 14px",
+            opacity: page === 1 ? 0.35 : 1,
+            cursor: page === 1 ? "not-allowed" : "pointer",
+          }}
+        >
+          ← Prev
+        </button>
+
+        {/* Page Numbers */}
+        {getPageNumbers().map((p, i) =>
+          p === "ellipsis" ? (
+            <span
+              key={`ellipsis-${i}`}
+              style={{
+                ...btnBase,
+                border: "none",
+                cursor: "default",
+                color: "#52525b",
+              }}
+            >
+              ···
+            </span>
+          ) : (
+            <button
+              key={p}
+              onClick={() => onPageChange(p)}
+              style={{
+                ...btnBase,
+                background: p === page ? "#F54E00" : "transparent",
+                color: p === page ? "#fff" : "#a1a1aa",
+                borderColor: p === page ? "#F54E00" : "#2a2b35",
+                fontWeight: p === page ? 700 : 500,
+              }}
+            >
+              {p}
+            </button>
+          ),
+        )}
+
+        {/* Next */}
+        <button
+          onClick={() => onPageChange(page + 1)}
+          disabled={page >= totalPages}
+          style={{
+            ...btnBase,
+            padding: "0 14px",
+            opacity: page >= totalPages ? 0.35 : 1,
+            cursor: page >= totalPages ? "not-allowed" : "pointer",
+          }}
+        >
+          Next →
+        </button>
+      </div>
+
+      <div style={{ fontSize: "12px", color: "#52525b" }}>
+        Showing {from}–{to} of {total}
+      </div>
+    </div>
+  );
 }
 
 // ─── Stats Bar ───
@@ -312,9 +439,21 @@ function StatsBar({ stats }: { stats: Stats }) {
       {[
         { label: "Total Registrations", value: stats.total, color: "#fff" },
         { label: "Checked In", value: stats.checked_in, color: "#22c55e" },
-        { label: "Payments Verified", value: stats.payment_verified, color: "#a855f7" },
-        { label: "Veg Count 🥬", value: stats.veg_count || 0, color: "#22c55e" },
-        { label: "Non-Veg Count 🍗", value: stats.non_veg_count || 0, color: "#ef4444" },
+        {
+          label: "Payments Verified",
+          value: stats.payment_verified,
+          color: "#a855f7",
+        },
+        {
+          label: "Veg Count 🥬",
+          value: stats.veg_count || 0,
+          color: "#22c55e",
+        },
+        {
+          label: "Non-Veg Count 🍗",
+          value: stats.non_veg_count || 0,
+          color: "#ef4444",
+        },
       ].map((item) => (
         <div key={item.label} style={styles.card}>
           <div
@@ -340,6 +479,45 @@ function StatsBar({ stats }: { stats: Stats }) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function StatsSkeleton() {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+        gap: "12px",
+        marginBottom: "20px",
+      }}
+    >
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} style={styles.card}>
+          <div
+            style={{
+              width: "48px",
+              height: "28px",
+              background: "#2a2b35",
+              borderRadius: "6px",
+              marginBottom: "6px",
+              animation: "pulse 1.5s ease-in-out infinite",
+            }}
+          />
+          <div
+            style={{
+              width: "80px",
+              height: "12px",
+              background: "#2a2b35",
+              borderRadius: "4px",
+              animation: "pulse 1.5s ease-in-out infinite",
+              animationDelay: "0.2s",
+            }}
+          />
+        </div>
+      ))}
+      <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }`}</style>
     </div>
   );
 }
@@ -372,14 +550,14 @@ function RegistrationDetail({
       const res = await fetch("/api/admin/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           code: reg.unique_code,
-          action: "checkin" 
+          action: "checkin",
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Check-in failed");
-      
+
       addToast("success", "User checked in successfully");
       await onRefresh();
     } catch (err: any) {
@@ -430,7 +608,7 @@ function RegistrationDetail({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Review failed");
-      
+
       addToast("success", `Abstract ${action.toLowerCase()}`);
       await onRefresh();
     } catch (err: any) {
@@ -453,7 +631,7 @@ function RegistrationDetail({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Payment update failed");
-      
+
       addToast("success", `Payment ${status.toLowerCase()}`);
       await onRefresh();
     } catch (err: any) {
@@ -530,27 +708,32 @@ function RegistrationDetail({
           }}
         >
           <div>
-            <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "4px" }}>
+            <h2
+              style={{ fontSize: "20px", fontWeight: 700, marginBottom: "4px" }}
+            >
               {reg.name}
             </h2>
             <div style={{ color: "#a1a1aa", fontSize: "13px" }}>
               {reg.email} · {reg.mobile}
             </div>
-            <div style={{ color: "#71717a", fontSize: "12px", marginTop: "2px" }}>
+            <div
+              style={{ color: "#71717a", fontSize: "12px", marginTop: "2px" }}
+            >
               {reg.college} · {reg.year}
             </div>
             {reg.food_preference && (
-              <div 
-                style={{ 
-                  marginTop: "6px", 
+              <div
+                style={{
+                  marginTop: "6px",
                   display: "inline-block",
                   padding: "2px 8px",
                   borderRadius: "4px",
                   fontSize: "11px",
                   fontWeight: 600,
-                  backgroundColor: reg.food_preference === "VEG" ? "#22c55e20" : "#ef444420",
+                  backgroundColor:
+                    reg.food_preference === "VEG" ? "#22c55e20" : "#ef444420",
                   color: reg.food_preference === "VEG" ? "#22c55e" : "#ef4444",
-                  border: `1px solid ${reg.food_preference === "VEG" ? "#22c55e40" : "#ef444440"}`
+                  border: `1px solid ${reg.food_preference === "VEG" ? "#22c55e40" : "#ef444440"}`,
                 }}
               >
                 Food: {reg.food_preference === "VEG" ? "Veg 🥬" : "Non-Veg 🍗"}
@@ -748,41 +931,41 @@ function RegistrationDetail({
                 </a>
               )}
             </div>
-            
+
             {/* Payment Actions */}
             {payment.status !== "VERIFIED" && (
-                <div style={{ display: "flex", gap: "8px" }}>
-                  {payment.status !== "VERIFIED" && (
-                     <button
-                        onClick={() => handlePaymentStatus("VERIFIED")}
-                        disabled={updating === "payment"}
-                        style={{
-                          ...styles.btn,
-                          ...styles.btnSuccess,
-                          padding: "4px 12px",
-                          fontSize: "11px",
-                          opacity: updating === "payment" ? 0.6 : 1,
-                        }}
-                      >
-                        {updating === "payment" ? "..." : "Verify Payment"}
-                      </button>
-                  )}
-                  {payment.status !== "REJECTED" && (
-                      <button
-                        onClick={() => handlePaymentStatus("REJECTED")}
-                        disabled={updating === "payment"}
-                        style={{
-                          ...styles.btn,
-                          ...styles.btnDanger,
-                          padding: "4px 12px",
-                          fontSize: "11px",
-                          opacity: updating === "payment" ? 0.6 : 1,
-                        }}
-                      >
-                        {updating === "payment" ? "..." : "Reject Payment"}
-                      </button>
-                  )}
-                </div>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {payment.status !== "VERIFIED" && (
+                  <button
+                    onClick={() => handlePaymentStatus("VERIFIED")}
+                    disabled={updating === "payment"}
+                    style={{
+                      ...styles.btn,
+                      ...styles.btnSuccess,
+                      padding: "4px 12px",
+                      fontSize: "11px",
+                      opacity: updating === "payment" ? 0.6 : 1,
+                    }}
+                  >
+                    {updating === "payment" ? "..." : "Verify Payment"}
+                  </button>
+                )}
+                {payment.status !== "REJECTED" && (
+                  <button
+                    onClick={() => handlePaymentStatus("REJECTED")}
+                    disabled={updating === "payment"}
+                    style={{
+                      ...styles.btn,
+                      ...styles.btnDanger,
+                      padding: "4px 12px",
+                      fontSize: "11px",
+                      opacity: updating === "payment" ? 0.6 : 1,
+                    }}
+                  >
+                    {updating === "payment" ? "..." : "Reject Payment"}
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}
@@ -968,12 +1151,17 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [suggestions, setSuggestions] = useState<Registration[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  
+
   const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
 
   // Search Effect
@@ -985,7 +1173,9 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
     const fetchSuggestions = async () => {
       try {
-        const res = await fetch(`/api/admin/search?q=${encodeURIComponent(debouncedSearch)}`);
+        const res = await fetch(
+          `/api/admin/search?q=${encodeURIComponent(debouncedSearch)}`,
+        );
         const data = await res.json();
         if (data.results) {
           setSuggestions(data.results);
@@ -1003,37 +1193,60 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     setShowSuggestions(false);
     setSearchQuery("");
     try {
-      const res = await fetch(`/api/admin/search?code=${encodeURIComponent(uniqueCode)}`);
+      const res = await fetch(
+        `/api/admin/search?code=${encodeURIComponent(uniqueCode)}`,
+      );
       const data = await res.json();
       if (data.user) {
         const merged = mergeSearchResult(data);
         setSelectedReg(merged);
       }
     } catch {
-       // err
+      // err
     }
   };
 
-  // Initialize filter from URL params
+  // Initialize filter, page, and limit from URL params
   const [filter, setFilter] = useState({
     event: searchParams.get("event") || "",
     paymentStatus: searchParams.get("paymentStatus") || "",
     checkedIn: searchParams.get("checkedIn") || "",
     abstractStatus: searchParams.get("abstractStatus") || "",
   });
+  const [page, setPage] = useState(() => {
+    const p = parseInt(searchParams.get("page") || "1", 10);
+    return isNaN(p) || p < 1 ? 1 : p;
+  });
+  const [limit, setLimit] = useState(() => {
+    const l = parseInt(searchParams.get("limit") || "10", 10);
+    return [10, 15, 20, 50].includes(l) ? l : 10;
+  });
 
-  // Update URL when filter changes
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (filter.event) params.set("event", filter.event);
-    if (filter.paymentStatus) params.set("paymentStatus", filter.paymentStatus);
-    if (filter.checkedIn) params.set("checkedIn", filter.checkedIn);
-    if (filter.abstractStatus) params.set("abstractStatus", filter.abstractStatus);
-    
-    router.replace(`${pathname}?${params.toString()}`);
-  }, [filter, pathname, router]);
-  const [page, setPage] = useState(1);
-  const PER_PAGE = 30;
+  // Sync URL without a separate effect (avoids double-render from router.replace)
+  const syncUrl = useCallback(
+    (f: typeof filter, p: number, l: number) => {
+      const params = new URLSearchParams();
+      if (f.event) params.set("event", f.event);
+      if (f.paymentStatus) params.set("paymentStatus", f.paymentStatus);
+      if (f.checkedIn) params.set("checkedIn", f.checkedIn);
+      if (f.abstractStatus) params.set("abstractStatus", f.abstractStatus);
+      if (p > 1) params.set("page", String(p));
+      if (l !== 10) params.set("limit", String(l));
+      router.replace(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router],
+  );
+
+  // Fetch stats separately (only on mount / manual refresh)
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/stats");
+      const data = await res.json();
+      if (data.stats) setStats(data.stats);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const fetchRegistrations = useCallback(async () => {
     setLoading(true);
@@ -1045,13 +1258,15 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       if (filter.checkedIn) params.set("checkedIn", filter.checkedIn);
       if (filter.abstractStatus)
         params.set("abstractStatus", filter.abstractStatus);
+      params.set("page", String(page));
+      params.set("limit", String(limit));
 
       const res = await fetch(`/api/admin/registrations?${params}`);
       const data = await res.json();
 
       if (data.registrations) {
         setRegistrations(data.registrations);
-        setStats(data.stats);
+        setPaginationMeta(data.pagination);
         return data.registrations as Registration[];
       }
       return [];
@@ -1066,55 +1281,102 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     filter.paymentStatus,
     filter.checkedIn,
     filter.abstractStatus,
+    page,
+    limit,
   ]);
 
-  const handleExport = () => {
-    if (registrations.length === 0) return;
+  const handleExport = async () => {
+    setExportDialogOpen(false);
+    setExporting(true);
+    try {
+      // Fetch ALL registrations from the database (no pagination)
+      const res = await fetch(`/api/admin/registrations?page=1&limit=10000`);
+      const result = await res.json();
+      const allRegs: Registration[] = result.registrations || [];
 
-    const data = registrations.map(reg => {
-       const payment = reg.payment?.[0];
-       // Flatten events for CSV? Or just list them.
-       // Let's create a row per registration.
-       const eventNames = reg.events.map(e => e.event_title).join(", ");
-       
-       return {
-         "Unique Code": reg.unique_code,
-         "Name": reg.name,
-         "Email": reg.email,
-         "Mobile": reg.mobile,
-         "College": reg.college,
-         "Year": reg.year,
-         "Checked In": reg.checked_in ? "Yes" : "No",
-         "Check In Time": reg.check_in_time ? new Date(reg.check_in_time).toLocaleString() : "",
-         "Payment Status": payment?.status || "N/A",
-         "Amount": payment?.amount || 0,
-         "Transaction ID": payment?.transaction_id || "",
-         "Events": eventNames,
-         "Registered At": new Date(reg.created_at).toLocaleString(),
-       };
-    });
+      if (allRegs.length === 0) return;
 
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
-    
-    // Format: GUSTO26_Registrations_DD-MM-YYYY_HH-MM.xlsx
-    const now = new Date();
-    const timestamp = now.toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }).replace(/[\/\,\s\:]/g, "-").replace(/--/g, "_");
+      const data = allRegs.map((reg) => {
+        const payment = reg.payment?.[0];
+        const eventNames = reg.events.map((e) => e.event_title).join(", ");
 
-    XLSX.writeFile(workbook, `GUSTO26_Registrations_${timestamp}.xlsx`);
+        return {
+          "Unique Code": reg.unique_code,
+          Name: reg.name,
+          Email: reg.email,
+          Mobile: reg.mobile,
+          College: reg.college,
+          Year: reg.year,
+          "Food Preference":
+            reg.food_preference === "VEG"
+              ? "Veg"
+              : reg.food_preference === "NON_VEG"
+                ? "Non-Veg"
+                : "",
+          "Checked In": reg.checked_in ? "Yes" : "No",
+          "Check In Time": reg.check_in_time
+            ? new Date(reg.check_in_time).toLocaleString()
+            : "",
+          "Payment Status": payment?.status || "N/A",
+          Amount: payment?.amount || 0,
+          "Transaction ID": payment?.transaction_id || "",
+          Events: eventNames,
+          "Registered At": new Date(reg.created_at).toLocaleString(),
+        };
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
+
+      const now = new Date();
+      const timestamp = now
+        .toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+        .replace(/[\/\,\s\:]/g, "-")
+        .replace(/--/g, "_");
+
+      XLSX.writeFile(workbook, `GUSTO26_Registrations_${timestamp}.xlsx`);
+    } catch {
+      // ignore
+    } finally {
+      setExporting(false);
+    }
   };
 
+  // Fetch stats once on mount
+  const statsFetched = useRef(false);
   useEffect(() => {
+    if (!statsFetched.current) {
+      statsFetched.current = true;
+      fetchStats();
+    }
+  }, [fetchStats]);
+
+  // Fetch registrations and sync URL when deps change
+  // Track the callback reference so StrictMode's duplicate mount-effect is skipped
+  const isInitialMount = useRef(true);
+  const prevFetchRef = useRef<typeof fetchRegistrations | null>(null);
+  useEffect(() => {
+    // Skip if same reference (StrictMode re-run on mount)
+    if (prevFetchRef.current === fetchRegistrations) return;
+    prevFetchRef.current = fetchRegistrations;
+
     fetchRegistrations();
-  }, [fetchRegistrations]);
+
+    // Sync URL (skip on initial mount to avoid double-render)
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    } else {
+      syncUrl(filter, page, limit);
+    }
+  }, [fetchRegistrations]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const mergeSearchResult = (data: {
     user: Record<string, unknown>;
@@ -1127,30 +1389,28 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       payment: data.payment ? [data.payment] : null,
     }) as unknown as Registration;
 
-
-
   const handleRefresh = async () => {
-    // 1. Re-fetch the main list
-    const newRegs = await fetchRegistrations(); 
+    // 1. Re-fetch stats and table
+    fetchStats();
+    const newRegs = await fetchRegistrations();
 
     // 2. If we have a selected registration, we must update it
     if (selectedReg) {
       // Try to find it in the new list first (saves a network call)
-      const found = newRegs?.find(r => r.id === selectedReg.id);
-      
+      const found = newRegs?.find((r) => r.id === selectedReg.id);
+
       if (found) {
         setSelectedReg(found);
       } else {
         // If not found (maybe pagination?), re-fetch individual
-        // logic similar to search refresh
         try {
           const r = await fetch(
             `/api/admin/search?code=${encodeURIComponent(selectedReg.unique_code)}`,
           );
           const data = await r.json();
           if (data.user) {
-             const merged = mergeSearchResult(data);
-             setSelectedReg(merged);
+            const merged = mergeSearchResult(data);
+            setSelectedReg(merged);
           }
         } catch {
           // ignore
@@ -1159,12 +1419,15 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     }
   };
 
-  // Client-side pagination
-  const paginatedRegs = registrations.slice(
-    (page - 1) * PER_PAGE,
-    page * PER_PAGE,
-  );
-  const totalPages = Math.ceil(registrations.length / PER_PAGE);
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
 
   return (
     <div style={styles.container}>
@@ -1182,16 +1445,22 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         </h1>
         <div style={{ display: "flex", gap: "10px" }}>
           <button
-            onClick={fetchRegistrations}
+            onClick={handleRefresh}
             style={{ ...styles.btn, ...styles.btnSecondary }}
           >
             ↻ Refresh
           </button>
           <button
-            onClick={handleExport}
-            style={{ ...styles.btn, background: "#22c55e", color: "white" }}
+            onClick={() => setExportDialogOpen(true)}
+            disabled={exporting}
+            style={{
+              ...styles.btn,
+              background: "#22c55e",
+              color: "white",
+              opacity: exporting ? 0.6 : 1,
+            }}
           >
-            ↓ Export Excel
+            {exporting ? "⏳ Exporting..." : "↓ Export Excel"}
           </button>
           <button
             onClick={onLogout}
@@ -1202,8 +1471,75 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         </div>
       </div>
 
+      {/* Export Confirmation Dialog */}
+      {exportDialogOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+          onClick={() => setExportDialogOpen(false)}
+        >
+          <div
+            style={{
+              background: "#1a1b23",
+              border: "1px solid #2a2b35",
+              borderRadius: "12px",
+              padding: "24px",
+              maxWidth: "420px",
+              width: "90%",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3
+              style={{ margin: "0 0 8px", fontSize: "16px", fontWeight: 600 }}
+            >
+              Export All Registrations
+            </h3>
+            <p
+              style={{
+                margin: "0 0 20px",
+                fontSize: "13px",
+                color: "#9ca3af",
+                lineHeight: 1.5,
+              }}
+            >
+              This will fetch{" "}
+              <strong style={{ color: "#e5e7eb" }}>all registrations</strong>{" "}
+              from the database and download them as an Excel file. This may
+              take a moment.
+            </p>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
+                onClick={() => setExportDialogOpen(false)}
+                style={{ ...styles.btn, ...styles.btnSecondary }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleExport}
+                style={{ ...styles.btn, background: "#22c55e", color: "white" }}
+              >
+                Export
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Stats */}
-      {stats && <StatsBar stats={stats} />}
+      {stats ? <StatsBar stats={stats} /> : <StatsSkeleton />}
 
       <div
         style={{
@@ -1213,25 +1549,25 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         }}
       >
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-           <div style={{ fontSize: "18px" }}>🔍</div>
-           <input
-             type="text"
-             value={searchQuery}
-             onChange={(e) => setSearchQuery(e.target.value)}
-             placeholder="Search by name, email, mobile or code..."
-             style={{
-               ...styles.input,
-               border: "none",
-               padding: "8px 0",
-               fontSize: "15px",
-               flex: 1,
-             }}
-             onFocus={() => {
-                if(suggestions.length > 0) setShowSuggestions(true);
-             }}
-           />
+          <div style={{ fontSize: "18px" }}>🔍</div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by name, email, mobile or code..."
+            style={{
+              ...styles.input,
+              border: "none",
+              padding: "8px 0",
+              fontSize: "15px",
+              flex: 1,
+            }}
+            onFocus={() => {
+              if (suggestions.length > 0) setShowSuggestions(true);
+            }}
+          />
         </div>
-        
+
         {/* Suggestions Dropdown */}
         {showSuggestions && suggestions.length > 0 && (
           <div
@@ -1249,29 +1585,42 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
             }}
           >
-            {suggestions.map(s => (
-               <div
-                 key={s.id}
-                 onClick={() => selectUser(s.unique_code)}
-                 style={{
-                   padding: "10px 14px",
-                   borderBottom: "1px solid #2a2b35",
-                   cursor: "pointer",
-                   display: "flex",
-                   justifyContent: "space-between",
-                   alignItems: "center"
-                 }}
-                 onMouseEnter={(e) => (e.currentTarget.style.background = "#2a2b35")}
-                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-               >
-                 <div>
-                   <div style={{fontWeight: 600, fontSize: "14px"}}>{s.name}</div>
-                   <div style={{fontSize: "12px", color: "#71717a"}}>{s.email} · {s.unique_code}</div>
-                 </div>
-                 <div style={{fontSize: "12px", color: s.checked_in ? "#22c55e" : "#ef4444"}}>
-                    {s.checked_in ? "Checked In" : ""}
-                 </div>
-               </div>
+            {suggestions.map((s) => (
+              <div
+                key={s.id}
+                onClick={() => selectUser(s.unique_code)}
+                style={{
+                  padding: "10px 14px",
+                  borderBottom: "1px solid #2a2b35",
+                  cursor: "pointer",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = "#2a2b35")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "transparent")
+                }
+              >
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: "14px" }}>
+                    {s.name}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#71717a" }}>
+                    {s.email} · {s.unique_code}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: s.checked_in ? "#22c55e" : "#ef4444",
+                  }}
+                >
+                  {s.checked_in ? "Checked In" : ""}
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -1281,7 +1630,6 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       {/* Search Result - REMOVED */}
 
       {/* Search Result */}
-
 
       {/* Filters */}
       <div
@@ -1351,10 +1699,40 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         </select>
 
         <span
-          style={{ color: "#71717a", fontSize: "12px", marginLeft: "auto" }}
+          style={{
+            color: "#71717a",
+            fontSize: "12px",
+            marginLeft: "auto",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
         >
-          {registrations.length} registration
-          {registrations.length !== 1 ? "s" : ""}
+          <span>
+            {paginationMeta ? paginationMeta.total : registrations.length}{" "}
+            registration
+            {(paginationMeta ? paginationMeta.total : registrations.length) !==
+            1
+              ? "s"
+              : ""}
+          </span>
+          <select
+            value={limit}
+            onChange={(e) => handleLimitChange(Number(e.target.value))}
+            style={{
+              ...styles.input,
+              width: "auto",
+              minWidth: "80px",
+              padding: "4px 8px",
+              fontSize: "12px",
+            }}
+          >
+            {[10, 15, 20, 50].map((n) => (
+              <option key={n} value={n}>
+                {n} / page
+              </option>
+            ))}
+          </select>
         </span>
       </div>
 
@@ -1368,9 +1746,9 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             color: "#71717a",
           }}
         >
-          Loading...
+          Loading hang tight ra coordinators...
         </div>
-      ) : paginatedRegs.length === 0 ? (
+      ) : registrations.length === 0 ? (
         <div
           style={{
             ...styles.card,
@@ -1396,7 +1774,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               </tr>
             </thead>
             <tbody>
-              {paginatedRegs.map((reg) => {
+              {registrations.map((reg) => {
                 const payment = reg.payment?.[0];
                 return (
                   <tr
@@ -1513,49 +1891,11 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       )}
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "8px",
-            marginTop: "16px",
-          }}
-        >
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            style={{
-              ...styles.btn,
-              ...styles.btnSecondary,
-              opacity: page === 1 ? 0.4 : 1,
-            }}
-          >
-            ← Previous
-          </button>
-          <span
-            style={{
-              display: "flex",
-              alignItems: "center",
-              fontSize: "13px",
-              color: "#71717a",
-              padding: "0 12px",
-            }}
-          >
-            Page {page} of {totalPages}
-          </span>
-          <button
-            onClick={() => setPage((p) => p + 1)}
-            disabled={page >= totalPages}
-            style={{
-              ...styles.btn,
-              ...styles.btnSecondary,
-              opacity: page >= totalPages ? 0.4 : 1,
-            }}
-          >
-            Next →
-          </button>
-        </div>
+      {paginationMeta && (
+        <Pagination
+          pagination={paginationMeta}
+          onPageChange={handlePageChange}
+        />
       )}
 
       {/* Detail Modal */}
@@ -1589,8 +1929,17 @@ export default function AdminPage() {
 
   if (checking) {
     return (
-      <div style={{ ...styles.page, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ color: "#71717a" }}>Verifying session...</div>
+      <div
+        style={{
+          ...styles.page,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div style={{ color: "#71717a" }}>
+          Verifying session ra coordinators...
+        </div>
       </div>
     );
   }
@@ -1598,11 +1947,15 @@ export default function AdminPage() {
   return (
     <div style={styles.page}>
       {authenticated ? (
-        <Suspense fallback={<div style={{padding: 20}}>Loading dashboard...</div>}>
-          <Dashboard onLogout={() => {
-            localStorage.removeItem("admin_passkey");
-            setAuthenticated(false);
-          }} />
+        <Suspense
+          fallback={<div style={{ padding: 20 }}>Loading dashboard...</div>}
+        >
+          <Dashboard
+            onLogout={() => {
+              localStorage.removeItem("admin_passkey");
+              setAuthenticated(false);
+            }}
+          />
         </Suspense>
       ) : (
         <LoginScreen onLogin={() => setAuthenticated(true)} />
