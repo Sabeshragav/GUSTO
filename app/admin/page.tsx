@@ -1746,7 +1746,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             color: "#71717a",
           }}
         >
-          Loading hang tight ra coordinators...
+          Hang tight ra coordinators...
         </div>
       ) : registrations.length === 0 ? (
         <div
@@ -1757,7 +1757,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             color: "#71717a",
           }}
         >
-          No registrations found.
+          No registrations found ra coordinators...
         </div>
       ) : (
         <div style={{ ...styles.card, padding: 0, overflow: "auto" }}>
