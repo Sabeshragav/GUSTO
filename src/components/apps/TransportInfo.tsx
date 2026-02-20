@@ -16,35 +16,32 @@ const TRANSPORT_DATA: InfoCard[] = [
     icon: "🚌",
     items: [
       "Government College of Engineering is well-connected by TNSTC and private bus services.",
-      "Erode Central Bus Stand is approximately 5 km from the campus.",
+      "Erode Central Bus Stand is approximately 10 km from the campus.",
       "Frequent city buses (Route 4, 7, 12) run from the bus stand to GCE, Erode.",
-      "Auto-rickshaws and cabs are available from the bus stand (~₹100-150).",
     ],
   },
   {
     title: "By Train",
     icon: "🚆",
     items: [
-      "Erode Junction (ED) is the nearest railway station, about 6 km from campus.",
-      "Erode Junction is a major junction on the Salem–Coimbatore line.",
+      "Erode Junction (ED) is the nearest railway station, about 13 km from campus.",
+      "Erode Junction is a major junction on the Salem-Coimbatore line.",
       "Well-connected to Chennai, Coimbatore, Bangalore, Madurai, and Trichy.",
-      "Prepaid taxi and auto counters available at the station.",
     ],
   },
   {
     title: "By Air",
     icon: "✈️",
     items: [
-      "Coimbatore International Airport (CJB) is the nearest airport (~80 km).",
-      "Salem Airport (SLV) is approximately 90 km away.",
-      "Taxi services available from both airports to Erode (~2-2.5 hours).",
+      "Coimbatore International Airport (CJB) is the nearest airport (~100 km).",
+      "Salem Airport (SLV) is approximately 80 km away.",
     ],
   },
 ];
 
 const LANDMARKS = [
-  "Erode Bus Stand — 12 km",
-  "Erode Junction Railway Station — 15 km",
+  "Erode Bus Stand — 10 km",
+  "Erode Junction Railway Station — 13 km",
   "Perundurai — 15 km",
   "Bhavani — 8 km",
   "Gobichettipalayam — 25 km",
@@ -121,7 +118,7 @@ export function TransportInfo() {
                     </p>
                   </div>
                   <div className="text-right flex flex-col items-end">
-                    <span className="text-[10px] font-bold bg-[var(--surface-secondary)] px-2 py-1 rounded border border-[var(--border-color)] mb-1 block w-fit">
+                    <span className="text-[10px] text-white font-bold bg-[var(--surface-secondary)] px-2 py-1 rounded border border-[var(--border-color)] mb-1 block w-fit">
                       {route.duration}
                     </span>
                     <span className="text-[10px] text-[var(--text-muted)]">

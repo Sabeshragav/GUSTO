@@ -8,18 +8,9 @@ const photographyImg = "/assets/events/photo.jpg";
 const shortFilmImg = "/assets/events/shortfilm.jpg";
 const iconIQImg = "/assets/events/iconiq.jpg";
 
-const paperPresentationEmail = "subramanidhaya77@gmail.com";
-const projectPresentationEmail = "project.gusto26@example.com";
-const thinkCompilerRegLink = "#";
-const codeChaosRegLink = "#";
-const promptXRegLink = "#";
-const memeContestEmail = "meme.gusto26@example.com";
-const photographyContestEmail = "photo.gusto26@example.com";
-const shortFilmEmail = "shortfilm.gusto26@example.com";
-const iconIQRegLink = "#";
-
 export const eventDetails = {
     "technicalEvents": [
+        //Paper Presentation
         {
             "id": "tech-1",
             "title": "Paper Presentation",
@@ -27,12 +18,13 @@ export const eventDetails = {
             "description": "The Paper Presentation technical event provides a platform for students to present their innovative ideas and research work. The event focuses on evaluating participants' understanding of the topics, Originality of ideas, communication skills, and presentation abilities.",
             "rules": [
                 "Solo and Team Participation of maximum three members are allowed.",
-                "Participant must submit Abstract of their paper during the registration process on or before the deadline.",
+                "Participant must submit Abstract of their paper during the registration process on or before 2nd March 2026.",
                 "Papers will be shortlisted based on the Quality, Relevance and Originality of the Abstract.",
-                "Author of the shortlisted paper will be notified of Acceptance via mail before the announcement date.",
-                "Accepted authors will receive instructions on how to proceed with full paper submission. Registration and payment must be completed on or before the deadline.",
+                "Author of the shortlisted paper will receive the mail from 3rd to 5th of march 2026.",
+                "Accepted authors will receive instructions on how to proceed with full paper submission",
                 "Author of accepted paper are asked to be ready with oral PowerPoint presentation for 7 to 10 min which will be the stage event.",
-                "Winning contestant will be rewarded by the attractive cash prizes."
+                "Winning contestant will be rewarded by the attractive cash prizes.",
+                "On-spot registration is not available."
             ],
             "coordinator1": {
                 "name": "DHAYANITHI S",
@@ -46,11 +38,12 @@ export const eventDetails = {
                 "name": "PRAVEENRAJ V",
                 "phone": "8838828045"
             },
-            "time": "10:15 AM",
+            "time": "10:30 AM",
             "venue": "Seminar Hall & HOD lab",
             "submission_name": "Abstract Submission Email",
             "submission_Email": "subramanidhaya77@gmail.com"
         },
+        //Project Presentation
         {
             "id": "tech-2",
             "title": "Project Presentation",
@@ -62,9 +55,10 @@ export const eventDetails = {
                 "The participants must bring their working project model and presentation slides.",
                 "Presentation will approximately take 5-10 minutes per team, followed by a live demonstration of the project.",
                 "The participants must provide their project report (hard copy).",
-                "Batches will be allocated based on registration. The last date to send the abstract is 20th April 2025, and you will receive the shortlists on 21th April 2025 via mail.",
+                "Batches will be allocated based on registration. The last date to send the abstract is 2nd March 2026, and the shortlisted will get the mail from 3rd to 5th of march 2026.",
                 "The winners will be determined by juries.",
-                "Contestants who violate the rules and guidelines will be eliminated instantly."
+                "Contestants who violate the rules and guidelines will be eliminated instantly.",
+                "On-spot registration is not available."
             ],
             "coordinator1": {
                 "name": "KAVIKUMAR B",
@@ -75,8 +69,8 @@ export const eventDetails = {
                 "phone": "9597209198"
             },
             "coordinator3": {
-                "name": "SIVARANJANI S",
-                "phone": "8220174412"
+                "name": "SARASWATHI D",
+                "phone": "9600759940"
             },
             "time": "10:30 AM",
             "venue": "IT Computer Lab 1",
@@ -85,6 +79,7 @@ export const eventDetails = {
         }
     ],
     "technicalIndividualEvents": [
+        //Think Like a Compiler
         {
             "id": "tech-ind-1",
             "title": "Think Like a Compiler",
@@ -124,6 +119,16 @@ export const eventDetails = {
                         "Marks will be awarded based on correctness, logic, and efficiency of the solution.",
                         "The decision of the event coordinators/judges will be final."
                     ]
+                },
+                "general": {
+                    "title": "General Rules",
+                    "rules": [
+                        "Strictly individual event.",
+                        "No external assistance or internet usage allowed.",
+                        "Decisions of the coordinators/judges are final.",
+                        "Any malpractice leads to immediate disqualification.",
+                        "On-spot registration is available."
+                    ]
                 }
             },
             "coordinator1": {
@@ -141,6 +146,7 @@ export const eventDetails = {
             "time": "10:15 AM",
             "venue": "Hardware lab & IT-lab 2",
         },
+        //Code Chaos
         {
             "id": "tech-ind-2",
             "title": "Code Chaos",
@@ -156,7 +162,7 @@ export const eventDetails = {
                         "Allowed languages: C, Python, Java.",
                         "Participants must type and submit the complete program.",
                         "Any runtime or compilation error results in elimination.",
-                        "Participants who successfully execute the program or produce the closest correct output within time will qualify for Level 2."
+                        "Participants who successfully execute the program or produce the closest correct output within time will qualify for Level 2.",
                     ]
                 },
                 "round2": {
@@ -176,7 +182,8 @@ export const eventDetails = {
                         "Strictly individual event.",
                         "No external assistance or internet usage allowed.",
                         "Decisions of the coordinators/judges are final.",
-                        "Any malpractice leads to immediate disqualification."
+                        "Any malpractice leads to immediate disqualification.",
+                        "On-spot registration is available."
                     ]
                 }
             },
@@ -237,7 +244,8 @@ export const eventDetails = {
                         "Manual intervention is strictly prohibited.",
                         "Switching AI tools during a round is not permitted.",
                         "All prompts used and final outputs must be submitted for evaluation.",
-                        "Participants must bring their own laptop (mandatory)."
+                        "Participants must bring their own laptop (mandatory).",
+                        "On-spot registration is available."
                     ]
                 }
             },
@@ -258,6 +266,7 @@ export const eventDetails = {
         }
     ],
     "nonTechnicalEvents": [
+        //Photography
         {
             "id": "non-tech-1",
             "title": "Photography",
@@ -270,7 +279,9 @@ export const eventDetails = {
                 "Participants must work individually; group submissions are not allowed. The use of AI-generated content is strictly prohibited. Collages are not allowed; submissions must consist of one single photograph only.",
                 "Each participant may submit only one photograph. The aspect ratio must be 3:4. Only minimal touch editing (basic brightness, contrast, crop) is permitted. Any form of plagiarism will result in immediate disqualification.",
                 "All photographs must be uploaded online by the submission deadline via the designated photography submission email.",
-                "Winners will be notified and rewarded with exciting prizes."
+                "Last date for submission is 4th March 2026.",
+                "Winners will be notified and rewarded with exciting prizes.",
+                "On-spot registration is not available."
             ],
             "coordinator1": {
                 "name": "RAKAVI R",
@@ -284,6 +295,7 @@ export const eventDetails = {
             "submission_name": "Photography Submission Email",
             "submission_Email": "gr906344@gmail.com"
         },
+        //Meme Contest
         {
             "id": "non-tech-2",
             "title": "Meme Contest",
@@ -300,7 +312,9 @@ export const eventDetails = {
                 "Only final meme(s) must be uploaded before the deadline.",
                 "Late submissions will not be considered.",
                 "Submission mode is Online only.",
-                "Breaking rules will lead to disqualification."
+                "Last date for submission is 4th March 2026.",
+                "Breaking rules will lead to disqualification.",
+                "On-spot registration is not available."
             ],
             "coordinator1": {
                 "name": "VINUBHARATHI M S",
@@ -314,6 +328,7 @@ export const eventDetails = {
             "submission_name": "Meme Submission Email",
             "submission_Email": "yoroim80@gmail.com"
         },
+        //Short Film Competition
         {
             "id": "non-tech-3",
             "title": "Short Film Competition",
@@ -330,7 +345,9 @@ export const eventDetails = {
                 "The film should not contain any vulgar, offensive, or inappropriate content. Such entries will be disqualified.",
                 "Films will be judged based on: Story and Message, Creativity, Direction and Editing, Cinematography, and Overall Impact.",
                 "Each team can submit only one entry.",
-                "The organizing committee reserves the right to modify rules if necessary."
+                "The organizing committee reserves the right to modify rules if necessary.",
+                "Last date for submission is 4th March 2026.",
+                "On-spot registration is not available."
             ],
             "coordinator1": {
                 "name": "DEEPAK M",
@@ -344,6 +361,7 @@ export const eventDetails = {
             "submission_name": "Short Film Submission Email",
             "submission_Email": "adhithyav82005@gmail.com"
         },
+        //Icon IQ
         {
             "id": "non-tech-4",
             "title": "Icon IQ",
@@ -380,7 +398,8 @@ export const eventDetails = {
                         "Use of mobile phones, internet access, or any external assistance is strictly prohibited.",
                         "Participants must follow the instructions given by the coordinators.",
                         "Any form of malpractice will lead to immediate disqualification.",
-                        "The judges' decision will be final and binding."
+                        "The judges' decision will be final and binding.",
+                        "On-spot registration is available."
                     ]
                 }
             },

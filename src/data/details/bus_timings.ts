@@ -20,7 +20,7 @@ export const busRoutes: BusRoute[] = [
             { time: "7:50 am", type: "Town bus", destination: "IRTT" },
         ],
         stopName: "IRTT College (Main Campus)",
-        distance: "12 km",
+        distance: "10 km",
         duration: "25 min",
     },
     {
