@@ -127,15 +127,15 @@ export const eventDetails = {
                 }
             },
             "coordinator1": {
-                "name": "S.Nandhakumar",
+                "name": "NANDHAKUMAR S",
                 "phone": "7695966279"
             },
             "coordinator2": {
-                "name": "B.Ganga",
+                "name": "GANGA B",
                 "phone": "8072017045"
             },
             "coordinator3": {
-                "name": "M.Manisha",
+                "name": "MANISHA M",
                 "phone": "9942011161"
             },
             "time": "10:15 AM",
@@ -181,15 +181,15 @@ export const eventDetails = {
                 }
             },
             "coordinator1": {
-                "name": "A.Sanuktha",
+                "name": "SANUKTHA A",
                 "phone": "9361334075"
             },
             "coordinator2": {
-                "name": "K.Divyasri",
+                "name": "DIVYASRI K",
                 "phone": "8667797100"
             },
             "coordinator3": {
-                "name": "P.Surya",
+                "name": "SURYA P",
                 "phone": "6383150516"
             },
             "time": "11:00 AM",
@@ -242,15 +242,15 @@ export const eventDetails = {
                 }
             },
             "coordinator1": {
-                "name": "C.SanjayKanth",
+                "name": "SANJAYKANTH C",
                 "phone": "7904546645"
             },
             "coordinator2": {
-                "name": "M.Rasiga",
+                "name": "RASIGA M",
                 "phone": "9345128184"
             },
             "coordinator3": {
-                "name": "M.Swetha",
+                "name": "SWETHA M",
                 "phone": "7418185974"
             },
             "time": "11:00 AM",
@@ -288,15 +288,19 @@ export const eventDetails = {
             "id": "non-tech-2",
             "title": "Meme Contest",
             "image": memeContestImg,
-            "description": "Showcase your creativity and humor by creating original memes based on given themes. Express your wit and design skills in this light-hearted yet competitive event.",
+            "description": "Meme Contest is a fun and creative competition that tests participants' creativity, humor, and awareness through memes. Participants must create memes only based on the given themes. Memes should be clean, original, and suitable for all audiences. Evaluation is based on creativity, humor, theme relevance, and overall quality.",
             "rules": [
-                "Online Event",
-                "Only individual participation is permitted; no group entries.",
-                "Memes must be created only based on provided situations.",
-                "Created memes must be uploaded online before 5th March 2026 via meme submission email",
-                "Winners will receive exciting prizes as rewards.",
-                "Theme can be related to General College Life, Students struggles, fun & fest themes (Eg : hostel life, monday mood, online vs offline classes, That one professor, college crush, Seniors advice be Like ) ",
-                "Memes containing adult content or depicting violence are strictly prohibited and will not be considered."
+                "Themes: AI Technologies / College Life (Student Struggles, Final Year Project, Exams, Hostel Life, etc.) / Job vs Entrepreneurship.",
+                "Memes must be created only based on the provided themes.",
+                "Memes must be original — no copied memes from social media.",
+                "Memes must be clean and college-friendly.",
+                "Memes containing adult content, hate speech, or violence are strictly prohibited.",
+                "This is an individual event only.",
+                "Participants must submit their memes through the official Google Form link provided.",
+                "Only final meme(s) must be uploaded before the deadline.",
+                "Late submissions will not be considered.",
+                "Submission mode is Online only.",
+                "Breaking rules will lead to disqualification."
             ],
             "coordinator1": {
                 "name": "VINUBHARATHI M S",
@@ -329,11 +333,11 @@ export const eventDetails = {
                 "The organizing committee reserves the right to modify rules if necessary."
             ],
             "coordinator1": {
-                "name": "M.Deepak",
+                "name": "DEEPAK M",
                 "phone": "6374294597"
             },
             "coordinator2": {
-                "name": "S.Mari Sangeeth",
+                "name": "MARI SANGEETH S",
                 "phone": "6383575163"
             },
             "time": "Online Event",
@@ -381,11 +385,11 @@ export const eventDetails = {
                 }
             },
             "coordinator1": {
-                "name": "P.Santhosh kumar",
+                "name": "SANTHOSH KUMAR P",
                 "phone": "8637424695"
             },
             "coordinator2": {
-                "name": "B.Kanimozhi",
+                "name": "KANIMOZHI B",
                 "phone": "8220802872"
             },
             "time": "10:15 AM",

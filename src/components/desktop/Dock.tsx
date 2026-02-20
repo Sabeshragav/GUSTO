@@ -38,6 +38,7 @@ const dockItems: DockItem[] = [
   },
   { id: "snake", name: "Snake", iconName: "gamepad", appId: "snake" },
   { id: "spotify", name: "Spotify", iconName: "music", appId: "spotify" },
+  { id: "youtube", name: "YouTube", iconName: "youtube", appId: "youtube" },
   { id: "gallery", name: "Gallery", iconName: "image", appId: "gallery" },
   { id: "about", name: "About", iconName: "info", appId: "about" },
   {

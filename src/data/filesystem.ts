@@ -41,6 +41,18 @@ export const fileSystem: FileNode = {
       type: 'app',
       icon: 'info',
     },
+    {
+      id: 'youtube-app',
+      name: 'YouTube',
+      type: 'app',
+      icon: 'youtube',
+    },
+    {
+      id: 'register-app',
+      name: 'Register',
+      type: 'app',
+      icon: 'clipboard', // Fallback icon in case custom mapping isn't full yet, or use 'user-plus' if supported
+    },
   ],
 };
 

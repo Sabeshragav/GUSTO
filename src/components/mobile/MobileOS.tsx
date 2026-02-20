@@ -36,6 +36,7 @@ import { Gallery } from "../apps/Gallery";
 import { About } from "../apps/About";
 import { RegisterPage } from "../apps/register/RegisterPage";
 // import { BrowserChrome } from "../apps/register/BrowserChrome"; // Removed
+import { YouTubeApp } from "../apps/YouTubeApp"; // Added Import
 
 // ── Constants ──
 
@@ -67,16 +68,17 @@ const PAGE_1_APPS: MobileApp[] = [
   { id: "rules", name: "Rules", icon: "clipboard" },
   { id: "contact", name: "Contact", icon: "mail" },
   { id: "transport", name: "Transport", icon: "map" },
+  { id: "register", name: "Register", icon: "user-plus" },
   { id: "calendar", name: "Calendar", icon: "calendarDays" },
   { id: "achievements", name: "Achievements", icon: "trophy" },
   { id: "browser", name: "Browser", icon: "globe" },
   { id: "minesweeper", name: "Minesweeper", icon: "bomb" },
+  { id: "youtube", name: "YouTube", icon: "youtube" },
 ];
 
 const PAGE_2_APPS: MobileApp[] = [
   { id: "gallery", name: "Gallery", icon: "image" },
   { id: "about", name: "About", icon: "info" },
-  { id: "register", name: "Register", icon: "user-plus" },
 ];
 
 const HOME_PAGES = [PAGE_1_APPS, PAGE_2_APPS];
@@ -232,6 +234,8 @@ function renderApp(appId: string, data?: unknown) {
       return <Gallery />;
     case "about":
       return <About />;
+    case "youtube": // Added Case
+      return <YouTubeApp videoId={(data as any)?.videoId} />;
     case "register":
     case "browser":
       return <RegisterPage data={data} />;
@@ -256,6 +260,7 @@ function MobileOSContent() {
   const [showRecents, setShowRecents] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [backPressCount, setBackPressCount] = useState(0);
+  const [isShortScreen, setIsShortScreen] = useState(false);
 
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
@@ -263,6 +268,15 @@ function MobileOSContent() {
     minutes: 0,
     seconds: 0,
   });
+
+  useEffect(() => {
+    const checkHeight = () => {
+      setIsShortScreen(window.innerHeight < 750);
+    };
+    checkHeight();
+    window.addEventListener("resize", checkHeight);
+    return () => window.removeEventListener("resize", checkHeight);
+  }, []);
 
   useEffect(() => {
     const ua = navigator.userAgent.toLowerCase();
@@ -544,44 +558,44 @@ function MobileOSContent() {
                 >
                   {/* Page 0: Branding & Widgets */}
                   {currentPage === 0 && (
-                    <div className="w-full max-w-[340px] flex flex-col gap-4 mt-2 mb-4">
+                    <div className="w-full max-w-[340px] flex flex-col gap-2 mt-1 mb-2">
                       {/* Header Branding */}
-                      <div className="flex flex-col items-center justify-center pt-4 pb-2">
-                        <div className="flex items-center gap-5 mb-3">
-                          <div className="relative w-16 h-16 drop-shadow-xl filter brightness-110">
+                      <div className="flex flex-col items-center justify-center pt-2 pb-1">
+                        <div className="flex items-center gap-4 mb-2">
+                          <div className="relative w-14 h-14 drop-shadow-xl filter brightness-110">
                             <Image
                               src="/logos/GCEE/white.png"
                               alt="GCEE Logo"
-                              width={64}
-                              height={64}
+                              width={56}
+                              height={56}
                               className="object-contain w-full h-full"
                             />
                           </div>
-                          <div className="h-10 w-[1.5px] bg-white/20 rounded-full"></div>
-                          <div className="relative w-16 h-16 drop-shadow-xl filter brightness-110">
+                          <div className="h-8 w-[1.5px] bg-white/20 rounded-full"></div>
+                          <div className="relative w-14 h-14 drop-shadow-xl filter brightness-110">
                             <Image
                               src="/logos/AIT/silver.png"
                               alt="AIT Logo"
-                              width={64}
-                              height={64}
+                              width={56}
+                              height={56}
                               className="object-contain w-full h-full"
                             />
                           </div>
                         </div>
-                        <h2 className="text-white text-xs font-black text-center uppercase tracking-widest leading-relaxed max-w-[300px] drop-shadow-md">
+                        <h2 className="text-white text-[10px] font-black text-center uppercase tracking-widest leading-relaxed max-w-[280px] drop-shadow-md">
                           Government College of Engineering, Erode
                         </h2>
-                        <h3 className="text-[#FF6B35] text-[10px] font-black text-center uppercase tracking-[0.2em] mt-1.5 drop-shadow-sm">
+                        <h3 className="text-[#FF6B35] text-[9px] font-black text-center uppercase tracking-[0.2em] mt-1 drop-shadow-sm">
                           Information Technology
                         </h3>
                       </div>
                       {/* Countdown */}
-                      <div className="bg-black/30 backdrop-blur-md rounded-[20px] border border-white/10 px-4 py-3 shadow-lg flex items-center justify-between">
+                      <div className="bg-black/30 backdrop-blur-md rounded-[16px] border border-white/10 px-3 py-2 shadow-lg flex items-center justify-between scale-95 origin-center">
                         <div className="flex flex-col">
-                          <span className="text-[#FF6B35] text-[9px] font-bold uppercase tracking-wider mb-0.5">
+                          <span className="text-[#FF6B35] text-[8px] font-bold uppercase tracking-wider mb-0.5">
                             Countdown
                           </span>
-                          <span className="text-white/60 text-[10px] font-medium leading-tight">
+                          <span className="text-white/60 text-[9px] font-medium leading-tight">
                             Registration Ends Soon
                           </span>
                         </div>
@@ -591,10 +605,10 @@ function MobileOSContent() {
                               key={u.label}
                               className="flex flex-col items-center"
                             >
-                              <span className="text-white text-lg font-bold font-mono leading-none tracking-tight">
+                              <span className="text-white text-base font-bold font-mono leading-none tracking-tight">
                                 {u.value}
                               </span>
-                              <span className="text-[8px] text-white/50 font-bold uppercase tracking-wider mt-0.5">
+                              <span className="text-[7px] text-white/50 font-bold uppercase tracking-wider mt-0.5">
                                 {u.label}
                               </span>
                             </div>
@@ -602,11 +616,14 @@ function MobileOSContent() {
                         </div>
                       </div>
 
-                      {/* Event Promo Widget */}
-                      <EventPromoWidget
-                        variant="mobile"
-                        onEventClick={handleWidgetClick}
-                      />
+                      {/* Event Promo Widget - Reduced Size */}
+                      <div className="transform scale-90 origin-top">
+                        <EventPromoWidget
+                          variant="mobile"
+                          onEventClick={handleWidgetClick}
+                          className="!max-w-full"
+                        />
+                      </div>
                     </div>
                   )}
 

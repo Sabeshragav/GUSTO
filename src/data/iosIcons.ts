@@ -29,6 +29,7 @@ const iosIconMap: Record<string, string> = {
     // ── Extra ──
     gallery: "Photos.svg",
     about: "System Information.svg",
+    youtube: "TV.svg", // Using Apple TV icon as placeholder for YouTube
 };
 
 /**

@@ -22,6 +22,7 @@ import { RegisterPage } from "../apps/register/RegisterPage";
 import { BrowserChrome } from "../apps/register/BrowserChrome";
 import { Gallery } from "../apps/Gallery";
 import { About } from "../apps/About";
+import { YouTubeApp } from "../apps/YouTubeApp"; // Added Import
 
 export function WindowManager() {
   const { state } = useDesktop();
@@ -54,6 +55,9 @@ export function WindowManager() {
         return <Achievements />;
       case "spotify":
         return <Spotify />;
+      case "youtube": // Added Case
+        // Pass video ID if provided in window data
+        return <YouTubeApp videoId={(windowState.data as any)?.videoId} />;
       case "events":
         return <EventsExplorer />;
       case "rules":

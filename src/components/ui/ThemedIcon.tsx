@@ -42,6 +42,7 @@ import {
   MdDownload,
   MdDesktopWindows,
   MdAutoAwesome,
+  MdOndemandVideo, // Added Import
 } from "react-icons/md";
 import { GiBombingRun } from "react-icons/gi";
 import type { IconType } from "react-icons";
@@ -141,6 +142,7 @@ const iconMapping: Record<string, IconMappingEntry> = {
     material: MdAssignment,
   },
   map: { lucide: "Map", phosphor: "MapTrifold", material: MdMap },
+  youtube: { lucide: "Youtube", phosphor: "YoutubeLogo", material: MdOndemandVideo }, // Added Mapping
 };
 
 interface ThemedIconProps {
