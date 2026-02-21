@@ -247,7 +247,7 @@ export function RulesSection() {
                   className="flex gap-2 group hover:bg-[var(--accent-color)]/5 rounded px-2 py-1.5 -mx-2 transition-colors"
                 >
                   {/* Line number */}
-                  <span className="font-mono text-[10px] text-[var(--text-muted)]/40 w-5 text-right flex-shrink-0 pt-0.5 select-none group-hover:text-[var(--accent-color)]/60">
+                  <span className="font-mono text-[10px] text-white text-[var(--text-muted)]/40 w-5 text-right flex-shrink-0 pt-0.5 select-none group-hover:text-[var(--accent-color)]/60">
                     {idx + 1}
                   </span>
                   {/* Bullet indicator */}
@@ -278,7 +278,7 @@ export function RulesSection() {
                   key={idx}
                   className="flex gap-2 group hover:bg-green-500/5 rounded px-2 py-1.5 -mx-2 transition-colors"
                 >
-                  <span className="font-mono text-[10px] text-[var(--text-muted)]/40 w-5 text-right flex-shrink-0 pt-0.5 select-none group-hover:text-green-500/60">
+                  <span className="font-mono text-white text-[10px] text-[var(--text-muted)]/40 w-5 text-right flex-shrink-0 pt-0.5 select-none group-hover:text-green-500/60">
                     {GENERAL_RULES.length + idx + 1}
                   </span>
                   <span className="text-green-500 text-xs flex-shrink-0 pt-0.5">

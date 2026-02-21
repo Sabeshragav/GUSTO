@@ -1162,6 +1162,13 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [suggestions, setSuggestions] = useState<Registration[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  const [exportFilter, setExportFilter] = useState({
+    event: "",
+    paymentStatus: "",
+    checkedIn: "",
+    abstractStatus: "",
+  });
+
   const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
 
   // Search Effect
@@ -1289,12 +1296,24 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     setExportDialogOpen(false);
     setExporting(true);
     try {
-      // Fetch ALL registrations from the database (no pagination)
-      const res = await fetch(`/api/admin/registrations?page=1&limit=10000`);
+      const params = new URLSearchParams();
+      if (exportFilter.event) params.set("event", exportFilter.event);
+      if (exportFilter.paymentStatus)
+        params.set("paymentStatus", exportFilter.paymentStatus);
+      if (exportFilter.checkedIn) params.set("checkedIn", exportFilter.checkedIn);
+      if (exportFilter.abstractStatus)
+        params.set("abstractStatus", exportFilter.abstractStatus);
+      params.set("page", "1");
+      params.set("limit", "10000");
+
+      const res = await fetch(`/api/admin/registrations?${params}`);
       const result = await res.json();
       const allRegs: Registration[] = result.registrations || [];
 
-      if (allRegs.length === 0) return;
+      if (allRegs.length === 0) {
+        alert("No registrations found with these filters.");
+        return;
+      }
 
       const data = allRegs.map((reg) => {
         const payment = reg.payment?.[0];
@@ -1451,7 +1470,10 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             ↻ Refresh
           </button>
           <button
-            onClick={() => setExportDialogOpen(true)}
+            onClick={() => {
+              setExportFilter({ ...filter });
+              setExportDialogOpen(true);
+            }}
             disabled={exporting}
             style={{
               ...styles.btn,
@@ -1510,11 +1532,68 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                 lineHeight: 1.5,
               }}
             >
-              This will fetch{" "}
-              <strong style={{ color: "#e5e7eb" }}>all registrations</strong>{" "}
-              from the database and download them as an Excel file. This may
-              take a moment.
+              Select filters for the export. Leaving them blank will export based on the selected criteria.
             </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#71717a", marginBottom: "4px", fontWeight: 600 }}>EVENT</label>
+                <select
+                  value={exportFilter.event}
+                  onChange={(e) => setExportFilter(f => ({ ...f, event: e.target.value }))}
+                  style={styles.input}
+                >
+                  <option value="">All Events</option>
+                  {Object.entries(EVENT_NAMES).map(([id, name]) => (
+                    <option key={id} value={id}>{name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#71717a", marginBottom: "4px", fontWeight: 600 }}>PAYMENT STATUS</label>
+                <select
+                  value={exportFilter.paymentStatus}
+                  onChange={(e) => setExportFilter(f => ({ ...f, paymentStatus: e.target.value }))}
+                  style={styles.input}
+                >
+                  <option value="">All Payments</option>
+                  <option value="VERIFIED">Verified</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="REJECTED">Rejected</option>
+                </select>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: exportFilter.event === "paper-presentation" || exportFilter.event === "project-presentation" ? "1fr 1fr" : "1fr", gap: "10px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "11px", color: "#71717a", marginBottom: "4px", fontWeight: 600 }}>CHECK-IN</label>
+                  <select
+                    value={exportFilter.checkedIn}
+                    onChange={(e) => setExportFilter(f => ({ ...f, checkedIn: e.target.value }))}
+                    style={styles.input}
+                  >
+                    <option value="">All</option>
+                    <option value="true">Checked In</option>
+                    <option value="false">Not Checked In</option>
+                  </select>
+                </div>
+                {(exportFilter.event === "paper-presentation" || exportFilter.event === "project-presentation") && (
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", color: "#71717a", marginBottom: "4px", fontWeight: 600 }}>ABSTRACT</label>
+                    <select
+                      value={exportFilter.abstractStatus}
+                      onChange={(e) => setExportFilter(f => ({ ...f, abstractStatus: e.target.value }))}
+                      style={styles.input}
+                    >
+                      <option value="">All</option>
+                      <option value="CONFIRMED">Pending</option>
+                      <option value="APPROVED">Approved</option>
+                      <option value="REJECTED">Rejected</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            </div>
             <div
               style={{
                 display: "flex",
@@ -1566,6 +1645,34 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               if (suggestions.length > 0) setShowSuggestions(true);
             }}
           />
+          {searchQuery && (
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setSuggestions([]);
+                setShowSuggestions(false);
+              }}
+              style={{
+                background: "#2a2b35",
+                color: "#71717a",
+                border: "none",
+                borderRadius: "50%",
+                width: "20px",
+                height: "20px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontWeight: "bold",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#71717a")}
+            >
+              ✕
+            </button>
+          )}
         </div>
 
         {/* Suggestions Dropdown */}
@@ -1644,7 +1751,13 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         <select
           value={filter.event}
           onChange={(e) => {
-            setFilter((f) => ({ ...f, event: e.target.value }));
+            const val = e.target.value;
+            setFilter((f) => ({
+              ...f,
+              event: val,
+              // Auto-clear abstract status if non-abstract event selected
+              ...(val !== "paper-presentation" && val !== "project-presentation" ? { abstractStatus: "" } : {})
+            }));
             setPage(1);
           }}
           style={{ ...styles.input, width: "auto", minWidth: "160px" }}
@@ -1684,19 +1797,21 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           <option value="false">Not Checked In</option>
         </select>
 
-        <select
-          value={filter.abstractStatus}
-          onChange={(e) => {
-            setFilter((f) => ({ ...f, abstractStatus: e.target.value }));
-            setPage(1);
-          }}
-          style={{ ...styles.input, width: "auto", minWidth: "140px" }}
-        >
-          <option value="">All Abstracts</option>
-          <option value="CONFIRMED">Pending Review</option>
-          <option value="APPROVED">Approved</option>
-          <option value="REJECTED">Rejected</option>
-        </select>
+        {(filter.event === "paper-presentation" || filter.event === "project-presentation") && (
+          <select
+            value={filter.abstractStatus}
+            onChange={(e) => {
+              setFilter((f) => ({ ...f, abstractStatus: e.target.value }));
+              setPage(1);
+            }}
+            style={{ ...styles.input, width: "auto", minWidth: "140px" }}
+          >
+            <option value="">All Abstracts</option>
+            <option value="CONFIRMED">Pending Review</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+          </select>
+        )}
 
         <span
           style={{
@@ -1712,7 +1827,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             {paginationMeta ? paginationMeta.total : registrations.length}{" "}
             registration
             {(paginationMeta ? paginationMeta.total : registrations.length) !==
-            1
+              1
               ? "s"
               : ""}
           </span>
