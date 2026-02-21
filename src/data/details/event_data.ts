@@ -24,6 +24,7 @@ export const eventDetails = {
                 "Accepted authors will receive instructions on how to proceed with full paper submission",
                 "Author of accepted paper are asked to be ready with oral PowerPoint presentation for 7 to 10 min which will be the stage event.",
                 "Winning contestant will be rewarded by the attractive cash prizes.",
+                "while sending the abstract mention your name, department, year, phone number and college name  in the mail",
                 "On-spot registration is not available."
             ],
             "coordinator1": {
@@ -58,6 +59,7 @@ export const eventDetails = {
                 "Batches will be allocated based on registration. The last date to send the abstract is 2nd March 2026, and the shortlisted will get the mail from 3rd to 5th of march 2026.",
                 "The winners will be determined by juries.",
                 "Contestants who violate the rules and guidelines will be eliminated instantly.",
+                "while sending the abstract mention your name, department, year, phone number and college name  in the mail",
                 "On-spot registration is not available."
             ],
             "coordinator1": {
@@ -281,6 +283,7 @@ export const eventDetails = {
                 "All photographs must be uploaded online by the submission deadline via the designated photography submission email.",
                 "Last date for submission is 4th March 2026.",
                 "Winners will be notified and rewarded with exciting prizes.",
+                "while sending the photograph mention your name, department, year, phone number and college name  in the mail",
                 "On-spot registration is not available."
             ],
             "coordinator1": {
@@ -308,7 +311,7 @@ export const eventDetails = {
                 "Memes must be clean and college-friendly.",
                 "Memes containing adult content, hate speech, or violence are strictly prohibited.",
                 "This is an individual event only.",
-                "Participants must submit their memes through the official Google Form link provided.",
+                "while sending the meme mention your name, department, year, phone number and college name  in the mail",
                 "Only final meme(s) must be uploaded before the deadline.",
                 "Late submissions will not be considered.",
                 "Submission mode is Online only.",
@@ -341,6 +344,7 @@ export const eventDetails = {
                 "English subtitles are compulsory if the film is not in English.",
                 "The film must be in MP4 format. Minimum resolution: 1080p (Full HD).",
                 "Participants must upload their short film to Google Drive and ensure that the link is shared with viewing access for evaluation purposes.",
+                "while sending the short film mention your name, department, year, phone number and college name  in the mail",
                 "The film must be original. Only copyright-free music and content should be used. Proper credits must be given wherever required.",
                 "The film should not contain any vulgar, offensive, or inappropriate content. Such entries will be disqualified.",
                 "Films will be judged based on: Story and Message, Creativity, Direction and Editing, Cinematography, and Overall Impact.",
