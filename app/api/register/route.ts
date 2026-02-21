@@ -1,6 +1,7 @@
+import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getClient, generateUniqueCode } from "@/lib/db";
-import { uploadToS3 } from "@/lib/s3";
+import { uploadToS3, buildS3Url } from "@/lib/s3";
 import { sendRegistrationEmail } from "@/lib/email";
 import { EVENTS, REGISTRATION_PRICE } from "@/data/events";
 import {
@@ -91,6 +92,9 @@ export async function POST(req: NextRequest) {
             }
         }
 
+        // ── Prepare screenshot buffer BEFORE the transaction ──
+        const screenshotBuffer = Buffer.from(await screenshot.arrayBuffer());
+
         // ── Begin transaction ──
         const client = await getClient();
         try {
@@ -109,54 +113,70 @@ export async function POST(req: NextRequest) {
                 );
             }
 
-            // Generate unique code (retry up to 5 times for collisions)
-            let uniqueCode = "";
-            for (let i = 0; i < 5; i++) {
-                const candidate = generateUniqueCode();
-                const codeCheck = await client.query(
-                    "SELECT id FROM users WHERE unique_code = $1",
-                    [candidate],
-                );
-                if (codeCheck.rows.length === 0) {
-                    uniqueCode = candidate;
-                    break;
-                }
-            }
-            if (!uniqueCode) {
-                await client.query("ROLLBACK");
-                return NextResponse.json(
-                    { error: "Failed to generate unique code. Please try again." },
-                    { status: 500 },
-                );
-            }
+            // Generate IDs and URLs upfront — no DB dependency needed
+            const userId = randomUUID();
+            const uniqueCode = generateUniqueCode();
+            const ext = screenshot.name.split(".").pop() || "png";
+            const screenshotUrl = buildS3Url("payments", userId, ext);
 
-            // Insert user
-            const userResult = await client.query(
-                `INSERT INTO users (name, email, mobile, college, year, unique_code, food_preference)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7)
-                 RETURNING id`,
-                [name, email, mobile, college, year, uniqueCode, foodPreference],
-            );
-            const userId = userResult.rows[0].id;
+            // 🔥 Run S3 upload and all DB inserts fully in parallel
+            const typedEvents = selectedEvents as typeof EVENTS;
 
-            // Insert event registrations
-            for (const event of selectedEvents as typeof EVENTS) {
-                const fallbackId = fallbackSelections[event.id] || null;
-                const status =
-                    event.eventType === "ABSTRACT" ? "CONFIRMED" : "CONFIRMED";
-                const attendanceStatus =
-                    event.timeSlot === "ONLINE" ? "NOT_REQUIRED" : "PENDING";
-
+            const dbTransaction = async () => {
+                // Insert user (with our pre-generated UUID)
                 await client.query(
-                    `INSERT INTO event_registrations (user_id, event_id, fallback_event_id, status, attendance_status)
-                     VALUES ($1, $2, $3, $4, $5)`,
-                    [userId, event.id, fallbackId, status, attendanceStatus],
+                    `INSERT INTO users (id, name, email, mobile, college, year, unique_code, food_preference)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+                    [
+                        userId,
+                        name,
+                        email,
+                        mobile,
+                        college,
+                        year,
+                        uniqueCode,
+                        foodPreference,
+                    ],
                 );
-            }
 
-            // Upload payment screenshot
-            const screenshotBuffer = Buffer.from(await screenshot.arrayBuffer());
-            const screenshotUrl = await uploadToS3(
+                // Batch insert event registrations + payment in parallel
+                const eventInsert =
+                    typedEvents.length > 0
+                        ? (() => {
+                            const values: unknown[] = [];
+                            const placeholders: string[] = [];
+                            typedEvents.forEach((event, i) => {
+                                const offset = i * 5;
+                                placeholders.push(
+                                    `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5})`,
+                                );
+                                values.push(
+                                    userId,
+                                    event.id,
+                                    fallbackSelections[event.id] || null,
+                                    "CONFIRMED",
+                                    event.timeSlot === "ONLINE" ? "NOT_REQUIRED" : "PENDING",
+                                );
+                            });
+                            return client.query(
+                                `INSERT INTO event_registrations (user_id, event_id, fallback_event_id, status, attendance_status)
+                             VALUES ${placeholders.join(", ")}`,
+                                values,
+                            );
+                        })()
+                        : Promise.resolve();
+
+                const paymentInsert = client.query(
+                    `INSERT INTO payments (user_id, amount, screenshot_url, transaction_id)
+                     VALUES ($1, $2, $3, $4)`,
+                    [userId, REGISTRATION_PRICE, screenshotUrl, transactionId],
+                );
+
+                await Promise.all([eventInsert, paymentInsert]);
+                await client.query("COMMIT");
+            };
+
+            const s3Upload = uploadToS3(
                 screenshotBuffer,
                 screenshot.name,
                 screenshot.type,
@@ -164,14 +184,7 @@ export async function POST(req: NextRequest) {
                 userId,
             );
 
-            // Insert payment record
-            await client.query(
-                `INSERT INTO payments (user_id, amount, screenshot_url, transaction_id)
-                 VALUES ($1, $2, $3, $4)`,
-                [userId, REGISTRATION_PRICE, screenshotUrl, transactionId],
-            );
-
-            await client.query("COMMIT");
+            await Promise.all([dbTransaction(), s3Upload]);
 
             // Send confirmation email (fire-and-forget — does not block response)
             const submissionEvents = getSubmissionEvents(
@@ -183,7 +196,7 @@ export async function POST(req: NextRequest) {
                 to: email,
                 name,
                 uniqueCode,
-                events: (selectedEvents as typeof EVENTS).map((e) => ({
+                events: typedEvents.map((e) => ({
                     title: e.title,
                     eventType: e.eventType,
                     submissionEmail: e.submissionEmail,
@@ -194,7 +207,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({
                 success: true,
                 uniqueCode,
-                events: (selectedEvents as typeof EVENTS).map((e) => e.title),
+                events: typedEvents.map((e) => e.title),
                 amount: REGISTRATION_PRICE,
                 hasSubmissionEvents: allNeedSubmission.length > 0,
             });

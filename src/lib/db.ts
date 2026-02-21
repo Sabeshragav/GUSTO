@@ -1,4 +1,5 @@
-import { Pool, PoolClient } from 'pg';
+import { Pool, PoolClient } from "pg";
+import { randomUUID } from "crypto";
 
 let pool: Pool;
 
@@ -24,15 +25,12 @@ export async function getClient(): Promise<PoolClient> {
   return pool.connect();
 }
 
-
 /**
- * Generate unique registration code: GUSTO26-XXXX
+ * Generate unique registration code: GUSTO26-XXXXXXXX
+ * Uses 8 hex chars from a UUID (~4.2 billion combinations),
+ * making collisions essentially impossible without DB lookups.
  */
 export function generateUniqueCode(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let code = 'GUSTO26-';
-  for (let i = 0; i < 4; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
+  const hex = randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
+  return `GUSTO26-${hex}`;
 }
