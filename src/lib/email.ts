@@ -20,30 +20,47 @@ async function sendViaBrevo(
   to: string,
   subject: string,
   html: string,
+  maxRetries = 3,
 ): Promise<void> {
   console.log(`[Email/Brevo] Sending to ${to} | Subject: "${subject}"`);
-  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      "api-key": process.env.BREVO_API_KEY!,
-    },
-    body: JSON.stringify({
-      sender: { name: "GUSTO '26", email: "noreply@gustogcee.in" },
-      to: [{ email: to }],
-      subject,
-      htmlContent: html,
-    }),
+
+  const payload = JSON.stringify({
+    sender: { name: "GUSTO '26", email: "noreply@gustogcee.in" },
+    to: [{ email: to }],
+    subject,
+    htmlContent: html,
   });
 
-  if (!res.ok) {
-    const body = await res.text();
-    console.error(`[Email/Brevo] FAILED for ${to} | Status: ${res.status} | Body: ${body}`);
-    throw new Error(`Brevo API error ${res.status}: ${body}`);
-  }
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "api-key": process.env.BREVO_API_KEY!,
+        },
+        body: payload,
+      });
 
-  console.log(`[Email/Brevo] SUCCESS for ${to}`);
+      if (!res.ok) {
+        const body = await res.text();
+        console.error(`[Email/Brevo] FAILED for ${to} | Status: ${res.status} | Body: ${body}`);
+        throw new Error(`Brevo API error ${res.status}: ${body}`);
+      }
+
+      console.log(`[Email/Brevo] SUCCESS for ${to}`);
+      return;
+    } catch (err: any) {
+      if (attempt < maxRetries) {
+        const delay = 500 * attempt;
+        console.warn(`[Email/Brevo] Attempt ${attempt}/${maxRetries} failed for ${to}: ${err.message}. Retrying in ${delay}ms...`);
+        await new Promise((r) => setTimeout(r, delay));
+      } else {
+        throw err;
+      }
+    }
+  }
 }
 
 /**

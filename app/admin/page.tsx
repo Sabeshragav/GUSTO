@@ -1219,7 +1219,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   });
   const [limit, setLimit] = useState(() => {
     const l = parseInt(searchParams.get("limit") || "10", 10);
-    return [10, 15, 20, 50].includes(l) ? l : 10;
+    return [10, 15, 20, 25].includes(l) ? l : 10;
   });
 
   // Sync URL without a separate effect (avoids double-render from router.replace)
@@ -1727,7 +1727,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               fontSize: "12px",
             }}
           >
-            {[10, 15, 20, 50].map((n) => (
+            {[10, 15, 20, 25].map((n) => (
               <option key={n} value={n}>
                 {n} / page
               </option>

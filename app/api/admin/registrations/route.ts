@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 
     // Pagination params
     const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
-    const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '20', 10)));
+    const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '10', 10)));
     const offset = (page - 1) * limit;
 
     // Build dynamic WHERE clauses
