@@ -45,7 +45,9 @@ async function sendViaBrevo(
 
       if (!res.ok) {
         const body = await res.text();
-        console.error(`[Email/Brevo] FAILED for ${to} | Status: ${res.status} | Body: ${body}`);
+        console.error(
+          `[Email/Brevo] FAILED for ${to} | Status: ${res.status} | Body: ${body}`,
+        );
         throw new Error(`Brevo API error ${res.status}: ${body}`);
       }
 
@@ -54,7 +56,9 @@ async function sendViaBrevo(
     } catch (err: any) {
       if (attempt < maxRetries) {
         const delay = 500 * attempt;
-        console.warn(`[Email/Brevo] Attempt ${attempt}/${maxRetries} failed for ${to}: ${err.message}. Retrying in ${delay}ms...`);
+        console.warn(
+          `[Email/Brevo] Attempt ${attempt}/${maxRetries} failed for ${to}: ${err.message}. Retrying in ${delay}ms...`,
+        );
         await new Promise((r) => setTimeout(r, delay));
       } else {
         throw err;
@@ -88,23 +92,45 @@ export async function sendRegistrationEmail(data: RegistrationEmailData) {
     )
     .join("");
 
-  // Build submission reminder section
-  const submissionEvents = events.filter(
-    (e) => e.eventType === "ABSTRACT" || e.eventType === "SUBMISSION",
+  // Build submission reminder section — different deadlines per type
+  const abstractEvents = events.filter((e) => e.eventType === "ABSTRACT");
+  const submissionOnlyEvents = events.filter(
+    (e) => e.eventType === "SUBMISSION",
   );
   let submissionReminder = "";
-  if (submissionEvents.length > 0) {
-    const items = submissionEvents
-      .map(
-        (e) =>
-          `<li><strong>${e.title}</strong> → Send to: <a href="mailto:${e.submissionEmail}">${e.submissionEmail}</a></li>`,
-      )
-      .join("");
+
+  if (abstractEvents.length > 0 || submissionOnlyEvents.length > 0) {
+    let abstractSection = "";
+    if (abstractEvents.length > 0) {
+      const items = abstractEvents
+        .map(
+          (e) =>
+            `<li><strong>${e.title}</strong> → Send to: <a href="mailto:${e.submissionEmail}">${e.submissionEmail}</a></li>`,
+        )
+        .join("");
+      abstractSection = `
+                <p>Submit before <strong>March 2, 2026 EOD</strong>:</p>
+                <ul>${items}</ul>`;
+    }
+
+    let submissionSection = "";
+    if (submissionOnlyEvents.length > 0) {
+      const items = submissionOnlyEvents
+        .map(
+          (e) =>
+            `<li><strong>${e.title}</strong> → Send to: <a href="mailto:${e.submissionEmail}">${e.submissionEmail}</a></li>`,
+        )
+        .join("");
+      submissionSection = `
+                <p>Submit before <strong>March 4, 2026 EOD</strong>:</p>
+                <ul>${items}</ul>`;
+    }
+
     submissionReminder = `
             <div style="background:#fff3cd;border:1px solid #ffc107;padding:12px;border-radius:6px;margin-top:16px;">
                 <strong>⚠️ Submission Reminder</strong>
-                <p>Please send your works for the following events before <strong>March 2, 2026 EOD</strong>:</p>
-                <ul>${items}</ul>
+                ${abstractSection}
+                ${submissionSection}
             </div>
         `;
   }

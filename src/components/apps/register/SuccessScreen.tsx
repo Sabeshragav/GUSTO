@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { CheckCircle, Copy, Clock, PartyPopper } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 interface SuccessScreenProps {
@@ -158,8 +159,7 @@ export function SuccessScreen({
         >
           <Clock size={14} className="text-amber-400 flex-shrink-0" />
           <p className="text-[11px] text-amber-400 text-left">
-            Payment verification is pending. You will receive a confirmation
-            email once verified.
+            Make sure to screenshot this success screen for future references
           </p>
         </motion.div>
 
@@ -171,9 +171,12 @@ export function SuccessScreen({
           className="text-[10px] text-[var(--text-muted)] mt-4"
         >
           Need help? Contact{" "}
-          <span className="text-[var(--accent-color)]">
-            gustogcee@gmail.com
-          </span>
+          <Link
+            href="mailto:gustoitgcee@gmail.com"
+            className="text-[var(--accent-color)] hover:underline"
+          >
+            gustoitgcee@gmail.com
+          </Link>
         </motion.p>
       </motion.div>
     </div>
