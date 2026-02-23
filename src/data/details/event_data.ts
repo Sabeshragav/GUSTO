@@ -204,6 +204,7 @@ export const eventDetails = {
             "time": "11:00 AM",
             "venue": "IT-lab 1 & IT-lab 3",
         },
+        //PromptX
         {
             "id": "tech-ind-3",
             "title": "PROMPTX",
@@ -214,39 +215,36 @@ export const eventDetails = {
                     "title": "Round 1 — Image Recreation",
                     "description": "Participants will be provided with 5 AI-generated reference images. Each image must be recreated as accurately as possible using AI image generation tools.",
                     "rules": [
-                        "5 AI-generated reference images will be provided.",
-                        "Each image must be recreated as accurately as possible.",
-                        "AI Tools allowed: Midjourney, Stable Diffusion.",
-                        "Time limit: 5 minutes per image.",
-                        "Maximum of 3 prompts allowed per image.",
-                        "Only one AI tool must be selected and used throughout the round."
+                        "Participants will be provided with 3 AI-generated reference images.",
+                        "Each image must be recreated as accurately as possible using AI image generation tools.",
+                        "AI Tools allowed: ChatGPT , Gemini",
+                        "Time limit: 6 minutes per image.",
+                        "Maximum of 5 prompts allowed per image."
                     ]
                 },
                 "round2": {
                     "title": "Round 2 — Web Page Replication",
                     "description": "Participants will be given 2 web page design references (screenshots). Each web page must be replicated using AI-generated code. The designs must be recreated using vanilla HTML, CSS, and JavaScript only.",
                     "rules": [
-                        "2 web page design references (screenshots) will be provided.",
+                        "Participants will be given 2 web page design references (screenshots).",
                         "Each web page must be replicated using AI-generated code.",
-                        "Designs must be recreated using vanilla HTML, CSS, and JavaScript only.",
+                        "The designs must be recreated using vanilla HTML, CSS, and JavaScript only.",
                         "AI Tools allowed: ChatGPT, Claude, Gemini.",
-                        "Time limit: 5 minutes per webpage.",
-                        "Maximum of 3 prompts allowed per webpage.",
-                        "Only one AI tool must be selected and used throughout the round."
+                        "Time limit: 10 minutes per webpage.",
+                        "Maximum of 5 prompts allowed per webpage."
                     ]
                 },
                 "general": {
                     "title": "General Rules",
                     "rules": [
                         "PROMPTX is an individual event. Team participation is not allowed.",
-                        "Time limit is 5 minutes per image and per webpage.",
-                        "Maximum of 3 prompts are allowed per image and per webpage.",
-                        "Participants must use only the AI tools specified for each round. Use of any other AI tool will result in disqualification.",
-                        "For each round, only one AI tool must be selected and the same tool must be used till the end.",
-                        "Manual intervention is strictly prohibited.",
+                        "Participants must use only the AI tools specified for each round. Using any other AI tool will lead to disqualification.",
+                        "For each round, only one AI tool must be selected and used throughout the round.",
+                        "Manual edits or modifications are strictly prohibited.",
                         "Switching AI tools during a round is not permitted.",
                         "All prompts used and final outputs must be submitted for evaluation.",
                         "Participants must bring their own laptop (mandatory).",
+                        "Participants should come prepared with at least 2 email IDs.",
                         "On-spot registration is available."
                     ]
                 }
