@@ -122,6 +122,5 @@ export async function GET(req: NextRequest) {
             total,
             totalPages,
         },
-        eventList: EVENTS.map((e) => ({ id: e.id, title: e.title })),
     });
 }
