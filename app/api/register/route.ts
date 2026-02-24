@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getClient, generateUniqueCode } from "@/lib/db";
 import { uploadToS3, buildS3Url } from "@/lib/s3";
 import { sendRegistrationEmail } from "@/lib/email";
@@ -192,16 +192,22 @@ export async function POST(req: NextRequest) {
             );
             const allNeedSubmission = [...abstractEvents, ...submissionEvents];
             console.log(`[Register] Dispatching confirmation email to ${email}`);
-            sendRegistrationEmail({
-                to: email,
-                name,
-                uniqueCode,
-                events: typedEvents.map((e) => ({
-                    title: e.title,
-                    eventType: e.eventType,
-                    submissionEmail: e.submissionEmail,
-                })),
-                amount: REGISTRATION_PRICE,
+            after(async () => {
+                try {
+                    await sendRegistrationEmail({
+                        to: email,
+                        name,
+                        uniqueCode,
+                        events: typedEvents.map((e) => ({
+                            title: e.title,
+                            eventType: e.eventType,
+                            submissionEmail: e.submissionEmail,
+                        })),
+                        amount: REGISTRATION_PRICE,
+                    });
+                } catch (err) {
+                    console.error("[Register] Background email failed:", err);
+                }
             });
 
             return NextResponse.json({

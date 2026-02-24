@@ -70,13 +70,9 @@ async function sendViaBrevo(
 /**
  * Try SES first, fall back to Brevo on failure.
  */
-function sendEmail(to: string, subject: string, html: string) {
-  console.log(`[Email] Firing email to ${to} (fire-and-forget)`);
-
-  // Fire-and-forget: do not await, catch errors asynchronously
-  sendViaBrevo(to, subject, html).catch((err) => {
-    console.error(`[Email] Fire-and-forget failed for ${to}:`, err);
-  });
+export async function sendEmail(to: string, subject: string, html: string) {
+  console.log(`[Email] Dispatching email to ${to}`);
+  return sendViaBrevo(to, subject, html);
 }
 
 export async function sendRegistrationEmail(data: RegistrationEmailData) {
@@ -179,7 +175,7 @@ export async function sendRegistrationEmail(data: RegistrationEmailData) {
     `;
 
   const subject = `Registration Confirmed — ${uniqueCode} | GUSTO '26`;
-  sendEmail(to, subject, html);
+  await sendEmail(to, subject, html);
 }
 
 export async function sendAbstractRejectionEmail(data: AbstractRejectionData) {
@@ -212,5 +208,5 @@ export async function sendAbstractRejectionEmail(data: AbstractRejectionData) {
     `;
 
   const subject = `Abstract Update — ${originalEvent} | GUSTO '26`;
-  sendEmail(to, subject, html);
+  await sendEmail(to, subject, html);
 }

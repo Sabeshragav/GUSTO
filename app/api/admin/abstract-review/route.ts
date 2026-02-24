@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { validateAdmin } from '../auth';
 import { getClient } from '@/lib/db';
 import { sendAbstractRejectionEmail } from '@/lib/email';
@@ -78,23 +78,29 @@ export async function POST(req: NextRequest) {
                     [userId, reg.fallback_event_id, attendanceStatus]
                 );
 
-                // Send rejection email
-                const originalEventTitle = EVENTS.find((e) => e.id === eventId)?.title || eventId;
-                const fallbackTitle = fallbackEvent?.title || reg.fallback_event_id;
-
-                try {
-                    await sendAbstractRejectionEmail({
-                        to: reg.email,
-                        name: reg.name,
-                        originalEvent: originalEventTitle,
-                        fallbackEvent: fallbackTitle,
-                    });
-                } catch (emailErr) {
-                    console.error('Failed to send rejection email:', emailErr);
-                }
+                // Rejection email logic moved to after() block below
             }
 
             await client.query('COMMIT');
+
+            if (action === 'REJECTED') {
+                const originalEventTitle = EVENTS.find((e) => e.id === eventId)?.title || eventId;
+                const fallbackEvent = EVENTS.find((e) => e.id === reg.fallback_event_id);
+                const fallbackTitle = fallbackEvent?.title || reg.fallback_event_id;
+
+                after(async () => {
+                    try {
+                        await sendAbstractRejectionEmail({
+                            to: reg.email,
+                            name: reg.name,
+                            originalEvent: originalEventTitle,
+                            fallbackEvent: fallbackTitle,
+                        });
+                    } catch (err) {
+                        console.error('[AbstractReview] Background email failed:', err);
+                    }
+                });
+            }
 
             return NextResponse.json({
                 success: true,
