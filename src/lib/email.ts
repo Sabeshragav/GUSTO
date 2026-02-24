@@ -199,10 +199,12 @@ export async function sendAbstractRejectionEmail(data: AbstractRejectionData) {
                 <p style="color:#6b7280;font-size:13px;">
                     No action is needed on your part. Your registration remains valid.
                 </p>
-
-                <p style="margin-top:20px; font-size:13px; color:#6b7280;">
-                    In case you haven't joined our WhatsApp group yet, join it here: <a href="https://chat.whatsapp.com/GrLcESGCd110KDrP9QCoH0" style="color:#25d366; font-weight:bold;">https://chat.whatsapp.com/GrLcESGCd110KDrP9QCoH0</a>
-                </p>
+                
+                <div style="background:#dcfce7;border:1px solid #22c55e;padding:12px;border-radius:8px;margin-top:16px;text-align:center;">
+                    <p style="margin:0;font-size:14px;font-weight:bold;">💬 Join the GUSTO '26 WhatsApp Group</p>
+                    <p style="margin:4px 0 8px;font-size:12px;color:#6b7280;">In case you haven't joined our WhatsApp group yet, join it here</p>
+                    <a href="https://chat.whatsapp.com/GrLcESGCd110KDrP9QCoH0" style="display:inline-block;background:#25D366;color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:13px;">Join WhatsApp Group</a>
+                </div>
             </div>
         </div>
     `;
