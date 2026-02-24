@@ -146,7 +146,7 @@ export function SuccessScreen({
             <path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.611.611l4.458-1.495A11.935 11.935 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.313 0-4.46-.744-6.206-2.006l-.44-.327-3.074 1.03 1.03-3.074-.327-.44A9.955 9.955 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
           </svg>
           <span className="text-[11px] font-semibold text-green-500">
-            Join the GUSTO &apos;26 WhatsApp Group
+            Join our GUSTO &apos;26 WhatsApp Group
           </span>
         </motion.a>
 

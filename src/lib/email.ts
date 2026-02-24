@@ -203,6 +203,10 @@ export async function sendAbstractRejectionEmail(data: AbstractRejectionData) {
                 <p style="color:#6b7280;font-size:13px;">
                     No action is needed on your part. Your registration remains valid.
                 </p>
+
+                <p style="margin-top:20px; font-size:13px; color:#6b7280;">
+                    In case you haven't joined our WhatsApp group yet, join it here: <a href="https://chat.whatsapp.com/GrLcESGCd110KDrP9QCoH0" style="color:#25d366; font-weight:bold;">https://chat.whatsapp.com/GrLcESGCd110KDrP9QCoH0</a>
+                </p>
             </div>
         </div>
     `;
