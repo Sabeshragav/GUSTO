@@ -96,7 +96,6 @@ export async function sendRegistrationEmail(data: RegistrationEmailData) {
   let submissionReminder = "";
 
   if (abstractEvents.length > 0 || submissionOnlyEvents.length > 0) {
-    let abstractSection = "";
     if (abstractEvents.length > 0) {
       const items = abstractEvents
         .map(
@@ -104,12 +103,14 @@ export async function sendRegistrationEmail(data: RegistrationEmailData) {
             `<li><strong>${e.title}</strong> → Send to: <a href="mailto:${e.submissionEmail}">${e.submissionEmail}</a></li>`,
         )
         .join("");
-      abstractSection = `
-                <p>Submit before <strong>March 2, 2026 EOD</strong>:</p>
-                <ul>${items}</ul>`;
+      submissionReminder += `
+            <div style="background:#fff3cd;border:1px solid #ffc107;padding:12px;border-radius:6px;margin-top:16px;">
+                <strong>⚠️ Paper/Project Submission Reminder</strong>
+                <p>Submit before <strong>March 2nd, 2026 EOD</strong>:</p>
+                <ul>${items}</ul>
+            </div>`;
     }
 
-    let submissionSection = "";
     if (submissionOnlyEvents.length > 0) {
       const items = submissionOnlyEvents
         .map(
@@ -117,18 +118,13 @@ export async function sendRegistrationEmail(data: RegistrationEmailData) {
             `<li><strong>${e.title}</strong> → Send to: <a href="mailto:${e.submissionEmail}">${e.submissionEmail}</a></li>`,
         )
         .join("");
-      submissionSection = `
-                <p>Submit before <strong>March 4, 2026 EOD</strong>:</p>
-                <ul>${items}</ul>`;
-    }
-
-    submissionReminder = `
+      submissionReminder += `
             <div style="background:#fff3cd;border:1px solid #ffc107;padding:12px;border-radius:6px;margin-top:16px;">
-                <strong>⚠️ Submission Reminder</strong>
-                ${abstractSection}
-                ${submissionSection}
-            </div>
-        `;
+                <strong>⚠️ Online Events Submission Reminder</strong>
+                <p>Submit before <strong>March 4th, 2026 EOD</strong>:</p>
+                <ul>${items}</ul>
+            </div>`;
+    }
   }
 
   const html = `

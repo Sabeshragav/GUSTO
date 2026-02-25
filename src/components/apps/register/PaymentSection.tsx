@@ -48,8 +48,8 @@ export function PaymentSection({
 
   return (
     <div className="space-y-4">
-      {/* Deadline notice for abstract/submission events */}
-      {(hasAbstractEvents || hasSubmissionEvents) && (
+      {/* Deadline notice for abstract events (Paper/Project) */}
+      {hasAbstractEvents && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -61,8 +61,8 @@ export function PaymentSection({
               className="text-amber-400 flex-shrink-0 mt-0.5"
             />
             <div>
-                <p className="text-xs font-bold text-amber-400">
-                ⚠️ Submission Deadline: March 2, 2026 EOD
+              <p className="text-xs font-bold text-amber-400">
+                ⚠️ Submission Deadline: March 2nd, 2026 EOD
               </p>
               <p className="text-xs text-[var(--text-muted)] mt-1">
                 Please send your works for the following events to the
@@ -87,6 +87,33 @@ export function PaymentSection({
                     </a>
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Deadline notice for submission events (Online) */}
+      {hasSubmissionEvents && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30"
+        >
+          <div className="flex items-start gap-2">
+            <AlertCircle
+              size={14}
+              className="text-amber-400 flex-shrink-0 mt-0.5"
+            />
+            <div>
+              <p className="text-xs font-bold text-amber-400">
+                ⚠️ Submission Deadline: March 4th, 2026 EOD
+              </p>
+              <p className="text-xs text-[var(--text-muted)] mt-1">
+                Please send your works for the following events to the
+                respective emails:
+              </p>
+              <div className="mt-2 space-y-1.5">
                 {submissionEvents.map((e) => (
                   <div
                     key={e.id}
@@ -228,11 +255,10 @@ export function PaymentSection({
               setDragOver(true);
             }}
             onDragLeave={() => setDragOver(false)}
-            className={`cursor-pointer p-6 rounded-lg border-2 border-dashed text-center transition-colors ${
-              dragOver
-                ? "border-[var(--accent-color)] bg-[var(--accent-color)]/5"
-                : "border-[var(--border-color)] hover:border-[var(--text-muted)]"
-            }`}
+            className={`cursor-pointer p-6 rounded-lg border-2 border-dashed text-center transition-colors ${dragOver
+              ? "border-[var(--accent-color)] bg-[var(--accent-color)]/5"
+              : "border-[var(--border-color)] hover:border-[var(--text-muted)]"
+              }`}
           >
             <Upload
               size={24}
