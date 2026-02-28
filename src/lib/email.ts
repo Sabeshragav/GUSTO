@@ -106,7 +106,7 @@ export async function sendRegistrationEmail(data: RegistrationEmailData) {
       submissionReminder += `
             <div style="background:#fff3cd;border:1px solid #ffc107;padding:12px;border-radius:6px;margin-top:16px;">
                 <strong>⚠️ Paper/Project Submission Reminder</strong>
-                <p>Submit before <strong>March 2nd, 2026 EOD</strong>:</p>
+                <p>Submit before <strong>March 3rd, 2026 EOD</strong>:</p>
                 <ul>${items}</ul>
             </div>`;
     }
@@ -121,7 +121,7 @@ export async function sendRegistrationEmail(data: RegistrationEmailData) {
       submissionReminder += `
             <div style="background:#fff3cd;border:1px solid #ffc107;padding:12px;border-radius:6px;margin-top:16px;">
                 <strong>⚠️ Online Events Submission Reminder</strong>
-                <p>Submit before <strong>March 4th, 2026 EOD</strong>:</p>
+                <p>Submit before <strong>March 5th, 2026 3:00 PM</strong>:</p>
                 <ul>${items}</ul>
             </div>`;
     }
