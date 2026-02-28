@@ -26,7 +26,7 @@ export function CalendarApp() {
 
   const getDayEvent = (day: number) => {
     if (day === 6) return { type: 'gusto', title: "Gusto '26", color: 'var(--ph-orange)' };
-    if (day === 4) return { type: 'deadline', title: "Reg Ends", color: '#FF3B30' }; // Red for deadline
+    if (day === 5) return { type: 'deadline', title: "Reg Ends", color: '#FF3B30' }; // Red for deadline
     return null;
   };
 
