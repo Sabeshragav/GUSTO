@@ -24,8 +24,8 @@ export const eventDetails = {
                 "Accepted authors will receive instructions on how to proceed with full paper submission",
                 "Author of accepted paper are asked to be ready with oral PowerPoint presentation for 7 to 10 min which will be the stage event.",
                 "Winning contestant will be rewarded by the attractive cash prizes.",
-                "Each member in the team must register individually ",
-                "while sending the abstract mention your name, department, year, phone number, college name ,team members and team members with their registation code in the mail",
+                "Each member of the team must register individually. However, the abstract should be submitted only once by the designated team leader on behalf of the team.",
+                "When submitting the abstract, the team leader should include their name, department, year, phone number, college name, names of all team members, and the registration codes of all team members in the email.",
                 "On-spot registration is not available."
             ],
             "coordinator1": {
@@ -60,8 +60,8 @@ export const eventDetails = {
                 "Batches will be allocated based on registration. The last date to send the abstract is 3rd March 2026, and the shortlisted will get the mail from 4th to 5th of march 2026.",
                 "The winners will be determined by juries.",
                 "Contestants who violate the rules and guidelines will be eliminated instantly.",
-                "Each member in the team must register individually ",
-                "while sending the abstract mention your name, department, year, phone number, college name ,team members and team members with their registation code in the mail",
+                "Each member of the team must register individually. However, the abstract should be submitted only once by the designated team leader on behalf of the team.",
+                "When submitting the abstract, the team leader should include their name, department, year, phone number, college name, names of all team members, and the registration codes of all team members in the email.",
                 "On-spot registration is not available."
             ],
             "coordinator1": {
@@ -344,12 +344,11 @@ export const eventDetails = {
                 "English subtitles are compulsory if the film is not in English.",
                 "The film must be in MP4 format. Minimum resolution: 1080p (Full HD).",
                 "Participants must upload their short film to Google Drive and ensure that the link is shared with viewing access for evaluation purposes.",
-                "Every member in the team should register idividually",
-                "while sending the short film mention your name, department, year, phone number , college name , team members and their registation code in the mail",
+                "Each member of the team must register individually. However, the mail should be sent only once by the designated team leader on behalf of the team.",
+                "When submitting the drive link through mail, the team leader should include their name, department, year, phone number, college name, names of all team members,the registration codes of all team members and the drive link of the film in the email.",
                 "The film must be original. Only copyright-free music and content should be used. Proper credits must be given wherever required.",
                 "The film should not contain any vulgar, offensive, or inappropriate content. Such entries will be disqualified.",
                 "Films will be judged based on: Story and Message, Creativity, Direction and Editing, Cinematography, and Overall Impact.",
-                "Each team can submit only one entry.",
                 "The organizing committee reserves the right to modify rules if necessary.",
                 "Last date for submission is 5th March 2026 - 3.00PM.",
                 "On-spot registration is not available."
