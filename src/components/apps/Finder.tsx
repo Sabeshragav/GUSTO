@@ -22,6 +22,7 @@ import { useDesktop } from "../../contexts/DesktopContext";
 import { useAchievements } from "../../contexts/AchievementsContext";
 import { fileSystem, getFilePath } from "../../data/filesystem";
 import type { FileNode } from "../../types";
+import posthog from "posthog-js";
 
 interface FinderProps {
   windowId: string;
@@ -99,6 +100,10 @@ export function Finder({ windowId, data }: FinderProps) {
     if (item.type === "folder") {
       navigateTo(item);
     } else {
+      if (item.name === "Registration" && typeof window !== 'undefined') {
+        console.log("[PostHog] try to register");
+        posthog.capture("try to register");
+      }
       openFile(item);
       markFileOpened(item.id);
     }

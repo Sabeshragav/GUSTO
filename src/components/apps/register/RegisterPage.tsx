@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from "lucide-react";
+import { useEffect } from "react";
 
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useEventValidation } from "../../../hooks/useEventValidation";
@@ -78,11 +79,22 @@ interface RegisterPageProps {
 }
 
 import { useSEO } from "@/hooks/useSEO";
+import posthog from "posthog-js";
+
+let hasTrackedRegistrationVisit = false;
 
 export function RegisterPage({ data }: RegisterPageProps) {
   useSEO("register");
   const { isMobile } = useIsMobile();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (posthog && typeof window !== 'undefined' && !hasTrackedRegistrationVisit) {
+      hasTrackedRegistrationVisit = true;
+      console.log("[PostHog] visited registration page");
+      posthog.capture("visited registration page");
+    }
+  }, []);
 
   /* ─── Multi-step state ─── */
   const [currentStep, setCurrentStep] = useState(1);
@@ -217,6 +229,22 @@ export function RegisterPage({ data }: RegisterPageProps) {
     const valid = await canGoNext();
     if (!valid) return;
     if (currentStep < TOTAL_STEPS) {
+      // Track step completions
+      if (typeof window !== 'undefined') {
+        if (currentStep === 1) {
+          console.log("[PostHog] filled the details screen");
+          posthog.capture("filled the details screen");
+        }
+        if (currentStep === 2) {
+          console.log("[PostHog] chosen the events");
+          posthog.capture("chosen the events");
+        }
+        if (currentStep === 3) {
+          console.log("[PostHog] chosen fallback");
+          posthog.capture("chosen fallback");
+        }
+      }
+
       setCurrentStep((s) => s + 1);
       scrollToTop();
     }
@@ -288,6 +316,10 @@ export function RegisterPage({ data }: RegisterPageProps) {
 
         setRegistrationId(result.uniqueCode || "SUBMITTED");
         setIsSuccess(true);
+        if (typeof window !== 'undefined') {
+          console.log("[PostHog] done payment screen");
+          posthog.capture("done payment screen");
+        }
 
         window.dispatchEvent(
           new CustomEvent("gusto-achievement", {

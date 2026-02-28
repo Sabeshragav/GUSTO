@@ -8,6 +8,7 @@ import type {
   SelectionCounts,
   EventValidation,
 } from "../../../hooks/useEventValidation";
+import posthog from "posthog-js";
 
 /* ─── Event type badge colors ─── */
 function getEventTypeBadge(eventType: string) {
@@ -58,7 +59,13 @@ function EventSelectCard({
     <motion.button
       type="button"
       onClick={() => {
-        if (isSelected || validation.canSelect) onToggle();
+        if (isSelected || validation.canSelect) {
+           if (!isSelected && typeof window !== 'undefined') {
+             console.log("[PostHog] clicked event", { eventTitle: event.title, eventType: event.eventType });
+             posthog.capture("clicked event", { eventTitle: event.title, eventType: event.eventType });
+           }
+           onToggle();
+        }
       }}
       whileTap={{ scale: 0.98 }}
       className={`w-full text-left p-3 rounded-lg border-2 transition-all ${

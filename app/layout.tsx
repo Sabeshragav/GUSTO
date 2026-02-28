@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@/index.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
+import { PostHogProvider } from "@/components/providers/PostHogProvider";
+import SuspendedPostHogPageView from "@/components/providers/PostHogPageView";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -98,9 +100,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-black`}
         suppressHydrationWarning
       >
-        {children}
-        <SpeedInsights />
-        <Analytics />
+        <PostHogProvider>
+          <SuspendedPostHogPageView />
+          {children}
+          <SpeedInsights />
+          <Analytics />
+        </PostHogProvider>
       </body>
     </html>
   );
