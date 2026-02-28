@@ -277,6 +277,18 @@ export function PaymentSection({
           </div>
         )}
       </div>
+
+      {/* Contact for queries */}
+      <p className="text-[10px] text-[var(--text-muted)] text-center pt-2">
+        For any queries related to registration & submission, contact{" "}
+        <span className="text-[var(--text-primary)] font-medium">
+          Santhoshkumar K
+        </span>
+        {" — "}
+        <a href="tel:+918344790660" className="text-blue-400 hover:underline">
+          8344790660
+        </a>
+      </p>
     </div>
   );
 }
