@@ -53,16 +53,16 @@ export function PaymentSection({
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30"
+          className="p-3 rounded-lg bg-green-500/10 border border-green-500/30"
         >
           <div className="flex items-start gap-2">
             <AlertCircle
               size={14}
-              className="text-amber-400 flex-shrink-0 mt-0.5"
+              className="text-green-400 flex-shrink-0 mt-0.5"
             />
             <div>
-              <p className="text-xs font-bold text-amber-400">
-                ⚠️ Submission Deadline: March 3rd, 2026 EOD
+              <p className="text-xs font-bold text-green-400">
+                Submission Deadline: March 3rd, 2026 EOD
               </p>
               <p className="text-xs text-[var(--text-muted)] mt-1">
                 Please send your works for the following events to the
@@ -81,7 +81,7 @@ export function PaymentSection({
                     <span className="text-[var(--text-muted)]">→</span>
                     <a
                       href={`mailto:${e.submissionEmail}`}
-                      className="text-[var(--accent-color)] underline"
+                      className="text-blue-400 underline"
                     >
                       {e.submissionEmail}
                     </a>
@@ -98,16 +98,16 @@ export function PaymentSection({
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30"
+          className="p-3 rounded-lg bg-green-500/10 border border-green-500/30"
         >
           <div className="flex items-start gap-2">
             <AlertCircle
               size={14}
-              className="text-amber-400 flex-shrink-0 mt-0.5"
+              className="text-green-400 flex-shrink-0 mt-0.5"
             />
             <div>
-              <p className="text-xs font-bold text-amber-400">
-                ⚠️ Submission Deadline: March 5th, 2026 - 3.00PM EOD
+              <p className="text-xs font-bold text-green-400">
+                Submission Deadline: March 5th, 2026 - 3.00PM
               </p>
               <p className="text-xs text-[var(--text-muted)] mt-1">
                 Please send your works for the following events to the
@@ -126,7 +126,7 @@ export function PaymentSection({
                     <span className="text-[var(--text-muted)]">→</span>
                     <a
                       href={`mailto:${e.submissionEmail}`}
-                      className="text-[var(--accent-color)] underline"
+                      className="text-blue-400 underline"
                     >
                       {e.submissionEmail}
                     </a>
@@ -255,10 +255,11 @@ export function PaymentSection({
               setDragOver(true);
             }}
             onDragLeave={() => setDragOver(false)}
-            className={`cursor-pointer p-6 rounded-lg border-2 border-dashed text-center transition-colors ${dragOver
-              ? "border-[var(--accent-color)] bg-[var(--accent-color)]/5"
-              : "border-[var(--border-color)] hover:border-[var(--text-muted)]"
-              }`}
+            className={`cursor-pointer p-6 rounded-lg border-2 border-dashed text-center transition-colors ${
+              dragOver
+                ? "border-[var(--accent-color)] bg-[var(--accent-color)]/5"
+                : "border-[var(--border-color)] hover:border-[var(--text-muted)]"
+            }`}
           >
             <Upload
               size={24}

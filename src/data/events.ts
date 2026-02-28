@@ -37,7 +37,7 @@ export const EVENTS: Event[] = [
     type: "Technical",
     eventType: "ABSTRACT",
     date: "2026-03-06",
-    time: "10:30 AM",
+    time: "11:00 AM",
     venue: "Seminar Hall & HOD lab",
     description:
       "A platform for students to present innovative research and ideas. Evaluates understanding, originality, and presentation skills.",
@@ -48,8 +48,8 @@ export const EVENTS: Event[] = [
       "Oral presentation: 7-10 minutes.",
       "On-spot registration not available.",
     ],
-    track: "A",
-    timeSlot: "SLOT_1015",
+    track: "B",
+    timeSlot: "SLOT_1100",
     submissionEmail: "subramanidhaya77@gmail.com",
   },
   {
@@ -122,7 +122,7 @@ export const EVENTS: Event[] = [
     type: "Technical",
     eventType: "DIRECT",
     date: "2026-03-06",
-    time: "11:00 AM",
+    time: "10:30 AM",
     venue: "AD-21 IT department",
     description:
       "AI prompt engineering competition targeting accuracy and efficiency in image and web page replication.",
@@ -134,8 +134,8 @@ export const EVENTS: Event[] = [
       "Manual edits are strictly prohibited.",
       "On-spot registration available.",
     ],
-    track: "B",
-    timeSlot: "SLOT_1100",
+    track: "A",
+    timeSlot: "SLOT_1015",
   },
 
   // ── Non-Technical Events (SUBMISSION — online) ──

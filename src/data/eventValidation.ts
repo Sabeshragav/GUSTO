@@ -47,8 +47,8 @@ export function validateEventSelection(
         return { valid: false, error: 'Maximum 2 Non-Technical events allowed' };
     }
 
-    // Check time slot conflicts (ONLINE events never conflict)
-    const slotted = events.filter((e) => e.timeSlot !== 'ONLINE');
+    // Check time slot conflicts (ONLINE events never conflict, Icon IQ is always choosable)
+    const slotted = events.filter((e) => e.timeSlot !== 'ONLINE' && e.id !== 'icon-iq');
     const seenSlots = new Set<string>();
     for (const e of slotted) {
         if (seenSlots.has(e.timeSlot)) {
@@ -71,7 +71,7 @@ export function getSelectionCounts(events: Event[], pass: Pass): { tech: number;
 export function getSelectionCounts(events: Event[], pass?: Pass) {
     const tech = events.filter((e) => e.type === 'Technical').length;
     const nonTech = events.filter((e) => e.type === 'Non-Technical').length;
-    
+
     if (pass) {
         return {
             tech,
@@ -132,10 +132,10 @@ export function canSelectEvent(
         return { canSelect: false, reason: 'Max 2 Non-Technical events' };
     }
 
-    // Time slot conflict (ONLINE never conflicts)
-    if (candidate.timeSlot !== 'ONLINE') {
+    // Time slot conflict (ONLINE never conflicts, Icon IQ is always choosable)
+    if (candidate.timeSlot !== 'ONLINE' && candidate.id !== 'icon-iq') {
         const conflict = currentSelection.find(
-            (e) => e.timeSlot !== 'ONLINE' && e.timeSlot === candidate.timeSlot
+            (e) => e.timeSlot !== 'ONLINE' && e.timeSlot === candidate.timeSlot && e.id !== 'icon-iq'
         );
         if (conflict) {
             return {
@@ -168,9 +168,10 @@ export function getValidFallbacks(
         if (e.eventType === 'ABSTRACT') return false;
         if (EXCLUDED_FALLBACK_IDS.has(e.id)) return false;
         // Must not conflict with other selected non-online events (excluding the abstract being replaced)
-        if (e.timeSlot !== 'ONLINE') {
+        // Icon IQ is exempt from time slot conflicts
+        if (e.timeSlot !== 'ONLINE' && e.id !== 'icon-iq') {
             const otherSelected = selectedEvents.filter(
-                (s) => s.id !== abstractEvent.id && s.timeSlot !== 'ONLINE'
+                (s) => s.id !== abstractEvent.id && s.timeSlot !== 'ONLINE' && s.id !== 'icon-iq'
             );
             if (otherSelected.some((s) => s.timeSlot === e.timeSlot)) return false;
         }

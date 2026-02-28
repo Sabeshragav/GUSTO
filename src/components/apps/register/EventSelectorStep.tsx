@@ -143,7 +143,7 @@ function FallbackSelector({
   return (
     <div className="mt-2 p-2.5 rounded-lg bg-purple-500/5 border border-purple-500/20">
       <p className="text-xs text-purple-300 font-semibold mb-1.5">
-        ⚠️ Fallback event for &quot;{abstractEvent.title}&quot;
+        Fallback event for &quot;{abstractEvent.title}&quot;
       </p>
       <p className="text-[10px] text-[var(--text-muted)] mb-2">
         If your abstract is rejected, you&apos;ll be auto-registered for this

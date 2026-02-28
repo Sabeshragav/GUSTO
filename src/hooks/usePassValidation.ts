@@ -56,12 +56,14 @@ export function usePassValidation(
                 return { canSelect: true, reason: null };
             }
 
-            // Track conflict
+            // Track conflict (Icon IQ is always choosable)
             const trackConflict = selectedEvents.find(
                 (e) =>
                     e.track === event.track &&
                     e.timeSlot === event.timeSlot &&
-                    e.timeSlot !== "ONLINE"
+                    e.timeSlot !== "ONLINE" &&
+                    e.id !== "icon-iq" &&
+                    event.id !== "icon-iq"
             );
             if (trackConflict) {
                 return {

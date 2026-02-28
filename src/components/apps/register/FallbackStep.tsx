@@ -54,7 +54,7 @@ export function FallbackStep({
                 className="p-3 rounded-lg bg-purple-500/5 border border-[var(--border-color)]"
               >
                 <p className="text-xs text-purple-300 font-semibold mb-1">
-                  ⚠️ Fallback for &quot;{ae.title}&quot;
+                  Fallback for &quot;{ae.title}&quot;
                 </p>
                 <p className="text-[10px] text-[var(--text-muted)] mb-2">
                   If your abstract is rejected, you&apos;ll be auto-registered
