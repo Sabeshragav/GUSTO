@@ -201,30 +201,12 @@ export function EventSelectorStep({
           Select 1 to 3 events
         </p>
         <p className="text-xs text-[var(--text-muted)] mt-0.5">
-          Max 2 Technical + Max 2 Non-Technical. At least 1 event required.
+          2 Technical events + 1 Non-Technical events  [or] 1 Technical events + 2 Non-Technical events .<br /> At least 1 event required.
         </p>
       </div>
 
       {/* Counters */}
       <div className="flex gap-2">
-        <span
-          className={`px-2.5 py-1 rounded text-xs font-bold border ${
-            counts.tech > 0
-              ? "bg-blue-500/10 border-blue-500/30 text-blue-300"
-              : "border-[var(--border-color)] text-[var(--text-muted)]"
-          }`}
-        >
-          Tech: {counts.tech}/2
-        </span>
-        <span
-          className={`px-2.5 py-1 rounded text-xs font-bold border ${
-            counts.nonTech > 0
-              ? "bg-green-500/10 border-green-500/30 text-green-300"
-              : "border-[var(--border-color)] text-[var(--text-muted)]"
-          }`}
-        >
-          Non-Tech: {counts.nonTech}/2
-        </span>
         <span
           className={`px-2.5 py-1 rounded text-xs font-bold border ${
             counts.total === 3
