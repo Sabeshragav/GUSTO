@@ -2,7 +2,13 @@
 
 import { useState, useRef, useCallback } from "react";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
-import { Upload, X, Image as ImageIcon, AlertCircle, Mail } from "lucide-react";
+import {
+  Upload,
+  X,
+  Image as ImageIcon,
+  //  AlertCircle,
+  Mail,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import type { RegistrationFormData } from "./RegisterPage";
@@ -56,16 +62,16 @@ export function PaymentSection({
           className="p-3 rounded-lg bg-green-500/10 border border-green-500/30"
         >
           <div className="flex items-start gap-2">
-            <AlertCircle
+            {/* <AlertCircle
               size={14}
               className="text-green-400 flex-shrink-0 mt-0.5"
-            />
+            /> */}
             <div>
               <p className="text-xs font-bold text-green-400">
                 Submission Deadline: March 3rd, 2026 EOD
               </p>
               <p className="text-xs text-[var(--text-muted)] mt-1">
-                Please send your works for the following events to the
+                Please complete your payment before sending your works to the
                 respective emails:
               </p>
               <div className="mt-2 space-y-1.5">
@@ -101,16 +107,16 @@ export function PaymentSection({
           className="p-3 rounded-lg bg-green-500/10 border border-green-500/30"
         >
           <div className="flex items-start gap-2">
-            <AlertCircle
+            {/* <AlertCircle
               size={14}
               className="text-green-400 flex-shrink-0 mt-0.5"
-            />
+            /> */}
             <div>
               <p className="text-xs font-bold text-green-400">
                 Submission Deadline: March 5th, 2026 - 3.00PM
               </p>
               <p className="text-xs text-[var(--text-muted)] mt-1">
-                Please send your works for the following events to the
+                Please complete your payment before sending your works to the
                 respective emails:
               </p>
               <div className="mt-2 space-y-1.5">
