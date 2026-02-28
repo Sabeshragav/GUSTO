@@ -18,13 +18,14 @@ export const eventDetails = {
             "description": "The Paper Presentation technical event provides a platform for students to present their innovative ideas and research work. The event focuses on evaluating participants' understanding of the topics, Originality of ideas, communication skills, and presentation abilities.",
             "rules": [
                 "Solo and Team Participation of maximum three members are allowed.",
-                "Participant must submit Abstract of their paper during the registration process on or before 2nd March 2026.",
+                "Participant must submit Abstract of their paper during the registration process on or before 3rd March 2026.",
                 "Papers will be shortlisted based on the Quality, Relevance and Originality of the Abstract.",
-                "Author of the shortlisted paper will receive the mail from 3rd to 5th of march 2026.",
+                "Author of the shortlisted paper will receive the mail from 4th to 5th of march 2026.",
                 "Accepted authors will receive instructions on how to proceed with full paper submission",
                 "Author of accepted paper are asked to be ready with oral PowerPoint presentation for 7 to 10 min which will be the stage event.",
                 "Winning contestant will be rewarded by the attractive cash prizes.",
-                "while sending the abstract mention your name, department, year, phone number and college name  in the mail",
+                "Each member in the team must register individually ",
+                "while sending the abstract mention your name, department, year, phone number, college name ,team members and team members with their registation code in the mail",
                 "On-spot registration is not available."
             ],
             "coordinator1": {
@@ -56,10 +57,11 @@ export const eventDetails = {
                 "The participants must bring their working project model and presentation slides.",
                 "Presentation will approximately take 5-10 minutes per team, followed by a live demonstration of the project.",
                 "The participants must provide their project report (hard copy).",
-                "Batches will be allocated based on registration. The last date to send the abstract is 2nd March 2026, and the shortlisted will get the mail from 3rd to 5th of march 2026.",
+                "Batches will be allocated based on registration. The last date to send the abstract is 3rd March 2026, and the shortlisted will get the mail from 4th to 5th of march 2026.",
                 "The winners will be determined by juries.",
                 "Contestants who violate the rules and guidelines will be eliminated instantly.",
-                "while sending the abstract mention your name, department, year, phone number and college name  in the mail",
+                "Each member in the team must register individually ",
+                "while sending the abstract mention your name, department, year, phone number, college name ,team members and team members with their registation code in the mail",
                 "On-spot registration is not available."
             ],
             "coordinator1": {
@@ -279,9 +281,9 @@ export const eventDetails = {
                 "Participants must work individually; group submissions are not allowed. The use of AI-generated content is strictly prohibited. Collages are not allowed; submissions must consist of one single photograph only.",
                 "Each participant may submit only one photograph. The aspect ratio must be 3:4. Only minimal touch editing (basic brightness, contrast, crop) is permitted. Any form of plagiarism will result in immediate disqualification.",
                 "All photographs must be uploaded online by the submission deadline via the designated photography submission email.",
-                "Last date for submission is 4th March 2026.",
+                "Last date for submission is 5th March 2026 - 3.00PM.",
                 "Winners will be notified and rewarded with exciting prizes.",
-                "while sending the photograph mention your name, department, year, phone number and college name  in the mail",
+                "while sending the photograph mention your name, department, year, phone number , college name and registation code in the mail",
                 "On-spot registration is not available."
             ],
             "coordinator1": {
@@ -309,11 +311,11 @@ export const eventDetails = {
                 "Memes must be clean and college-friendly.",
                 "Memes containing adult content, hate speech, or violence are strictly prohibited.",
                 "This is an individual event only.",
-                "while sending the meme mention your name, department, year, phone number and college name  in the mail",
+                "while sending the meme mention your name, department, year, phone number , college name and registation code  in the mail",
                 "Only final meme(s) must be uploaded before the deadline.",
                 "Late submissions will not be considered.",
                 "Submission mode is Online only.",
-                "Last date for submission is 4th March 2026.",
+                "Last date for submission is 5th March 2026 - 3.00PM.",
                 "Breaking rules will lead to disqualification.",
                 "On-spot registration is not available."
             ],
@@ -342,13 +344,14 @@ export const eventDetails = {
                 "English subtitles are compulsory if the film is not in English.",
                 "The film must be in MP4 format. Minimum resolution: 1080p (Full HD).",
                 "Participants must upload their short film to Google Drive and ensure that the link is shared with viewing access for evaluation purposes.",
-                "while sending the short film mention your name, department, year, phone number and college name  in the mail",
+                "Every member in the team should register idividually",
+                "while sending the short film mention your name, department, year, phone number , college name , team members and their registation code in the mail",
                 "The film must be original. Only copyright-free music and content should be used. Proper credits must be given wherever required.",
                 "The film should not contain any vulgar, offensive, or inappropriate content. Such entries will be disqualified.",
                 "Films will be judged based on: Story and Message, Creativity, Direction and Editing, Cinematography, and Overall Impact.",
                 "Each team can submit only one entry.",
                 "The organizing committee reserves the right to modify rules if necessary.",
-                "Last date for submission is 4th March 2026.",
+                "Last date for submission is 5th March 2026 - 3.00PM.",
                 "On-spot registration is not available."
             ],
             "coordinator1": {

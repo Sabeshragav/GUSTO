@@ -43,8 +43,8 @@ export const EVENTS: Event[] = [
       "A platform for students to present innovative research and ideas. Evaluates understanding, originality, and presentation skills.",
     team_size: "1-3",
     rules: [
-      "Submit abstract before 2nd March 2026.",
-      "Shortlisted candidates notified via email (3rd-5th March).",
+      "Submit abstract before 3rd March 2026.",
+      "Shortlisted candidates notified via email (4th-5th March).",
       "Oral presentation: 7-10 minutes.",
       "On-spot registration not available.",
     ],
@@ -64,8 +64,8 @@ export const EVENTS: Event[] = [
       "Showcase technical innovation through working projects or prototypes. Explain design, implementation, and results.",
     team_size: "1-3",
     rules: [
-      "Submit abstract and 5-page methodology before 2nd March 2026.",
-      "Shortlisted candidates notified (3rd-5th March).",
+      "Submit abstract and 5-page methodology before 3rd March 2026.",
+      "Shortlisted candidates notified (4th-5th March).",
       "Bring working model and hard copy report.",
       "Presentation: 5-10 mins + live demo.",
     ],
@@ -153,7 +153,7 @@ export const EVENTS: Event[] = [
     rules: [
       "Original photos only (no AI or plagiarism).",
       "Aspect ratio 3:4; minimal editing permitted.",
-      "Submit via email by 4th March 2026.",
+      "Submit via email before 4th March 2026 - 3.00PM.",
       "Mention details (name, dept, college) in mail.",
     ],
     track: "C",
@@ -174,8 +174,8 @@ export const EVENTS: Event[] = [
     rules: [
       "Themes: AI tech, College life, Job vs Entrepreneurship.",
       "Must be original and college-friendly.",
-      "Submit via email by 4th March 2026.",
-      "Mention details in the email body.",
+      "Submit via email before 5th March 2026 - 3.00PM.",
+      "Mention details (name, dept, college) in mail.",
     ],
     track: "C",
     timeSlot: "ONLINE",
@@ -195,7 +195,7 @@ export const EVENTS: Event[] = [
     rules: [
       "Length: 20-30 minutes; MP4 (min 1080p).",
       "English subtitles compulsory if not in English.",
-      "Submit Google Drive link by 4th March 2026.",
+      "Submit Google Drive link before 5th March 2026 - 3.00PM.",
       "Only copyright-free music allowed.",
     ],
     track: "C",

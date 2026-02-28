@@ -40,7 +40,7 @@ import { YouTubeApp } from "../apps/YouTubeApp"; // Added Import
 
 // ── Constants ──
 
-const TARGET_DATE = new Date("2026-03-04T23:59:59+05:30");
+const TARGET_DATE = new Date("2026-03-05T14:59:59+05:30");
 
 interface TimeLeft {
   days: number;

@@ -8,8 +8,8 @@ import { useIsMobile } from "../../hooks/useIsMobile";
 import { EventPromoWidget } from "../widgets/EventPromoWidget";
 
 // GUSTO 2026 event date — March 7, 2026
-const TARGET_DATE = new Date("2026-03-04T23:59:59+05:30");
-const REG_CLOSE_TEXT = "Registration closes on 4th March 2026";
+const TARGET_DATE = new Date("2026-03-05T14:59:59+05:30");
+const REG_CLOSE_TEXT = "Registration closes on 5th March 2026";
 
 interface TimeLeft {
   days: number;
