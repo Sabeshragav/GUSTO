@@ -1,6 +1,8 @@
 "use client";
 
-import { MessageCircle, Phone, Globe, Mail } from "lucide-react";
+import { Phone, Mail } from "lucide-react";
+import posthog from "posthog-js";
+import { useEffect } from "react";
 
 interface EventCardProps {
   event: any;
@@ -17,14 +19,28 @@ export function EventCard({
 }: EventCardProps) {
   const isTechnical = event.type === "Technical";
 
+  useEffect(() => {
+    if (isExpanded && typeof window !== "undefined") {
+      console.log("[PostHog] viewed event detail", {
+        eventTitle: event.title,
+        eventType: event.type,
+      });
+      posthog.capture("viewed event detail", {
+        eventTitle: event.title,
+        eventType: event.type,
+      });
+    }
+  }, [isExpanded, event.title, event.type]);
+
   const techBadge = isTechnical
     ? "bg-blue-500/15 text-blue-400 border border-blue-500/30"
     : "bg-purple-500/15 text-purple-400 border border-purple-500/30";
 
   return (
     <div
-      className={`border-2 border-[var(--border-color)] bg-[var(--surface-primary)] transition-all duration-200 flex flex-col ${!isMobile ? "hover:scale-[1.01] hover:shadow-md" : "active:scale-[0.99]"
-        }`}
+      className={`border-2 border-[var(--border-color)] bg-[var(--surface-primary)] transition-all duration-200 flex flex-col ${
+        !isMobile ? "hover:scale-[1.01] hover:shadow-md" : "active:scale-[0.99]"
+      }`}
       style={{ borderRadius: "6px" }}
     >
       {/* Image Banner (if available) */}
@@ -51,21 +67,18 @@ export function EventCard({
         {/* Venue/Time Info Row */}
         <div className="flex items-center gap-3 mb-3 text-xs text-[var(--text-muted)] font-mono">
           {event.time && (
-            <span className="flex items-center gap-1">
-              🕒 {event.time}
-            </span>
+            <span className="flex items-center gap-1">🕒 {event.time}</span>
           )}
           {event.venue && (
-            <span className="flex items-center gap-1">
-              📍 {event.venue}
-            </span>
+            <span className="flex items-center gap-1">📍 {event.venue}</span>
           )}
         </div>
 
         {/* Description */}
         <p
-          className={`text-sm text-[var(--text-secondary)] leading-relaxed mb-4 flex-1 ${isExpanded ? "" : "line-clamp-3"
-            }`}
+          className={`text-sm text-[var(--text-secondary)] leading-relaxed mb-4 flex-1 ${
+            isExpanded ? "" : "line-clamp-3"
+          }`}
         >
           {event.description}
         </p>
@@ -85,28 +98,37 @@ export function EventCard({
       {/* Expanded Details */}
       {isExpanded && (
         <div className="border-t-2 border-[var(--border-color)] p-4 bg-[var(--surface-bg)] animate-in fade-in slide-in-from-top-2 duration-200">
-
           {/* Rules Section — Mini Editor Style */}
           <div className="mb-6 border border-[var(--border-color)] rounded overflow-hidden">
             {/* Mini editor toolbar */}
             <div className="flex items-center gap-1 px-2 py-1 bg-[var(--surface-secondary)] border-b border-[var(--border-color)]">
               <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] mr-2 flex items-center gap-1">
-                <span className="text-[var(--accent-color)]">📜</span> Rules & Guidelines
+                <span className="text-[var(--accent-color)]">📜</span> Rules &
+                Guidelines
               </span>
               <div className="flex-1" />
               <div className="flex items-center gap-0.5">
                 {["B", "I", "U"].map((btn) => (
                   <span
                     key={btn}
-                    className={`w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] hover:bg-[var(--surface-primary)] transition-colors cursor-default ${btn === "B" ? "font-bold" : btn === "I" ? "italic" : "underline"
-                      }`}
+                    className={`w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] hover:bg-[var(--surface-primary)] transition-colors cursor-default ${
+                      btn === "B"
+                        ? "font-bold"
+                        : btn === "I"
+                          ? "italic"
+                          : "underline"
+                    }`}
                   >
                     {btn}
                   </span>
                 ))}
                 <div className="w-px h-3 bg-[var(--border-color)] mx-0.5" />
-                <span className="w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] cursor-default">≡</span>
-                <span className="w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] cursor-default">#</span>
+                <span className="w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] cursor-default">
+                  ≡
+                </span>
+                <span className="w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] cursor-default">
+                  #
+                </span>
               </div>
             </div>
 
@@ -115,21 +137,30 @@ export function EventCard({
               {Array.isArray(event.rules) ? (
                 <ul className="list-disc pl-5 space-y-1.5 text-sm text-[var(--text-secondary)] marker:text-[var(--accent-color)]">
                   {event.rules.map((rule: string, idx: number) => (
-                    <li key={idx} className="leading-snug">{rule}</li>
+                    <li key={idx} className="leading-snug">
+                      {rule}
+                    </li>
                   ))}
                 </ul>
               ) : (
                 <div className="space-y-4">
-                  {Object.entries(event.rules).map(([key, round]: [string, any]) => (
-                    <div key={key} className="bg-[var(--surface-secondary)]/50 p-3 rounded border border-[var(--border-color)]">
-                      <h5 className="font-bold text-xs uppercase text-[var(--text-primary)] mb-2">{round.title || key}</h5>
-                      <ul className="list-disc pl-4 space-y-1 text-sm text-[var(--text-secondary)] marker:text-[var(--accent-color)]">
-                        {round.rules.map((r: string, i: number) => (
-                          <li key={i}>{r}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
+                  {Object.entries(event.rules).map(
+                    ([key, round]: [string, any]) => (
+                      <div
+                        key={key}
+                        className="bg-[var(--surface-secondary)]/50 p-3 rounded border border-[var(--border-color)]"
+                      >
+                        <h5 className="font-bold text-xs uppercase text-[var(--text-primary)] mb-2">
+                          {round.title || key}
+                        </h5>
+                        <ul className="list-disc pl-4 space-y-1 text-sm text-[var(--text-secondary)] marker:text-[var(--accent-color)]">
+                          {round.rules.map((r: string, i: number) => (
+                            <li key={i}>{r}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ),
+                  )}
                 </div>
               )}
             </div>
@@ -139,17 +170,28 @@ export function EventCard({
           {(event.coordinator1 || event.coordinator2) && (
             <div className="mb-4">
               <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-widest mb-2 border-b border-[var(--border-color)] pb-1 flex items-center gap-2">
-                <span className="text-[var(--accent-color)]">👥</span> Coordinators
+                <span className="text-[var(--accent-color)]">👥</span>{" "}
+                Coordinators
               </h4>
               <div className="grid grid-cols-1 gap-2">
-                {[event.coordinator1, event.coordinator2, event.coordinator3].filter(Boolean).map((coord: any, idx) => (
-                  <div key={idx} className="flex items-center justify-between bg-[var(--surface-secondary)] p-2 rounded border border-[var(--border-color)]">
-                    <span className="text-sm font-bold text-[var(--text-primary)]">{coord.name}</span>
-                    <a href={`tel:${coord.phone}`} className="flex items-center gap-1 text-xs font-mono text-[var(--text-muted)] hover:text-[var(--accent-color)] transition-colors">
-                      <Phone size={12} /> {coord.phone}
-                    </a>
-                  </div>
-                ))}
+                {[event.coordinator1, event.coordinator2, event.coordinator3]
+                  .filter(Boolean)
+                  .map((coord: any, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between bg-[var(--surface-secondary)] p-2 rounded border border-[var(--border-color)]"
+                    >
+                      <span className="text-sm font-bold text-[var(--text-primary)]">
+                        {coord.name}
+                      </span>
+                      <a
+                        href={`tel:${coord.phone}`}
+                        className="flex items-center gap-1 text-xs font-mono text-[var(--text-muted)] hover:text-[var(--accent-color)] transition-colors"
+                      >
+                        <Phone size={12} /> {coord.phone}
+                      </a>
+                    </div>
+                  ))}
               </div>
             </div>
           )}
@@ -159,9 +201,14 @@ export function EventCard({
             <div className="mt-4 pt-3 border-t border-[var(--border-color)] flex flex-col gap-2">
               {event.submission_Email && (
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase">{event.submission_name || "Submission"}</span>
+                  <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
+                    {event.submission_name || "Submission"}
+                  </span>
                   <div className="flex items-center gap-2 text-sm break-all select-all text-white">
-                    <Mail size={14} className="shrink-0 text-[var(--accent-color)]" />
+                    <Mail
+                      size={14}
+                      className="shrink-0 text-[var(--accent-color)]"
+                    />
                     {event.submission_Email}
                   </div>
                 </div>
