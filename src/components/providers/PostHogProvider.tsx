@@ -5,6 +5,7 @@ import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
 
 if (
+  process.env.NODE_ENV === "production" &&
   typeof window !== "undefined" &&
   process.env.NEXT_PUBLIC_POSTHOG_KEY &&
   !posthog.__loaded

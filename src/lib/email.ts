@@ -1,4 +1,5 @@
 import {
+  AbstractApprovalData,
   AbstractRejectionData,
   RegistrationEmailData,
 } from "@/types/email.types";
@@ -11,6 +12,8 @@ import {
 //     secretAccessKey: process.env.APP_AWS_SECRET_ACCESS_KEY!,
 //   },
 // });
+
+const whatsappGroupLink = "https://chat.whatsapp.com/GrLcESGCd110KDrP9QCoH0";
 
 /**
  * Send an email via Brevo (Sendinblue) REST API.
@@ -160,7 +163,7 @@ export async function sendRegistrationEmail(data: RegistrationEmailData) {
                 <div style="background:#dcfce7;border:1px solid #22c55e;padding:12px;border-radius:8px;margin-top:16px;text-align:center;">
                     <p style="margin:0;font-size:14px;font-weight:bold;">💬 Join the GUSTO '26 WhatsApp Group</p>
                     <p style="margin:4px 0 8px;font-size:12px;color:#6b7280;">Stay updated and connect with other participants</p>
-                    <a href="https://chat.whatsapp.com/GrLcESGCd110KDrP9QCoH0" style="display:inline-block;background:#25D366;color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:13px;">Join WhatsApp Group</a>
+                    <a href=${whatsappGroupLink} style="display:inline-block;background:#25D366;color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:13px;">Join WhatsApp Group</a>
                 </div>
 
                 <p style="margin-top:20px;color:#6b7280;font-size:13px;">
@@ -199,12 +202,47 @@ export async function sendAbstractRejectionEmail(data: AbstractRejectionData) {
                 <div style="background:#dcfce7;border:1px solid #22c55e;padding:12px;border-radius:8px;margin-top:16px;text-align:center;">
                     <p style="margin:0;font-size:14px;font-weight:bold;">💬 Join the GUSTO '26 WhatsApp Group</p>
                     <p style="margin:4px 0 8px;font-size:12px;color:#6b7280;">In case you haven't joined our WhatsApp group yet, join it here</p>
-                    <a href="https://chat.whatsapp.com/GrLcESGCd110KDrP9QCoH0" style="display:inline-block;background:#25D366;color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:13px;">Join WhatsApp Group</a>
+                    <a href=${whatsappGroupLink} style="display:inline-block;background:#25D366;color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:13px;">Join WhatsApp Group</a>
                 </div>
             </div>
         </div>
     `;
 
   const subject = `Abstract Update — ${originalEvent} | GUSTO '26`;
+  await sendEmail(to, subject, html);
+}
+
+export async function sendAbstractApprovalEmail(data: AbstractApprovalData) {
+  const { to, name, event } = data;
+
+  const html = `
+        <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;">
+            <div style="background:linear-gradient(135deg,#22c55e,#16a34a);padding:24px;border-radius:12px 12px 0 0;">
+                <h1 style="color:#fff;margin:0;">Abstract Selected! 🎉</h1>
+                <p style="color:#dcfce7;margin:4px 0 0;">GUSTO '26 — Government College of Engineering, Erode</p>
+            </div>
+            <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px;">
+                <p>Hi <strong>${name}</strong>,</p>
+                <p>Congratulations! Your abstract for <strong>${event}</strong> has been <strong>selected</strong>.</p>
+
+                <div style="background:#f0fdf4;border:1px solid #22c55e;padding:12px;border-radius:8px;margin:16px 0;">
+                    <p style="margin:0;font-size:18px;font-weight:bold;color:#16a34a;">✅ ${event}</p>
+                    <p style="margin:8px 0 0;color:#15803d;">Your abstract has been approved and you're all set to participate!</p>
+                </div>
+
+                <p style="color:#374151;font-size:14px;">
+                    Please be prepared with your work for the event day. Further details will be shared soon.
+                </p>
+
+                <div style="background:#dcfce7;border:1px solid #22c55e;padding:12px;border-radius:8px;margin-top:16px;text-align:center;">
+                    <p style="margin:0;font-size:14px;font-weight:bold;">💬 Join the GUSTO '26 WhatsApp Group</p>
+                    <p style="margin:4px 0 8px;font-size:12px;color:#6b7280;">In case you haven't joined our WhatsApp group yet, join it here</p>
+                    <a href=${whatsappGroupLink} style="display:inline-block;background:#25D366;color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:13px;">Join WhatsApp Group</a>
+                </div>
+            </div>
+        </div>
+    `;
+
+  const subject = `Abstract Selected — ${event} | GUSTO '26`;
   await sendEmail(to, subject, html);
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { validateAdmin } from '../auth';
 import { getClient } from '@/lib/db';
-import { sendAbstractRejectionEmail } from '@/lib/email';
+import { sendAbstractApprovalEmail, sendAbstractRejectionEmail } from '@/lib/email';
 import { EVENTS } from '@/data/events';
 
 export async function POST(req: NextRequest) {
@@ -82,6 +82,22 @@ export async function POST(req: NextRequest) {
             }
 
             await client.query('COMMIT');
+
+            if (action === 'APPROVED') {
+                const eventTitle = EVENTS.find((e) => e.id === eventId)?.title || eventId;
+
+                after(async () => {
+                    try {
+                        await sendAbstractApprovalEmail({
+                            to: reg.email,
+                            name: reg.name,
+                            event: eventTitle,
+                        });
+                    } catch (err) {
+                        console.error('[AbstractReview] Background approval email failed:', err);
+                    }
+                });
+            }
 
             if (action === 'REJECTED') {
                 const originalEventTitle = EVENTS.find((e) => e.id === eventId)?.title || eventId;

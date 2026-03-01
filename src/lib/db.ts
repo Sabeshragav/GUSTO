@@ -5,11 +5,14 @@ let pool: Pool;
 
 function getPool(): Pool {
   if (!pool) {
+    const isLocal = process.env.NODE_ENV !== "production";
     pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      },
+      ssl: isLocal
+        ? false
+        : {
+          rejectUnauthorized: false,
+        },
     });
   }
   return pool;

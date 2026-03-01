@@ -11,3 +11,9 @@ export interface AbstractRejectionData {
     originalEvent: string;
     fallbackEvent: string;
 }
+
+export interface AbstractApprovalData {
+    to: string;
+    name: string;
+    event: string;
+}

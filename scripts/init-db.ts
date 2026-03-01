@@ -17,9 +17,14 @@ async function main() {
         process.exit(1);
     }
 
+    const isLocal = process.env.NODE_ENV !== "production";
     const pool = new Pool({
         connectionString,
-        ssl: { rejectUnauthorized: false },
+        ssl: isLocal
+            ? false
+            : {
+                rejectUnauthorized: false,
+            },
     });
 
     const client = await pool.connect();
