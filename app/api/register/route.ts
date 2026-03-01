@@ -11,6 +11,8 @@ import {
     getSubmissionEvents,
 } from "@/data/eventValidation";
 
+const MAX_SCREENSHOT_SIZE = 2 * 1024 * 1024; // 2 MB
+
 export async function POST(req: NextRequest) {
     try {
         const formData = await req.formData();
@@ -53,6 +55,18 @@ export async function POST(req: NextRequest) {
         if (!/^\d{10}$/.test(mobile)) {
             return NextResponse.json(
                 { error: "Mobile must be 10 digits" },
+                { status: 400 },
+            );
+        }
+        if (!screenshot.type.startsWith("image/")) {
+            return NextResponse.json(
+                { error: "Only image files are allowed for the screenshot" },
+                { status: 400 },
+            );
+        }
+        if (screenshot.size > MAX_SCREENSHOT_SIZE) {
+            return NextResponse.json(
+                { error: "Screenshot file size must be under 2 MB" },
                 { status: 400 },
             );
         }

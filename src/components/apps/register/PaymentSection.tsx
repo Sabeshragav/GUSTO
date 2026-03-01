@@ -14,6 +14,8 @@ import Image from "next/image";
 import type { RegistrationFormData } from "./RegisterPage";
 import { REGISTRATION_PRICE, type Event } from "../../../data/events";
 
+const MAX_SCREENSHOT_SIZE = 2 * 1024 * 1024; // 2 MB
+
 interface PaymentSectionProps {
   register: UseFormRegister<RegistrationFormData>;
   errors: FieldErrors<RegistrationFormData>;
@@ -39,17 +41,34 @@ export function PaymentSection({
 }: PaymentSectionProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+
+  const validateAndSetFile = useCallback(
+    (file: File) => {
+      setFileError(null);
+      if (!file.type.startsWith("image/")) {
+        setFileError("Only image files are allowed");
+        return;
+      }
+      if (file.size > MAX_SCREENSHOT_SIZE) {
+        setFileError("File size must be under 2 MB");
+        return;
+      }
+      onScreenshotChange(file);
+    },
+    [onScreenshotChange],
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setDragOver(false);
       const file = e.dataTransfer.files[0];
-      if (file && file.type.startsWith("image/")) {
-        onScreenshotChange(file);
+      if (file) {
+        validateAndSetFile(file);
       }
     },
-    [onScreenshotChange],
+    [validateAndSetFile],
   );
 
   return (
@@ -232,7 +251,7 @@ export function PaymentSection({
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file) onScreenshotChange(file);
+            if (file) validateAndSetFile(file);
           }}
         />
 
@@ -274,8 +293,12 @@ export function PaymentSection({
             <p className="text-xs text-[var(--text-muted)]">
               Click or drop payment screenshot here
             </p>
+            <p className="text-[10px] text-[var(--text-muted)] mt-1">
+              Max file size: 2 MB
+            </p>
           </div>
         )}
+        {fileError && <p className="text-xs text-red-400 mt-1">{fileError}</p>}
       </div>
 
       {/* Contact for queries */}
