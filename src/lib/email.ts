@@ -223,7 +223,7 @@ export async function sendAbstractApprovalEmail(data: AbstractApprovalData) {
             </div>
             <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px;">
                 <p>Hi <strong>${name}</strong>,</p>
-                <p>Congratulations! Your abstract for <strong>${event}</strong> has been <strong>selected</strong>.</p>
+                <p>Congratulations! Your team's abstract for <strong>${event}</strong> has been <strong>selected</strong>.</p>
 
                 <div style="background:#f0fdf4;border:1px solid #22c55e;padding:12px;border-radius:8px;margin:16px 0;">
                     <p style="margin:0;font-size:18px;font-weight:bold;color:#16a34a;">✅ ${event}</p>
