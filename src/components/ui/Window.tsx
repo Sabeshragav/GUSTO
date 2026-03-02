@@ -61,6 +61,47 @@ export function Window({
     winState.current = win;
   });
 
+  // Clamp window position & size to viewport on resize (e.g. exiting fullscreen
+  // when the file-upload dialog opens). Without this the submit button can end
+  // up below the visible area on smaller screens.
+  useEffect(() => {
+    if (isMobile || isTouchDevice) return;
+
+    const clampToViewport = () => {
+      const w = winState.current;
+      if (w.isMaximized || w.isMinimized) return;
+
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const menuBarHeight = 28;
+      const dockBuffer = 80; // keep clear of the dock hover zone at the bottom
+
+      // Ensure the window fits within the viewport —
+      // shrink it first if necessary, then reposition.
+      let newWidth = Math.min(w.width, vw);
+      let newHeight = Math.min(w.height, vh - menuBarHeight - dockBuffer);
+      let newX = w.x;
+      let newY = w.y;
+
+      // Keep the window's right/bottom edge above the dock zone
+      if (newX + newWidth > vw) newX = Math.max(0, vw - newWidth);
+      if (newY + newHeight > vh - dockBuffer) newY = Math.max(menuBarHeight, vh - dockBuffer - newHeight);
+
+      // Keep top-left in view
+      if (newX < 0) newX = 0;
+      if (newY < menuBarHeight) newY = menuBarHeight;
+
+      const posChanged = newX !== w.x || newY !== w.y;
+      const sizeChanged = newWidth !== w.width || newHeight !== w.height;
+
+      if (sizeChanged) resizeWindow(w.id, newWidth, newHeight);
+      if (posChanged) moveWindow(w.id, newX, newY);
+    };
+
+    window.addEventListener("resize", clampToViewport);
+    return () => window.removeEventListener("resize", clampToViewport);
+  }, [isMobile, isTouchDevice, moveWindow, resizeWindow]);
+
   useEffect(() => {
     if (!isDragging) return;
 
