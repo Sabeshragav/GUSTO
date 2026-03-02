@@ -17,6 +17,7 @@ import { useDesktop } from "../../contexts/DesktopContext";
 import type { DesktopItem } from "../../types";
 
 import { fileSystem } from "../../data/filesystem";
+import { getAllMacIconUrls } from "../../data/macIcons";
 
 export function Desktop() {
   const {
@@ -36,6 +37,14 @@ export function Desktop() {
   const tripleClickTimer = useRef<ReturnType<typeof setTimeout>>();
   const [iconsJiggling, setIconsJiggling] = useState(false);
   /* ... (existing code) ... */
+
+  // Preload all mac icon SVGs during the boot screen so they render instantly
+  useEffect(() => {
+    getAllMacIconUrls().forEach((url) => {
+      const img = new window.Image();
+      img.src = url;
+    });
+  }, []);
 
   const desktopItems = useMemo<DesktopItem[]>(() => {
     if (!fileSystem.children) return [];
@@ -203,12 +212,8 @@ export function Desktop() {
 
       <MenuBar />
 
-      <div
-        className="absolute inset-0 pt-16 pb-32 px-4 pointer-events-none"
-      >
-        <div
-          className="pointer-events-auto"
-        >
+      <div className="absolute inset-0 pt-16 pb-32 px-4 pointer-events-none">
+        <div className="pointer-events-auto">
           {desktopItems.map((item) => (
             <div
               key={item.id}

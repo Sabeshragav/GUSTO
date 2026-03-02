@@ -60,7 +60,7 @@ export function Dock() {
   const [isVisible, setIsVisible] = useState(true);
 
   // Check if any window is open and NOT minimized
-  const hasOpenWindows = state.windows.some(w => !w.isMinimized);
+  const hasOpenWindows = state.windows.some((w) => !w.isMinimized);
 
   useEffect(() => {
     // If no windows are overlapping the desktop area, keep dock visible
@@ -92,10 +92,10 @@ export function Dock() {
 
     // Initial check when windows open/close or hover state changes
     if (!isHovered && hasOpenWindows) {
-      // We don't force hide immediately to avoid jarring UX, 
+      // We don't force hide immediately to avoid jarring UX,
       // but we start listening to mouse to decide when to hide.
-      // Actually, if we just switched to having open windows, we might want to default to hidden 
-      // unless mouse is already at bottom. 
+      // Actually, if we just switched to having open windows, we might want to default to hidden
+      // unless mouse is already at bottom.
       // For simplicity, let's just attach listener.
     }
 
@@ -103,21 +103,24 @@ export function Dock() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [isHovered, hasOpenWindows]);
 
-
   const handleAppClick = (appId: string) => {
     // 1. Handle Mail specifically
     if (appId === "email") {
-      window.open("mailto:gustoreg25gcee@gmail.com?subject=Gusto '26 Query", "_self");
+      window.open(
+        "mailto:gustoreg25gcee@gmail.com?subject=Gusto '26 Query",
+        "_self",
+      );
       return;
     }
 
-    const existingWindow = state.windows.find(
-      (w) => w.appId === appId
-    );
+    const existingWindow = state.windows.find((w) => w.appId === appId);
 
     if (existingWindow) {
       // 2. If window is already focused and not minimized, minimize it
-      if (state.activeWindowId === existingWindow.id && !existingWindow.isMinimized) {
+      if (
+        state.activeWindowId === existingWindow.id &&
+        !existingWindow.isMinimized
+      ) {
         minimizeWindow(existingWindow.id);
       } else {
         // 3. Otherwise (minimized or background), bring to front
@@ -204,7 +207,7 @@ export function Dock() {
         />
       </div>
     </motion.div>,
-    document.body
+    document.body,
   );
 }
 
@@ -268,6 +271,7 @@ function DockIcon({
               sizes="80px"
               className="object-contain pointer-events-none"
               draggable={false}
+              priority
             />
           ) : (
             <div className="w-3/5 h-3/5">
@@ -283,8 +287,9 @@ function DockIcon({
 
       {/* Active Indicator */}
       <div
-        className={`w-1 h-1 rounded-full bg-[var(--text-primary)] transition-opacity ${isOpen ? "opacity-100" : "opacity-0"
-          }`}
+        className={`w-1 h-1 rounded-full bg-[var(--text-primary)] transition-opacity ${
+          isOpen ? "opacity-100" : "opacity-0"
+        }`}
       />
     </div>
   );

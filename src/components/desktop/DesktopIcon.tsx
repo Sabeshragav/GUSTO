@@ -151,6 +151,7 @@ export function DesktopIcon({ item }: DesktopIconProps) {
             height={56}
             className="w-14 h-14 object-contain pointer-events-none"
             draggable={false}
+            priority
           />
         ) : isApp ? (
           (() => {
@@ -166,6 +167,7 @@ export function DesktopIcon({ item }: DesktopIconProps) {
                 height={56}
                 className="w-14 h-14 object-contain pointer-events-none"
                 draggable={false}
+                priority
               />
             ) : (
               <ThemedIcon

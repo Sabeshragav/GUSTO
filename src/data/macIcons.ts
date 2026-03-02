@@ -49,6 +49,16 @@ export function getMacIcon(appId: string, trashHasItems?: boolean): string | nul
 }
 
 /**
+ * Get all icon URLs used by the desktop & dock so they can be preloaded.
+ */
+export function getAllMacIconUrls(): string[] {
+    return [
+        ...Object.values(macIconMap).map((f) => `/mac_os_icons/${f}`),
+        `/mac_os_icons/Folder.svg`,
+    ];
+}
+
+/**
  * Get the macOS folder icon URL.
  */
 export function getMacFolderIcon(): string {
