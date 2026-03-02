@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
+import { X } from "lucide-react";
 
 // ─── Types ───
 interface EventRegistration {
@@ -522,6 +523,98 @@ function StatsSkeleton() {
   );
 }
 
+// ─── Confirm Dialog ───
+interface ConfirmState {
+  title: string;
+  message: string;
+  confirmLabel: string;
+  variant: "success" | "danger" | "primary";
+  onConfirm: () => void;
+}
+
+function ConfirmDialog({
+  state,
+  onClose,
+}: {
+  state: ConfirmState;
+  onClose: () => void;
+}) {
+  const variantStyles = {
+    success: { background: "#22c55e", color: "#fff" },
+    danger: { background: "#ef4444", color: "#fff" },
+    primary: { background: "#F54E00", color: "#fff" },
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.6)",
+        backdropFilter: "blur(4px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 2000,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: "#1a1b23",
+          border: "1px solid #2a2b35",
+          borderRadius: "12px",
+          padding: "24px",
+          maxWidth: "380px",
+          width: "90%",
+          animation: "fadeIn 0.15s ease-out",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3
+          style={{
+            margin: "0 0 8px",
+            fontSize: "15px",
+            fontWeight: 600,
+            color: "#e4e4e7",
+          }}
+        >
+          {state.title}
+        </h3>
+        <p
+          style={{
+            margin: "0 0 20px",
+            fontSize: "13px",
+            color: "#9ca3af",
+            lineHeight: 1.5,
+          }}
+        >
+          {state.message}
+        </p>
+        <div
+          style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}
+        >
+          <button
+            onClick={onClose}
+            style={{ ...styles.btn, ...styles.btnSecondary }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              state.onConfirm();
+              onClose();
+            }}
+            style={{ ...styles.btn, ...variantStyles[state.variant] }}
+          >
+            {state.confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Registration Detail Modal ───
 function RegistrationDetail({
   reg,
@@ -534,6 +627,9 @@ function RegistrationDetail({
 }) {
   const [updating, setUpdating] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastMsg[]>([]);
+  const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
+
+  const confirm = (state: ConfirmState) => setConfirmState(state);
 
   const addToast = (type: "success" | "error", message: string) => {
     const id = Math.random().toString(36).substring(7);
@@ -713,46 +809,48 @@ function RegistrationDetail({
             >
               {reg.name}
             </h2>
-            <div style={{ color: "#a1a1aa", fontSize: "13px" }}>
-              {reg.email} · {reg.mobile}
-            </div>
-            <div
-              style={{ color: "#71717a", fontSize: "12px", marginTop: "2px" }}
-            >
-              {reg.college} · {reg.year}
-            </div>
-            {reg.food_preference && (
-              <div
-                style={{
-                  marginTop: "6px",
-                  display: "inline-block",
-                  padding: "2px 8px",
-                  borderRadius: "4px",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  backgroundColor:
-                    reg.food_preference === "VEG" ? "#22c55e20" : "#ef444420",
-                  color: reg.food_preference === "VEG" ? "#22c55e" : "#ef4444",
-                  border: `1px solid ${reg.food_preference === "VEG" ? "#22c55e40" : "#ef444440"}`,
-                }}
-              >
-                Food: {reg.food_preference === "VEG" ? "Veg 🥬" : "Non-Veg 🍗"}
-              </div>
-            )}
-          </div>
-          <div style={{ textAlign: "right" }}>
             <div
               style={{
-                fontSize: "24px",
-                fontWeight: 700,
-                color: "#fff",
-                letterSpacing: "1px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                flexWrap: "wrap",
               }}
             >
-              {reg.unique_code}
-            </div>
-            <div style={{ fontSize: "11px", color: "#71717a" }}>
-              Registered on {new Date(reg.created_at).toLocaleDateString()}
+              <span
+                style={{
+                  fontSize: "10px",
+                  padding: "2px 8px",
+                  borderRadius: "4px",
+                  fontWeight: 600,
+                  // fontFamily:
+                  //   "'SF Mono', 'Fira Code', 'Courier New', monospace",
+                  letterSpacing: "0.8px",
+                  color: "#a1a1aa",
+                  backgroundColor: "#27272a",
+                  border: "1px solid #3f3f46",
+                }}
+              >
+                {reg.unique_code}
+              </span>
+              {reg.food_preference && (
+                <span
+                  style={{
+                    padding: "2px 8px",
+                    borderRadius: "4px",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    backgroundColor:
+                      reg.food_preference === "VEG" ? "#22c55e20" : "#ef444420",
+                    color:
+                      reg.food_preference === "VEG" ? "#22c55e" : "#ef4444",
+                    border: `1px solid ${reg.food_preference === "VEG" ? "#22c55e40" : "#ef444440"}`,
+                  }}
+                >
+                  Food:{" "}
+                  {reg.food_preference === "VEG" ? "Veg 🥬" : "Non-Veg 🍗"}
+                </span>
+              )}
             </div>
           </div>
           <button
@@ -760,11 +858,11 @@ function RegistrationDetail({
             style={{
               ...styles.btn,
               ...styles.btnSecondary,
-              padding: "6px 12px",
+              padding: "6px 6px",
               fontSize: "12px",
             }}
           >
-            ✕ Close
+            <X className="h-4 w-4" />
           </button>
         </div>
 
@@ -848,7 +946,15 @@ function RegistrationDetail({
           )}
           {!reg.checked_in && (
             <button
-              onClick={handleCheckin}
+              onClick={() =>
+                confirm({
+                  title: "Confirm Check-in",
+                  message: `Check in ${reg.name}? This action cannot be undone.`,
+                  confirmLabel: "Check In",
+                  variant: "success",
+                  onConfirm: handleCheckin,
+                })
+              }
               disabled={updating === "checkin"}
               style={{
                 ...styles.btn,
@@ -937,7 +1043,15 @@ function RegistrationDetail({
               <div style={{ display: "flex", gap: "8px" }}>
                 {payment.status !== "VERIFIED" && (
                   <button
-                    onClick={() => handlePaymentStatus("VERIFIED")}
+                    onClick={() =>
+                      confirm({
+                        title: "Verify Payment",
+                        message: `Mark payment of ₹${payment.amount} as verified for ${reg.name}?`,
+                        confirmLabel: "Verify",
+                        variant: "success",
+                        onConfirm: () => handlePaymentStatus("VERIFIED"),
+                      })
+                    }
                     disabled={updating === "payment"}
                     style={{
                       ...styles.btn,
@@ -952,7 +1066,15 @@ function RegistrationDetail({
                 )}
                 {payment.status !== "REJECTED" && (
                   <button
-                    onClick={() => handlePaymentStatus("REJECTED")}
+                    onClick={() =>
+                      confirm({
+                        title: "Reject Payment",
+                        message: `Reject payment of ₹${payment.amount} for ${reg.name}? They will need to re-submit.`,
+                        confirmLabel: "Reject",
+                        variant: "danger",
+                        onConfirm: () => handlePaymentStatus("REJECTED"),
+                      })
+                    }
                     disabled={updating === "payment"}
                     style={{
                       ...styles.btn,
@@ -1041,7 +1163,14 @@ function RegistrationDetail({
                   <div style={{ display: "flex", gap: "6px" }}>
                     <button
                       onClick={() =>
-                        handleAbstractReview(ae.event_id, "APPROVED")
+                        confirm({
+                          title: "Approve Abstract",
+                          message: `Approve the abstract for ${ae.event_title} by ${reg.name}?`,
+                          confirmLabel: "Approve",
+                          variant: "success",
+                          onConfirm: () =>
+                            handleAbstractReview(ae.event_id, "APPROVED"),
+                        })
                       }
                       disabled={updating === `abstract-${ae.event_id}`}
                       style={{
@@ -1057,7 +1186,14 @@ function RegistrationDetail({
                     </button>
                     <button
                       onClick={() =>
-                        handleAbstractReview(ae.event_id, "REJECTED")
+                        confirm({
+                          title: "Reject Abstract",
+                          message: `Reject the abstract for ${ae.event_title} by ${reg.name}?`,
+                          confirmLabel: "Reject",
+                          variant: "danger",
+                          onConfirm: () =>
+                            handleAbstractReview(ae.event_id, "REJECTED"),
+                        })
                       }
                       disabled={updating === `abstract-${ae.event_id}`}
                       style={{
@@ -1076,6 +1212,14 @@ function RegistrationDetail({
               </div>
             ))}
           </div>
+        )}
+
+        {/* Confirm Dialog */}
+        {confirmState && (
+          <ConfirmDialog
+            state={confirmState}
+            onClose={() => setConfirmState(null)}
+          />
         )}
 
         {/* Event Attendance */}
@@ -1112,7 +1256,22 @@ function RegistrationDetail({
                 {(["PENDING", "PRESENT", "ABSENT"] as const).map((status) => (
                   <button
                     key={status}
-                    onClick={() => handleEventAttendance(ev.event_id, status)}
+                    onClick={() =>
+                      confirm({
+                        title: "Update Attendance",
+                        message: `Mark ${reg.name} as "${status.charAt(0) + status.slice(1).toLowerCase()}" for ${ev.event_title}?`,
+                        confirmLabel:
+                          status.charAt(0) + status.slice(1).toLowerCase(),
+                        variant:
+                          status === "PRESENT"
+                            ? "success"
+                            : status === "ABSENT"
+                              ? "danger"
+                              : "primary",
+                        onConfirm: () =>
+                          handleEventAttendance(ev.event_id, status),
+                      })
+                    }
                     disabled={updating === ev.event_id}
                     style={{
                       ...styles.btn,
@@ -1300,7 +1459,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       if (exportFilter.event) params.set("event", exportFilter.event);
       if (exportFilter.paymentStatus)
         params.set("paymentStatus", exportFilter.paymentStatus);
-      if (exportFilter.checkedIn) params.set("checkedIn", exportFilter.checkedIn);
+      if (exportFilter.checkedIn)
+        params.set("checkedIn", exportFilter.checkedIn);
       if (exportFilter.abstractStatus)
         params.set("abstractStatus", exportFilter.abstractStatus);
       params.set("page", "1");
@@ -1532,29 +1692,66 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                 lineHeight: 1.5,
               }}
             >
-              Select filters for the export. Leaving them blank will export based on the selected criteria.
+              Select filters for the export. Leaving them blank will export
+              based on the selected criteria.
             </p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
+                marginBottom: "20px",
+              }}
+            >
               <div>
-                <label style={{ display: "block", fontSize: "11px", color: "#71717a", marginBottom: "4px", fontWeight: 600 }}>EVENT</label>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "11px",
+                    color: "#71717a",
+                    marginBottom: "4px",
+                    fontWeight: 600,
+                  }}
+                >
+                  EVENT
+                </label>
                 <select
                   value={exportFilter.event}
-                  onChange={(e) => setExportFilter(f => ({ ...f, event: e.target.value }))}
+                  onChange={(e) =>
+                    setExportFilter((f) => ({ ...f, event: e.target.value }))
+                  }
                   style={styles.input}
                 >
                   <option value="">All Events</option>
                   {Object.entries(EVENT_NAMES).map(([id, name]) => (
-                    <option key={id} value={id}>{name}</option>
+                    <option key={id} value={id}>
+                      {name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "11px", color: "#71717a", marginBottom: "4px", fontWeight: 600 }}>PAYMENT STATUS</label>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "11px",
+                    color: "#71717a",
+                    marginBottom: "4px",
+                    fontWeight: 600,
+                  }}
+                >
+                  PAYMENT STATUS
+                </label>
                 <select
                   value={exportFilter.paymentStatus}
-                  onChange={(e) => setExportFilter(f => ({ ...f, paymentStatus: e.target.value }))}
+                  onChange={(e) =>
+                    setExportFilter((f) => ({
+                      ...f,
+                      paymentStatus: e.target.value,
+                    }))
+                  }
                   style={styles.input}
                 >
                   <option value="">All Payments</option>
@@ -1564,12 +1761,37 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                 </select>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: exportFilter.event === "paper-presentation" || exportFilter.event === "project-presentation" ? "1fr 1fr" : "1fr", gap: "10px" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    exportFilter.event === "paper-presentation" ||
+                    exportFilter.event === "project-presentation"
+                      ? "1fr 1fr"
+                      : "1fr",
+                  gap: "10px",
+                }}
+              >
                 <div>
-                  <label style={{ display: "block", fontSize: "11px", color: "#71717a", marginBottom: "4px", fontWeight: 600 }}>CHECK-IN</label>
+                  <label
+                    style={{
+                      display: "block",
+                      fontSize: "11px",
+                      color: "#71717a",
+                      marginBottom: "4px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    CHECK-IN
+                  </label>
                   <select
                     value={exportFilter.checkedIn}
-                    onChange={(e) => setExportFilter(f => ({ ...f, checkedIn: e.target.value }))}
+                    onChange={(e) =>
+                      setExportFilter((f) => ({
+                        ...f,
+                        checkedIn: e.target.value,
+                      }))
+                    }
                     style={styles.input}
                   >
                     <option value="">All</option>
@@ -1577,12 +1799,28 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                     <option value="false">Not Checked In</option>
                   </select>
                 </div>
-                {(exportFilter.event === "paper-presentation" || exportFilter.event === "project-presentation") && (
+                {(exportFilter.event === "paper-presentation" ||
+                  exportFilter.event === "project-presentation") && (
                   <div>
-                    <label style={{ display: "block", fontSize: "11px", color: "#71717a", marginBottom: "4px", fontWeight: 600 }}>ABSTRACT</label>
+                    <label
+                      style={{
+                        display: "block",
+                        fontSize: "11px",
+                        color: "#71717a",
+                        marginBottom: "4px",
+                        fontWeight: 600,
+                      }}
+                    >
+                      ABSTRACT
+                    </label>
                     <select
                       value={exportFilter.abstractStatus}
-                      onChange={(e) => setExportFilter(f => ({ ...f, abstractStatus: e.target.value }))}
+                      onChange={(e) =>
+                        setExportFilter((f) => ({
+                          ...f,
+                          abstractStatus: e.target.value,
+                        }))
+                      }
                       style={styles.input}
                     >
                       <option value="">All</option>
@@ -1756,7 +1994,9 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               ...f,
               event: val,
               // Auto-clear abstract status if non-abstract event selected
-              ...(val !== "paper-presentation" && val !== "project-presentation" ? { abstractStatus: "" } : {})
+              ...(val !== "paper-presentation" && val !== "project-presentation"
+                ? { abstractStatus: "" }
+                : {}),
             }));
             setPage(1);
           }}
@@ -1797,7 +2037,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           <option value="false">Not Checked In</option>
         </select>
 
-        {(filter.event === "paper-presentation" || filter.event === "project-presentation") && (
+        {(filter.event === "paper-presentation" ||
+          filter.event === "project-presentation") && (
           <select
             value={filter.abstractStatus}
             onChange={(e) => {
@@ -1827,7 +2068,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             {paginationMeta ? paginationMeta.total : registrations.length}{" "}
             registration
             {(paginationMeta ? paginationMeta.total : registrations.length) !==
-              1
+            1
               ? "s"
               : ""}
           </span>
