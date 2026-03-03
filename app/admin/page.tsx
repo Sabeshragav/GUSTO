@@ -311,7 +311,7 @@ function Pagination({
 
   const getPageNumbers = () => {
     const pages: (number | "ellipsis")[] = [];
-    const maxVisible = 7;
+    const maxVisible = 5;
 
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
