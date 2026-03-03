@@ -43,8 +43,8 @@ export const EVENTS: Event[] = [
       "A platform for students to present innovative research and ideas. Evaluates understanding, originality, and presentation skills.",
     team_size: "1-3",
     rules: [
-      "Submit abstract before 3rd March 2026.",
-      "Shortlisted candidates notified via email (4th-5th March).",
+      "Submit abstract before 4th March 2026.",
+      "Shortlisted candidates notified via email (5th of march 2026 or before).",
       "Oral presentation: 7-10 minutes.",
       "On-spot registration not available.",
     ],
@@ -64,8 +64,8 @@ export const EVENTS: Event[] = [
       "Showcase technical innovation through working projects or prototypes. Explain design, implementation, and results.",
     team_size: "1-3",
     rules: [
-      "Submit abstract and 5-page methodology before 3rd March 2026.",
-      "Shortlisted candidates notified (4th-5th March).",
+      "Submit abstract and 5-page methodology before 4th March 2026.",
+      "Shortlisted candidates notified (5th of march 2026 or before).",
       "Bring working model and hard copy report.",
       "Presentation: 5-10 mins + live demo.",
     ],
@@ -153,7 +153,7 @@ export const EVENTS: Event[] = [
     rules: [
       "Original photos only (no AI or plagiarism).",
       "Aspect ratio 3:4; minimal editing permitted.",
-      "Submit via email before 4th March 2026 - 3.00PM.",
+      "Submit via email before 5th March 2026 - 3.00PM.",
       "Mention details (name, dept, college) in mail.",
     ],
     track: "C",

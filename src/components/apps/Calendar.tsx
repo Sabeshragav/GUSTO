@@ -173,8 +173,8 @@ export function CalendarApp() {
                   <div className="bg-[var(--surface-primary)] border-2 border-[var(--border-color)] p-6 rounded-lg text-center">
                     <Clock size={40} className="mx-auto text-[#FF3B30] mb-4" />
                     <h5 className="text-lg font-bold text-[var(--text-primary)] mb-2">Deadline</h5>
-                    <p className="text-3xl font-mono font-black text-[var(--text-primary)] mb-1">11:59 PM</p>
-                    <p className="text-sm text-[var(--text-secondary)]">March 4, 2026</p>
+                    <p className="text-3xl font-mono font-black text-[var(--text-primary)] mb-1">03:00 PM</p>
+                    <p className="text-sm text-[var(--text-secondary)]">March 5, 2026</p>
                   </div>
 
                   <div className="mt-8 text-center text-sm text-[var(--text-muted)]">
