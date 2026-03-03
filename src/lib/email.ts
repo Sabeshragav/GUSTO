@@ -167,7 +167,7 @@ export async function sendRegistrationEmail(data: RegistrationEmailData) {
                 </div>
 
                 <p style="margin-top:20px;color:#6b7280;font-size:13px;">
-                    Please keep your unique code safe. You'll need it for check-in on event day.
+                    Please keep your unique code safe. You'll need it for check-in on event day(March 6th 2026).
                 </p>
             </div>
         </div>
@@ -231,7 +231,7 @@ export async function sendAbstractApprovalEmail(data: AbstractApprovalData) {
                 </div>
 
                 <p style="color:#374151;font-size:14px;">
-                    Please be prepared with your work for the event day. Further details will be shared soon.
+                    Please be prepared with your work for the event day(March 6th 2026). Further details will be shared soon.
                 </p>
 
                 <div style="background:#dcfce7;border:1px solid #22c55e;padding:12px;border-radius:8px;margin-top:16px;text-align:center;">
