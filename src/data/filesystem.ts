@@ -79,7 +79,7 @@ Please carry a valid college ID card for entry.
 
 See you there!
 The Gusto Team`,
-    date: '2026-03-02',
+    date: '2026-03-05',
     isRead: false,
     isStarred: true,
   },
@@ -144,7 +144,7 @@ Submit your entries here or reply to this email.
 
 Best,
 Gusto Photography Club`,
-    date: '2026-03-04',
+    date: '2026-03-05',
     isRead: true,
     isStarred: false,
   },

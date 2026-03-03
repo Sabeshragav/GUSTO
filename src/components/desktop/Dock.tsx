@@ -9,6 +9,7 @@ import { ThemedIcon } from "../ui/ThemedIcon";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { getAppColor } from "../../data/appColors";
 import { getMacIcon } from "../../data/macIcons";
+import { GENERAL_DEADLINE } from "../../data/events";
 
 interface DockItem {
   id: string;
@@ -127,6 +128,14 @@ export function Dock() {
         focusWindow(existingWindow.id);
       }
     } else {
+      // Check for registration deadline
+      if (appId === "register") {
+        const deadline = new Date(GENERAL_DEADLINE);
+        if (new Date() > deadline) {
+          alert("Registration has officially closed for Gusto '26.");
+          return;
+        }
+      }
       // 4. Not open -> open it
       openApp(appId);
     }
@@ -247,7 +256,9 @@ function DockIcon({
     >
       {/* Tooltip — outside motion.div so overflow doesn't clip it */}
       <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-[var(--surface-elevated)] text-[var(--text-primary)] text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-[var(--border-color)] shadow-lg z-50">
-        {item.name}
+        {item.appId === "register" && new Date() > new Date(GENERAL_DEADLINE)
+          ? `${item.name} (Closed)`
+          : item.name}
         <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[var(--border-color)]" />
       </div>
 
@@ -287,9 +298,8 @@ function DockIcon({
 
       {/* Active Indicator */}
       <div
-        className={`w-1 h-1 rounded-full bg-[var(--text-primary)] transition-opacity ${
-          isOpen ? "opacity-100" : "opacity-0"
-        }`}
+        className={`w-1 h-1 rounded-full bg-[var(--text-primary)] transition-opacity ${isOpen ? "opacity-100" : "opacity-0"
+          }`}
       />
     </div>
   );

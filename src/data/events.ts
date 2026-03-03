@@ -18,6 +18,7 @@ export interface Event {
   track: 'A' | 'B' | 'C';
   timeSlot: TimeSlot;
   submissionEmail?: string;
+  registrationDeadline: string; // ISO format or string comparable via Date
 }
 
 export const GUSTO_INFO = {
@@ -28,6 +29,10 @@ export const GUSTO_INFO = {
 };
 
 export const REGISTRATION_PRICE = 250;
+
+// Deadlines
+export const ABSTRACT_DEADLINE = "2026-03-04T23:59:59+05:30";
+export const GENERAL_DEADLINE = "2026-03-05T15:00:00+05:30";
 
 export const EVENTS: Event[] = [
   // ── Technical Events (ABSTRACT) ──
@@ -43,14 +48,15 @@ export const EVENTS: Event[] = [
       "A platform for students to present innovative research and ideas. Evaluates understanding, originality, and presentation skills.",
     team_size: "1-3",
     rules: [
-      "Submit abstract before 3rd March 2026.",
-      "Shortlisted candidates notified via email (4th-5th March).",
+      "Submit abstract before 4th March 2026.",
+      "Shortlisted candidates notified via email (5th of march 2026 or before).",
       "Oral presentation: 7-10 minutes.",
       "On-spot registration not available.",
     ],
     track: "B",
     timeSlot: "SLOT_1100",
     submissionEmail: "subramanidhaya77@gmail.com",
+    registrationDeadline: ABSTRACT_DEADLINE,
   },
   {
     id: "project-presentation",
@@ -64,14 +70,15 @@ export const EVENTS: Event[] = [
       "Showcase technical innovation through working projects or prototypes. Explain design, implementation, and results.",
     team_size: "1-3",
     rules: [
-      "Submit abstract and 5-page methodology before 3rd March 2026.",
-      "Shortlisted candidates notified (4th-5th March).",
+      "Submit abstract and 5-page methodology before 4th March 2026.",
+      "Shortlisted candidates notified (5th of march 2026 or before).",
       "Bring working model and hard copy report.",
       "Presentation: 5-10 mins + live demo.",
     ],
     track: "A",
     timeSlot: "SLOT_1015",
     submissionEmail: "kavikumarbalaganesan@gmail.com",
+    registrationDeadline: ABSTRACT_DEADLINE,
   },
 
   // ── Technical Events (DIRECT) ──
@@ -95,6 +102,7 @@ export const EVENTS: Event[] = [
     ],
     track: "B",
     timeSlot: "SLOT_1015",
+    registrationDeadline: GENERAL_DEADLINE,
   },
   {
     id: "code-chaos",
@@ -115,6 +123,7 @@ export const EVENTS: Event[] = [
     ],
     track: "A",
     timeSlot: "SLOT_1100",
+    registrationDeadline: GENERAL_DEADLINE,
   },
   {
     id: "promptx",
@@ -136,6 +145,7 @@ export const EVENTS: Event[] = [
     ],
     track: "A",
     timeSlot: "SLOT_1015",
+    registrationDeadline: GENERAL_DEADLINE,
   },
 
   // ── Non-Technical Events (SUBMISSION — online) ──
@@ -153,12 +163,13 @@ export const EVENTS: Event[] = [
     rules: [
       "Original photos only (no AI or plagiarism).",
       "Aspect ratio 3:4; minimal editing permitted.",
-      "Submit via email before 4th March 2026 - 3.00PM.",
+      "Submit via email before 5th March 2026 - 3.00PM.",
       "Mention details (name, dept, college) in mail.",
     ],
     track: "C",
     timeSlot: "ONLINE",
     submissionEmail: "gr906344@gmail.com",
+    registrationDeadline: GENERAL_DEADLINE,
   },
   {
     id: "meme-contest",
@@ -180,6 +191,7 @@ export const EVENTS: Event[] = [
     track: "C",
     timeSlot: "ONLINE",
     submissionEmail: "yoroim80@gmail.com",
+    registrationDeadline: GENERAL_DEADLINE,
   },
   {
     id: "short-film",
@@ -201,6 +213,7 @@ export const EVENTS: Event[] = [
     track: "C",
     timeSlot: "ONLINE",
     submissionEmail: "adhithyav82005@gmail.com",
+    registrationDeadline: GENERAL_DEADLINE,
   },
 
   // ── Non-Technical Event (DIRECT — offline) ──
@@ -223,5 +236,6 @@ export const EVENTS: Event[] = [
     ],
     track: "C",
     timeSlot: "SLOT_1015",
+    registrationDeadline: GENERAL_DEADLINE,
   },
 ];
