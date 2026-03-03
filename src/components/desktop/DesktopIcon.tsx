@@ -10,6 +10,7 @@ import { MacFolder } from "../ui/icons/MacFolder";
 import { ThemedIcon } from "../ui/ThemedIcon";
 import { getAppColor } from "../../data/appColors";
 import { getMacIcon, getMacFolderIcon } from "../../data/macIcons";
+import { GENERAL_DEADLINE } from "../../data/events";
 
 interface DesktopIconProps {
   item: DesktopItem;
@@ -42,6 +43,14 @@ export function DesktopIcon({ item }: DesktopIconProps) {
     deselectAll();
 
     if (item.appId) {
+      // Check for registration deadline
+      if (item.appId === "register") {
+        const deadline = new Date(GENERAL_DEADLINE);
+        if (new Date() > deadline) {
+          alert("Registration has officially closed for Gusto '26.");
+          return;
+        }
+      }
       openApp(item.appId);
     } else if (item.fileId) {
       const file = findFileById(item.fileId);

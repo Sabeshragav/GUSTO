@@ -35,12 +35,12 @@ import { Spotify } from "../apps/Spotify";
 import { Gallery } from "../apps/Gallery";
 import { About } from "../apps/About";
 import { RegisterPage } from "../apps/register/RegisterPage";
-// import { BrowserChrome } from "../apps/register/BrowserChrome"; // Removed
-import { YouTubeApp } from "../apps/YouTubeApp"; // Added Import
+import { YouTubeApp } from "../apps/YouTubeApp";
+import { GENERAL_DEADLINE } from "../../data/events";
 
 // ── Constants ──
 
-const TARGET_DATE = new Date("2026-03-05T14:59:59+05:30");
+const TARGET_DATE = new Date(GENERAL_DEADLINE);
 
 interface TimeLeft {
   days: number;
@@ -344,6 +344,13 @@ function MobileOSContent() {
 
   const handleOpenApp = useCallback(
     (appId: string, data?: unknown) => {
+      // Check for registration deadline
+      if (appId === "register" || appId === "browser") {
+        if (Date.now() > TARGET_DATE.getTime()) {
+          alert("Registration has officially closed for Gusto '26.");
+          return;
+        }
+      }
       setShowRecents(false);
       setShowDrawer(false);
       setBackPressCount(0);
@@ -596,7 +603,7 @@ function MobileOSContent() {
                             Countdown
                           </span>
                           <span className="text-white/60 text-[9px] font-medium leading-tight">
-                            Registration Ends Soon
+                            {Date.now() > TARGET_DATE.getTime() ? "REGISTRATION CLOSED" : "Registration Ends Soon"}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">

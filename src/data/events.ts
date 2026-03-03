@@ -18,6 +18,7 @@ export interface Event {
   track: 'A' | 'B' | 'C';
   timeSlot: TimeSlot;
   submissionEmail?: string;
+  registrationDeadline: string; // ISO format or string comparable via Date
 }
 
 export const GUSTO_INFO = {
@@ -28,6 +29,10 @@ export const GUSTO_INFO = {
 };
 
 export const REGISTRATION_PRICE = 250;
+
+// Deadlines
+export const ABSTRACT_DEADLINE = "2026-03-04T23:59:59+05:30";
+export const GENERAL_DEADLINE = "2026-03-05T15:00:00+05:30";
 
 export const EVENTS: Event[] = [
   // ── Technical Events (ABSTRACT) ──
@@ -51,6 +56,7 @@ export const EVENTS: Event[] = [
     track: "B",
     timeSlot: "SLOT_1100",
     submissionEmail: "subramanidhaya77@gmail.com",
+    registrationDeadline: ABSTRACT_DEADLINE,
   },
   {
     id: "project-presentation",
@@ -72,6 +78,7 @@ export const EVENTS: Event[] = [
     track: "A",
     timeSlot: "SLOT_1015",
     submissionEmail: "kavikumarbalaganesan@gmail.com",
+    registrationDeadline: ABSTRACT_DEADLINE,
   },
 
   // ── Technical Events (DIRECT) ──
@@ -95,6 +102,7 @@ export const EVENTS: Event[] = [
     ],
     track: "B",
     timeSlot: "SLOT_1015",
+    registrationDeadline: GENERAL_DEADLINE,
   },
   {
     id: "code-chaos",
@@ -115,6 +123,7 @@ export const EVENTS: Event[] = [
     ],
     track: "A",
     timeSlot: "SLOT_1100",
+    registrationDeadline: GENERAL_DEADLINE,
   },
   {
     id: "promptx",
@@ -136,6 +145,7 @@ export const EVENTS: Event[] = [
     ],
     track: "A",
     timeSlot: "SLOT_1015",
+    registrationDeadline: GENERAL_DEADLINE,
   },
 
   // ── Non-Technical Events (SUBMISSION — online) ──
@@ -159,6 +169,7 @@ export const EVENTS: Event[] = [
     track: "C",
     timeSlot: "ONLINE",
     submissionEmail: "gr906344@gmail.com",
+    registrationDeadline: GENERAL_DEADLINE,
   },
   {
     id: "meme-contest",
@@ -180,6 +191,7 @@ export const EVENTS: Event[] = [
     track: "C",
     timeSlot: "ONLINE",
     submissionEmail: "yoroim80@gmail.com",
+    registrationDeadline: GENERAL_DEADLINE,
   },
   {
     id: "short-film",
@@ -201,6 +213,7 @@ export const EVENTS: Event[] = [
     track: "C",
     timeSlot: "ONLINE",
     submissionEmail: "adhithyav82005@gmail.com",
+    registrationDeadline: GENERAL_DEADLINE,
   },
 
   // ── Non-Technical Event (DIRECT — offline) ──
@@ -223,5 +236,6 @@ export const EVENTS: Event[] = [
     ],
     track: "C",
     timeSlot: "SLOT_1015",
+    registrationDeadline: GENERAL_DEADLINE,
   },
 ];
