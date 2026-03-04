@@ -3,7 +3,10 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
-import { X } from "lucide-react";
+import { X, Plus, RefreshCw, Download, LogOut } from "lucide-react";
+import AddRegistrationModal from "./components/AddRegistrationModal";
+import RegistrationTypeFilter from "./components/RegistrationTypeFilter";
+import { ONSPOT_REGISTRATION_ENABLED } from "@/data/events";
 
 // ─── Types ───
 interface EventRegistration {
@@ -34,6 +37,7 @@ interface Registration {
   check_in_time: string | null;
   created_at: string;
   food_preference?: "VEG" | "NON_VEG";
+  registration_type?: "ONLINE" | "ONSPOT";
   events: EventRegistration[];
   payment: Payment[] | null;
 }
@@ -628,12 +632,14 @@ function RegistrationDetail({
   const [updating, setUpdating] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastMsg[]>([]);
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
+  const detailModalRef = useRef<HTMLDivElement>(null);
 
   const confirm = (state: ConfirmState) => setConfirmState(state);
 
   const addToast = (type: "success" | "error", message: string) => {
     const id = Math.random().toString(36).substring(7);
     setToasts((prev) => [...prev, { id, type, message }]);
+    detailModalRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const removeToast = (id: string) => {
@@ -760,6 +766,7 @@ function RegistrationDetail({
       onClick={onClose}
     >
       <div
+        ref={detailModalRef}
         style={{
           ...styles.card,
           maxWidth: "650px",
@@ -774,15 +781,16 @@ function RegistrationDetail({
         {/* Toast Container */}
         <div
           style={{
-            position: "absolute",
-            top: "20px",
-            right: "20px",
-            left: "20px",
+            position: "sticky",
+            top: 0,
+            left: 0,
+            right: 0,
             zIndex: 10,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             pointerEvents: "none",
+            paddingTop: toasts.length > 0 ? "8px" : "0",
           }}
         >
           {toasts.map((toast) => (
@@ -1022,7 +1030,21 @@ function RegistrationDetail({
                   TxnID: {payment.transaction_id}
                 </span>
               )}
-              {payment.screenshot_url && (
+              {payment.screenshot_url === "ONSPOT_REGISTRATION" ? (
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "#a78bfa",
+                    fontWeight: 600,
+                    padding: "2px 8px",
+                    borderRadius: "4px",
+                    background: "#a78bfa15",
+                    border: "1px solid #a78bfa30",
+                  }}
+                >
+                  On-Spot Registration
+                </span>
+              ) : payment.screenshot_url ? (
                 <a
                   href={payment.screenshot_url}
                   target="_blank"
@@ -1035,7 +1057,7 @@ function RegistrationDetail({
                 >
                   View Screenshot ↗
                 </a>
-              )}
+              ) : null}
             </div>
 
             {/* Payment Actions */}
@@ -1316,6 +1338,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [suggestions, setSuggestions] = useState<Registration[]>([]);
@@ -1326,6 +1349,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     paymentStatus: "",
     checkedIn: "",
     abstractStatus: "",
+    registrationType: "",
   });
 
   const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
@@ -1378,6 +1402,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     paymentStatus: searchParams.get("paymentStatus") || "",
     checkedIn: searchParams.get("checkedIn") || "",
     abstractStatus: searchParams.get("abstractStatus") || "",
+    registrationType: searchParams.get("registrationType") || "",
   });
   const [page, setPage] = useState(() => {
     const p = parseInt(searchParams.get("page") || "1", 10);
@@ -1396,6 +1421,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       if (f.paymentStatus) params.set("paymentStatus", f.paymentStatus);
       if (f.checkedIn) params.set("checkedIn", f.checkedIn);
       if (f.abstractStatus) params.set("abstractStatus", f.abstractStatus);
+      if (f.registrationType)
+        params.set("registrationType", f.registrationType);
       if (p > 1) params.set("page", String(p));
       if (l !== 10) params.set("limit", String(l));
       router.replace(`${pathname}?${params.toString()}`);
@@ -1424,6 +1451,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       if (filter.checkedIn) params.set("checkedIn", filter.checkedIn);
       if (filter.abstractStatus)
         params.set("abstractStatus", filter.abstractStatus);
+      if (filter.registrationType)
+        params.set("registrationType", filter.registrationType);
       params.set("page", String(page));
       params.set("limit", String(limit));
 
@@ -1447,6 +1476,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     filter.paymentStatus,
     filter.checkedIn,
     filter.abstractStatus,
+    filter.registrationType,
     page,
     limit,
   ]);
@@ -1463,6 +1493,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         params.set("checkedIn", exportFilter.checkedIn);
       if (exportFilter.abstractStatus)
         params.set("abstractStatus", exportFilter.abstractStatus);
+      if (exportFilter.registrationType)
+        params.set("registrationType", exportFilter.registrationType);
       params.set("page", "1");
       params.set("limit", "10000");
 
@@ -1500,6 +1532,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           Amount: payment?.amount || 0,
           "Transaction ID": payment?.transaction_id || "",
           Events: eventNames,
+          "Registration Type":
+            reg.registration_type === "ONSPOT" ? "On-Spot" : "Online",
           "Registered At": new Date(reg.created_at).toLocaleString(),
         };
       });
@@ -1623,13 +1657,73 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           Admin Dashboard
         </h1>
         <div style={{ display: "flex", gap: "10px" }}>
+          <style>{`
+            .toolbar-btn .btn-label { display: inline; }
+            .toolbar-btn .btn-icon-only { display: none; }
+            .logout-btn .logout-icon { display: none; }
+            @media (max-width: 768px) {
+              .toolbar-btn .btn-label { display: none; }
+              .toolbar-btn .btn-icon-only { display: inline-flex; }
+              .logout-btn .logout-label { display: none; }
+              .logout-btn .logout-icon { display: inline-flex; }
+            }
+          `}</style>
           <button
+            className="toolbar-btn"
             onClick={handleRefresh}
-            style={{ ...styles.btn, ...styles.btnSecondary }}
+            style={{
+              ...styles.btn,
+              ...styles.btnSecondary,
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
           >
-            ↻ Refresh
+            <span className="btn-icon-only">
+              <RefreshCw size={15} />
+            </span>
+            <span className="btn-label">
+              <RefreshCw
+                size={14}
+                style={{
+                  display: "inline",
+                  verticalAlign: "middle",
+                  marginRight: "4px",
+                }}
+              />
+              Refresh
+            </span>
           </button>
+          {ONSPOT_REGISTRATION_ENABLED && (
+            <button
+              className="toolbar-btn"
+              onClick={() => setAddModalOpen(true)}
+              style={{
+                ...styles.btn,
+                ...styles.btnSecondary,
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <span className="btn-icon-only">
+                <Plus size={15} />
+              </span>
+              <span className="btn-label">
+                <Plus
+                  size={14}
+                  style={{
+                    display: "inline",
+                    verticalAlign: "middle",
+                    marginRight: "4px",
+                  }}
+                />
+                Add
+              </span>
+            </button>
+          )}
           <button
+            className="toolbar-btn"
             onClick={() => {
               setExportFilter({ ...filter });
               setExportDialogOpen(true);
@@ -1640,15 +1734,47 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               background: "#22c55e",
               color: "white",
               opacity: exporting ? 0.6 : 1,
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
             }}
           >
-            {exporting ? "⏳ Exporting..." : "↓ Export Excel"}
+            <span className="btn-icon-only">
+              <Download size={15} />
+            </span>
+            <span className="btn-label">
+              {exporting ? (
+                "⏳ Exporting..."
+              ) : (
+                <>
+                  <Download
+                    size={14}
+                    style={{
+                      display: "inline",
+                      verticalAlign: "middle",
+                      marginRight: "4px",
+                    }}
+                  />
+                  Export Excel
+                </>
+              )}
+            </span>
           </button>
           <button
+            className="logout-btn"
             onClick={onLogout}
-            style={{ ...styles.btn, ...styles.btnDanger }}
+            style={{
+              ...styles.btn,
+              ...styles.btnDanger,
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
           >
-            Logout
+            <span className="logout-icon">
+              <LogOut size={15} />
+            </span>
+            <span className="logout-label">Logout</span>
           </button>
         </div>
       </div>
@@ -1831,6 +1957,26 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                   </div>
                 )}
               </div>
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "11px",
+                  color: "#71717a",
+                  marginBottom: "4px",
+                  fontWeight: 600,
+                }}
+              >
+                REGISTRATION TYPE
+              </label>
+              <RegistrationTypeFilter
+                value={exportFilter.registrationType}
+                onChange={(val) =>
+                  setExportFilter((f) => ({ ...f, registrationType: val }))
+                }
+              />
             </div>
             <div
               style={{
@@ -2036,6 +2182,14 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           <option value="true">Checked In</option>
           <option value="false">Not Checked In</option>
         </select>
+
+        <RegistrationTypeFilter
+          value={filter.registrationType}
+          onChange={(val) => {
+            setFilter((f) => ({ ...f, registrationType: val }));
+            setPage(1);
+          }}
+        />
 
         {(filter.event === "paper-presentation" ||
           filter.event === "project-presentation") && (
@@ -2262,6 +2416,13 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           onRefresh={handleRefresh}
         />
       )}
+
+      {/* Add Registration Modal */}
+      <AddRegistrationModal
+        open={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        onSuccess={handleRefresh}
+      />
     </div>
   );
 }

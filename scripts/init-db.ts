@@ -44,6 +44,7 @@ async function main() {
                 year VARCHAR(20) NOT NULL,
                 unique_code VARCHAR(20) UNIQUE NOT NULL,
                 food_preference VARCHAR(20) NULL,
+                registration_type VARCHAR(20) DEFAULT 'ONLINE',
                 checked_in BOOLEAN DEFAULT false,
                 check_in_time TIMESTAMPTZ NULL,
                 created_at TIMESTAMPTZ DEFAULT now()

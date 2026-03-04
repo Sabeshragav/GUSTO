@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
     const paymentFilter = url.searchParams.get('paymentStatus');
     const checkinFilter = url.searchParams.get('checkedIn');
     const attendanceFilter = url.searchParams.get('attendanceStatus');
+    const registrationTypeFilter = url.searchParams.get('registrationType');
 
     // Pagination params
     const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
@@ -54,6 +55,10 @@ export async function GET(req: NextRequest) {
         conditions.push(`er.attendance_status = $${paramIndex++}`);
         params.push(attendanceFilter);
     }
+    if (registrationTypeFilter && registrationTypeFilter !== 'ALL') {
+        conditions.push(`u.registration_type = $${paramIndex++}`);
+        params.push(registrationTypeFilter);
+    }
 
     const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
 
@@ -73,7 +78,7 @@ export async function GET(req: NextRequest) {
     const result = await query(
         `SELECT
             u.id, u.name, u.email, u.mobile, u.college, u.year,
-            u.unique_code, u.checked_in, u.check_in_time, u.created_at, u.food_preference,
+            u.unique_code, u.checked_in, u.check_in_time, u.created_at, u.food_preference, u.registration_type,
             COALESCE(
                 json_agg(
                     DISTINCT jsonb_build_object(

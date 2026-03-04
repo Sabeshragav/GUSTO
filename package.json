@@ -9,7 +9,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "db:init": "npx tsx --env-file=.env scripts/init-db.ts",
-    "db:delete": "npx tsx --env-file=.env scripts/delete-user.ts"
+    "db:delete": "npx tsx --env-file=.env scripts/delete-user.ts",
+    "db:alter": "npx tsx --env-file=.env scripts/add-registration-type.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.988.0",

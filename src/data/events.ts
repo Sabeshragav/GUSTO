@@ -47,6 +47,10 @@ export function isSlotsFull(eventIdOrTitle: string): boolean {
   return SLOTS_FULL_EVENT_IDS.has(eventIdOrTitle) || SLOTS_FULL_TITLES.has(eventIdOrTitle);
 }
 
+// ── Feature Flag: On-Spot Registration ──
+// Set to true to enable the "Add" button in the admin panel for on-spot registrations.
+export const ONSPOT_REGISTRATION_ENABLED = false;
+
 export const EVENTS: Event[] = [
   // ── Technical Events (ABSTRACT) ──
   {
