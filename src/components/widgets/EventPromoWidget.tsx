@@ -50,12 +50,12 @@ const SLIDES: Slide[] = [
       "Check each event's details to see eligibility.",
       "You must reach the registration desk before 10:00 AM, late arrivals will not be accepted.",
     ],
-    duration: 20000,
+    duration: 30000,
   },
   ...FEATURED_EVENTS.map((event) => ({
     type: "event" as const,
     event,
-    duration: 2000,
+    duration: 1000,
   })),
 ];
 

@@ -3,6 +3,7 @@
 import { Phone, Mail } from "lucide-react";
 import posthog from "posthog-js";
 import { useEffect } from "react";
+import { isSlotsFull } from "../../../data/events";
 
 interface EventCardProps {
   event: any;
@@ -210,20 +211,28 @@ export function EventCard({
           {/* Submission / Links */}
           {(event.submission_Email || event.registrationLink) && (
             <div className="mt-4 pt-3 border-t border-[var(--border-color)] flex flex-col gap-2">
-              {event.submission_Email && (
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
-                    {event.submission_name || "Submission"}
-                  </span>
-                  <div className="flex items-center gap-2 text-sm break-all select-all text-white">
-                    <Mail
-                      size={14}
-                      className="shrink-0 text-[var(--accent-color)]"
-                    />
-                    {event.submission_Email}
+              {event.submission_Email &&
+                (isSlotsFull(event.id) || isSlotsFull(event.title) ? (
+                  <div className="flex items-center gap-2 p-2 rounded bg-orange-500/10 border border-orange-500/30">
+                    <span className="text-orange-400 text-xs font-bold">
+                      Slots Full — Registration for this event is closed. Check
+                      out other events!
+                    </span>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase">
+                      {event.submission_name || "Submission"}
+                    </span>
+                    <div className="flex items-center gap-2 text-sm break-all select-all text-white">
+                      <Mail
+                        size={14}
+                        className="shrink-0 text-[var(--accent-color)]"
+                      />
+                      {event.submission_Email}
+                    </div>
+                  </div>
+                ))}
               {event.registrationLink && event.registrationLink !== "#" && (
                 <a
                   href={event.registrationLink}

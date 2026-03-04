@@ -1,4 +1,4 @@
-import type { Event } from './events';
+import { type Event, isSlotsFull } from './events';
 
 export const REGISTRATION_PRICE = 250;
 
@@ -167,6 +167,7 @@ export function getValidFallbacks(
         if (selectedIds.has(e.id)) return false;
         if (e.eventType === 'ABSTRACT') return false;
         if (EXCLUDED_FALLBACK_IDS.has(e.id)) return false;
+        if (isSlotsFull(e.id)) return false;
         // Must not conflict with other selected non-online events (excluding the abstract being replaced)
         // Icon IQ is exempt from time slot conflicts
         if (e.timeSlot !== 'ONLINE' && e.id !== 'icon-iq') {

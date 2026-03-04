@@ -34,6 +34,19 @@ export const REGISTRATION_PRICE = 250;
 export const ABSTRACT_DEADLINE = "2026-03-04T23:59:59+05:30";
 export const GENERAL_DEADLINE = "2026-03-05T12:00:00+05:30";
 
+// ── Feature Flag: Slots Full ──
+// Add event IDs (from events.ts) and their titles (for event_data.ts) here.
+export const SLOTS_FULL_EVENT_IDS: Set<string> = new Set([
+  "paper-presentation",
+]);
+const SLOTS_FULL_TITLES: Set<string> = new Set([
+  "Paper Presentation",
+]);
+
+export function isSlotsFull(eventIdOrTitle: string): boolean {
+  return SLOTS_FULL_EVENT_IDS.has(eventIdOrTitle) || SLOTS_FULL_TITLES.has(eventIdOrTitle);
+}
+
 export const EVENTS: Event[] = [
   // ── Technical Events (ABSTRACT) ──
   {

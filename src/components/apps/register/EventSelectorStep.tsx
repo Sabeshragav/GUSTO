@@ -1,8 +1,16 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, AlertTriangle, Clock, Send, FileText, Zap, X } from "lucide-react";
-import { EVENTS, type Event } from "../../../data/events";
+import {
+  Check,
+  AlertTriangle,
+  Clock,
+  Send,
+  FileText,
+  Zap,
+  X,
+} from "lucide-react";
+import { EVENTS, type Event, isSlotsFull } from "../../../data/events";
 import { getValidFallbacks } from "../../../data/eventValidation";
 import type {
   SelectionCounts,
@@ -55,31 +63,40 @@ function EventSelectCard({
   const badge = getEventTypeBadge(event.eventType);
   const BadgeIcon = badge.icon;
 
-  // Check if registration is closed
+  // Check if registration is closed or slots are full
   const isClosed = new Date() > new Date(event.registrationDeadline);
+  const slotsFull = isSlotsFull(event.id);
+  const isDisabled = isClosed || slotsFull;
 
   return (
     <motion.button
       type="button"
       onClick={() => {
-        if (isClosed) return; // Cannot select closed events
+        if (isDisabled) return; // Cannot select closed/full events
         if (isSelected || validation.canSelect) {
-          if (!isSelected && typeof window !== 'undefined') {
-            console.log("[PostHog] clicked event", { eventTitle: event.title, eventType: event.eventType });
-            posthog.capture("clicked event", { eventTitle: event.title, eventType: event.eventType });
+          if (!isSelected && typeof window !== "undefined") {
+            console.log("[PostHog] clicked event", {
+              eventTitle: event.title,
+              eventType: event.eventType,
+            });
+            posthog.capture("clicked event", {
+              eventTitle: event.title,
+              eventType: event.eventType,
+            });
           }
           onToggle();
         }
       }}
-      whileTap={isClosed ? {} : { scale: 0.98 }}
-      className={`w-full text-left p-3 rounded-lg border-2 transition-all ${isSelected
-        ? "border-[var(--accent-color)] bg-[var(--accent-color)]/10"
-        : isClosed
-          ? "border-red-500/30 opacity-60 cursor-not-allowed bg-[var(--surface-secondary)]"
-          : validation.canSelect
-            ? "border-[var(--border-color)] hover:border-[var(--text-muted)] bg-[var(--surface-secondary)]"
-            : "border-[var(--border-color)] opacity-50 cursor-not-allowed bg-[var(--surface-secondary)]"
-        }`}
+      whileTap={isDisabled ? {} : { scale: 0.98 }}
+      className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+        isSelected
+          ? "border-[var(--accent-color)] bg-[var(--accent-color)]/10"
+          : isDisabled
+            ? "border-red-500/30 opacity-60 cursor-not-allowed bg-[var(--surface-secondary)]"
+            : validation.canSelect
+              ? "border-[var(--border-color)] hover:border-[var(--text-muted)] bg-[var(--surface-secondary)]"
+              : "border-[var(--border-color)] opacity-50 cursor-not-allowed bg-[var(--surface-secondary)]"
+      }`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -111,33 +128,45 @@ function EventSelectCard({
           </div>
         </div>
         <div
-          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${isSelected
-            ? "border-[var(--accent-color)] bg-[var(--accent-color)]"
-            : isClosed
-              ? "border-red-500/30"
-              : "border-[var(--text-muted)]"
-            }`}
+          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+            isSelected
+              ? "border-[var(--accent-color)] bg-[var(--accent-color)]"
+              : isDisabled
+                ? "border-red-500/30"
+                : "border-[var(--text-muted)]"
+          }`}
         >
           {isSelected && <Check size={11} className="text-white" />}
-          {isClosed && !isSelected && <X size={11} className="text-red-400" />}
+          {isDisabled && !isSelected && (
+            <X size={11} className="text-red-400" />
+          )}
         </div>
       </div>
 
-      {/* Registration Ended Message */}
+      {/* Registration Ended / Slots Full Message */}
       {isClosed && !isSelected && (
         <div className="flex items-center gap-1 mt-2 text-[10px] font-bold text-red-400">
           <AlertTriangle size={11} />
           Registration Ended
         </div>
       )}
-
-      {/* Validation warning */}
-      {!isSelected && !isClosed && !validation.canSelect && validation.reason && (
-        <div className="flex items-center gap-1 mt-2 text-[10px] text-amber-400">
+      {slotsFull && !isClosed && !isSelected && (
+        <div className="flex items-center gap-1 mt-2 text-[10px] font-bold text-orange-400">
           <AlertTriangle size={11} />
-          {validation.reason}
+          Slots Full — Check out other events!
         </div>
       )}
+
+      {/* Validation warning */}
+      {!isSelected &&
+        !isDisabled &&
+        !validation.canSelect &&
+        validation.reason && (
+          <div className="flex items-center gap-1 mt-2 text-[10px] text-amber-400">
+            <AlertTriangle size={11} />
+            {validation.reason}
+          </div>
+        )}
     </motion.button>
   );
 }
@@ -223,17 +252,19 @@ export function EventSelectorStep({
           Select 1 to 3 events
         </p>
         <p className="text-xs text-[var(--text-muted)] mt-0.5">
-          2 Technical events + 1 Non-Technical events  [or] 1 Technical events + 2 Non-Technical events .<br /> At least 1 event required.
+          2 Technical events + 1 Non-Technical events [or] 1 Technical events +
+          2 Non-Technical events .<br /> At least 1 event required.
         </p>
       </div>
 
       {/* Counters */}
       <div className="flex gap-2">
         <span
-          className={`px-2.5 py-1 rounded text-xs font-bold border ${counts.total === 3
-            ? "bg-[var(--accent-color)]/10 border-[var(--accent-color)] text-[var(--accent-color)]"
-            : "border-[var(--border-color)] text-[var(--text-muted)]"
-            }`}
+          className={`px-2.5 py-1 rounded text-xs font-bold border ${
+            counts.total === 3
+              ? "bg-[var(--accent-color)]/10 border-[var(--accent-color)] text-[var(--accent-color)]"
+              : "border-[var(--border-color)] text-[var(--text-muted)]"
+          }`}
         >
           Total: {counts.total}/3
         </span>
