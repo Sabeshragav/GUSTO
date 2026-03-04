@@ -31,7 +31,7 @@ export const GUSTO_INFO = {
 export const REGISTRATION_PRICE = 250;
 
 // Deadlines
-export const ABSTRACT_DEADLINE = "2026-03-04T23:59:59+05:30";
+export const ABSTRACT_DEADLINE = "2026-03-05T12:00:00+05:30";
 export const GENERAL_DEADLINE = "2026-03-05T12:00:00+05:30";
 
 // ── Feature Flag: Slots Full ──
