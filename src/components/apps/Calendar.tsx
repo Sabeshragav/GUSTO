@@ -1,10 +1,19 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, X, Clock, MapPin, Users, AlertCircle, Calendar as CalendarIcon } from 'lucide-react';
-import { EVENTS } from '../../data/events';
-import { registationFinalDate } from '../../data/details/fullData';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Clock,
+  MapPin,
+  Users,
+  AlertCircle,
+  Calendar as CalendarIcon,
+} from "lucide-react";
+import { EVENTS } from "../../data/events";
+import { registationFinalDate } from "../../data/details/fullData";
 
 export function CalendarApp() {
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
@@ -15,7 +24,7 @@ export function CalendarApp() {
   const daysInMonth = 31;
   const startDay = 0; // Sunday
 
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   // Generate calendar grid
   const days = Array.from({ length: 35 }, (_, i) => {
@@ -25,8 +34,10 @@ export function CalendarApp() {
   });
 
   const getDayEvent = (day: number) => {
-    if (day === 6) return { type: 'gusto', title: "Gusto '26", color: 'var(--ph-orange)' };
-    if (day === 5) return { type: 'deadline', title: "Reg Ends", color: '#FF3B30' }; // Red for deadline
+    if (day === 6)
+      return { type: "gusto", title: "Gusto '26", color: "var(--ph-orange)" };
+    if (day === 5)
+      return { type: "deadline", title: "Reg Ends", color: "#FF3B30" }; // Red for deadline
     return null;
   };
 
@@ -37,8 +48,9 @@ export function CalendarApp() {
   return (
     <div className="flex h-full bg-[var(--surface-bg)] text-[var(--text-primary)] font-sans relative overflow-hidden">
       {/* Calendar View */}
-      <div className={`flex-1 flex flex-col transition-opacity duration-300 ${selectedDate ? 'opacity-30 pointer-events-none' : 'opacity-100'}`}>
-
+      <div
+        className={`flex-1 flex flex-col transition-opacity duration-300 ${selectedDate ? "opacity-30 pointer-events-none" : "opacity-100"}`}
+      >
         {/* Header */}
         <div className="p-4 flex items-center justify-between border-b-2 border-[var(--border-color)] bg-[var(--surface-primary)]">
           <h2 className="text-xl font-bold tracking-tight">March 2026</h2>
@@ -55,8 +67,11 @@ export function CalendarApp() {
         {/* Grid */}
         <div className="flex-1 p-4">
           <div className="grid grid-cols-7 mb-2">
-            {weekDays.map(d => (
-              <div key={d} className="text-center text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider py-2">
+            {weekDays.map((d) => (
+              <div
+                key={d}
+                className="text-center text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider py-2"
+              >
                 {d}
               </div>
             ))}
@@ -70,20 +85,30 @@ export function CalendarApp() {
                   {day && (
                     <button
                       onClick={() => handleDateClick(day)}
-                      className={`w-full h-full rounded-lg border-2 flex flex-col items-start p-2 transition-all hover:shadow-md ${event
+                      className={`w-full h-full rounded-lg border-2 flex flex-col items-start p-2 transition-all hover:shadow-md ${
+                        event
                           ? `bg-[var(--surface-elevated)] border-[${event.color}]`
-                          : 'bg-[var(--surface-primary)] border-transparent hover:border-[var(--border-color)] text-[var(--text-primary)]'
-                        }`}
+                          : "bg-[var(--surface-primary)] border-transparent hover:border-[var(--border-color)] text-[var(--text-primary)]"
+                      }`}
                       style={event ? { borderColor: event.color } : {}}
                     >
-                      <span className={`text-sm font-bold ${event ? '' : ''}`} style={event ? { color: event.color } : {}}>
+                      <span
+                        className={`text-sm font-bold ${event ? "" : ""}`}
+                        style={event ? { color: event.color } : {}}
+                      >
                         {day}
                       </span>
 
                       {event && (
                         <div className="mt-auto w-full">
-                          <div className="w-1.5 h-1.5 rounded-full mb-1" style={{ backgroundColor: event.color }} />
-                          <span className="text-[10px] font-medium leading-tight block truncate w-full text-left" style={{ color: event.color }}>
+                          <div
+                            className="w-1.5 h-1.5 rounded-full mb-1"
+                            style={{ backgroundColor: event.color }}
+                          />
+                          <span
+                            className="text-[10px] font-medium leading-tight block truncate w-full text-left"
+                            style={{ color: event.color }}
+                          >
                             {event.title}
                           </span>
                         </div>
@@ -101,17 +126,21 @@ export function CalendarApp() {
       <AnimatePresence>
         {selectedDate && (
           <motion.div
-            initial={{ x: '100%' }}
+            initial={{ x: "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="absolute inset-y-0 right-0 w-full md:w-[400px] bg-[var(--surface-elevated)] border-l-2 border-[var(--border-color)] shadow-2xl z-50 flex flex-col"
           >
             <div className="p-4 border-b-2 border-[var(--border-color)] flex items-center justify-between bg-[var(--surface-primary)]">
               <div>
-                <h3 className="font-bold text-lg">March {selectedDate}, 2026</h3>
+                <h3 className="font-bold text-lg">
+                  March {selectedDate}, 2026
+                </h3>
                 <span className="text-xs text-[var(--text-secondary)] font-medium uppercase tracking-wider">
-                  {new Date(2026, 2, selectedDate).toLocaleDateString('en-US', { weekday: 'long' })}
+                  {new Date(2026, 2, selectedDate).toLocaleDateString("en-US", {
+                    weekday: "long",
+                  })}
                 </span>
               </div>
               <button
@@ -123,22 +152,29 @@ export function CalendarApp() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {getDayEvent(selectedDate)?.type === 'gusto' ? (
+              {getDayEvent(selectedDate)?.type === "gusto" ? (
                 // GUSTO Event Details
                 <>
                   <div className="p-4 bg-[var(--ph-orange)] text-white rounded-lg shadow-[4px_4px_0px_0px_var(--ph-black)] border-2 border-[var(--ph-black)] mb-6">
                     <h4 className="text-2xl font-black mb-1">GUSTO &apos;26</h4>
-                    <p className="font-medium opacity-90">National Level Technical Symposium</p>
+                    <p className="font-medium opacity-90">
+                      National Level Technical Symposium
+                    </p>
                     <div className="mt-2 text-xs font-mono opacity-80 flex items-center gap-1">
                       <CalendarIcon size={12} /> March 6, 2026
                     </div>
                   </div>
 
-                  <h5 className="text-sm font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2">Schedule</h5>
+                  <h5 className="text-sm font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2">
+                    Schedule
+                  </h5>
 
                   <div className="space-y-3">
                     {EVENTS.map((event) => (
-                      <div key={event.id} className="group p-3 rounded-lg border-2 border-transparent hover:border-[var(--border-color)] hover:bg-[var(--surface-primary)] transition-all">
+                      <div
+                        key={event.id}
+                        className="group p-3 rounded-lg border-2 border-transparent hover:border-[var(--border-color)] hover:bg-[var(--surface-primary)] transition-all"
+                      >
                         <div className="flex justify-between items-start mb-1">
                           <h6 className="font-bold text-[var(--text-primary)] group-hover:text-[var(--ph-orange)] transition-colors">
                             {event.title}
@@ -150,35 +186,50 @@ export function CalendarApp() {
                           </div>
                         </div>
                         <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)] mt-1">
-                          <span className="flex items-center gap-1"><MapPin size={12} /> {event.venue}</span>
-                          <span className="flex items-center gap-1"><Users size={12} /> {event.team_size}</span>
+                          <span className="flex items-center gap-1">
+                            <MapPin size={12} /> {event.venue}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Users size={12} /> {event.team_size}
+                          </span>
                         </div>
                       </div>
                     ))}
                   </div>
                 </>
-              ) : getDayEvent(selectedDate)?.type === 'deadline' ? (
+              ) : getDayEvent(selectedDate)?.type === "deadline" ? (
                 // Registration Deadline Details
                 <div className="flex flex-col h-full">
                   <div className="p-4 bg-[#FF3B30] text-white rounded-lg shadow-[4px_4px_0px_0px_#8B0000] border-2 border-[#8B0000] mb-6">
                     <div className="flex items-start gap-3">
                       <AlertCircle size={28} className="shrink-0" />
                       <div>
-                        <h4 className="text-xl font-black mb-1">Registration Closes</h4>
-                        <p className="font-medium opacity-90 text-sm">Last chance to register for Gusto &apos;26!</p>
+                        <h4 className="text-xl font-black mb-1">
+                          Registration Closes
+                        </h4>
+                        <p className="font-medium opacity-90 text-sm">
+                          Last chance to register for Gusto &apos;26!
+                        </p>
                       </div>
                     </div>
                   </div>
 
                   <div className="bg-[var(--surface-primary)] border-2 border-[var(--border-color)] p-6 rounded-lg text-center">
                     <Clock size={40} className="mx-auto text-[#FF3B30] mb-4" />
-                    <h5 className="text-lg font-bold text-[var(--text-primary)] mb-2">Deadline</h5>
-                    <p className="text-3xl font-mono font-black text-[var(--text-primary)] mb-1">03:00 PM</p>
-                    <p className="text-sm text-[var(--text-secondary)]">March 5, 2026</p>
+                    <h5 className="text-lg font-bold text-[var(--text-primary)] mb-2">
+                      Deadline
+                    </h5>
+                    <p className="text-3xl font-mono font-black text-[var(--text-primary)] mb-1">
+                      12:00 PM
+                    </p>
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      March 5, 2026
+                    </p>
                   </div>
 
                   <div className="mt-8 text-center text-sm text-[var(--text-muted)]">
-                    Ensure all team details and abstracts are submitted before this time.
+                    Ensure all team details and abstracts are submitted before
+                    this time.
                   </div>
                 </div>
               ) : (
@@ -192,7 +243,7 @@ export function CalendarApp() {
               )}
             </div>
 
-            {getDayEvent(selectedDate)?.type === 'deadline' && (
+            {getDayEvent(selectedDate)?.type === "deadline" && (
               <div className="p-4 border-t-2 border-[var(--border-color)] bg-[var(--surface-primary)]">
                 <button className="w-full py-2.5 bg-[#FF3B30] text-white font-bold rounded shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-[1px] active:shadow-none transition-all hover:bg-[#D32F2F]">
                   Go to Registration

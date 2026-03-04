@@ -7,6 +7,21 @@
  * Requires DATABASE_URL in environment.
  */
 import { Pool } from "pg";
+import * as readline from "readline";
+
+function askConfirmation(prompt: string): Promise<boolean> {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    });
+
+    return new Promise((resolve) => {
+        rl.question(prompt, (answer) => {
+            rl.close();
+            resolve(answer.trim().toLowerCase() === "y");
+        });
+    });
+}
 
 async function main() {
     const identifier = process.argv[2];
@@ -23,9 +38,15 @@ async function main() {
         process.exit(1);
     }
 
+    const isLocal = process.env.NODE_ENV !== "production";
+
     const pool = new Pool({
-        connectionString,
-        ssl: { rejectUnauthorized: false },
+        connectionString: process.env.DATABASE_URL,
+        ssl: isLocal
+            ? false
+            : {
+                rejectUnauthorized: false,
+            },
     });
 
     const client = await pool.connect();
@@ -51,6 +72,17 @@ async function main() {
 
         console.log(`👤 Found user: ${user.name} (${user.email} / ${user.unique_code})`);
         console.log(`🆔 User ID: ${userId}`);
+
+        // Ask for confirmation before deleting
+        const confirmed = await askConfirmation(
+            `\n⚠️  Are you sure you want to delete this user and all their data? (y/N): `
+        );
+
+        if (!confirmed) {
+            console.log("❌ Deletion cancelled.");
+            await client.query("ROLLBACK");
+            process.exit(0);
+        }
 
         // 2. Delete from event_registrations
         const regRes = await client.query(

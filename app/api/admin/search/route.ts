@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     if (code) {
         try {
             const userResult = await query(
-                `SELECT id, name, email, mobile, college, year, unique_code, checked_in, check_in_time, created_at
+                `SELECT id, name, email, mobile, food_preference, college, year, unique_code, checked_in, check_in_time, created_at
                  FROM users WHERE unique_code = $1`,
                 [code]
             );
@@ -76,9 +76,9 @@ export async function GET(req: NextRequest) {
             LIMIT 10
         `;
         const searchTerm = `%${queryTerm}%`;
-        
+
         const userResult = await query(sql, [searchTerm]);
-        
+
         return NextResponse.json({
             results: userResult.rows
         });

@@ -252,14 +252,18 @@ export const eventDetails = {
                 }
             },
             "coordinator1": {
+                "name": "SUVETHARANI C",
+                "phone": "9688656958"
+            },
+            "coordinator2": {
                 "name": "SANJAYKANTH C",
                 "phone": "7904546645"
             },
-            "coordinator2": {
+            "coordinator3": {
                 "name": "RASIGA M",
                 "phone": "9345128184"
             },
-            "coordinator3": {
+            "coordinator4": {
                 "name": "SWETHA M",
                 "phone": "7418185974"
             },
@@ -281,7 +285,7 @@ export const eventDetails = {
                 "Participants must work individually; group submissions are not allowed. The use of AI-generated content is strictly prohibited. Collages are not allowed; submissions must consist of one single photograph only.",
                 "Each participant may submit only one photograph. The aspect ratio must be 3:4. Only minimal touch editing (basic brightness, contrast, crop) is permitted. Any form of plagiarism will result in immediate disqualification.",
                 "All photographs must be uploaded online by the submission deadline via the designated photography submission email.",
-                "Last date for submission is 5th March 2026 - 3.00PM.",
+                "Last date for submission is 5th March 2026 - 12.00PM.",
                 "Winners will be notified and rewarded with exciting prizes.",
                 "while sending the photograph mention your name, department, year, phone number , college name and registation code in the mail",
                 "On-spot registration is not available."
@@ -315,7 +319,7 @@ export const eventDetails = {
                 "Only final meme(s) must be uploaded before the deadline.",
                 "Late submissions will not be considered.",
                 "Submission mode is Online only.",
-                "Last date for submission is 5th March 2026 - 3.00PM.",
+                "Last date for submission is 5th March 2026 - 12.00PM.",
                 "Breaking rules will lead to disqualification.",
                 "On-spot registration is not available."
             ],
@@ -350,7 +354,7 @@ export const eventDetails = {
                 "The film should not contain any vulgar, offensive, or inappropriate content. Such entries will be disqualified.",
                 "Films will be judged based on: Story and Message, Creativity, Direction and Editing, Cinematography, and Overall Impact.",
                 "The organizing committee reserves the right to modify rules if necessary.",
-                "Last date for submission is 5th March 2026 - 3.00PM.",
+                "Last date for submission is 5th March 2026 - 12.00PM.",
                 "On-spot registration is not available."
             ],
             "coordinator1": {

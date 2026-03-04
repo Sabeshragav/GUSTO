@@ -132,7 +132,7 @@ export function PaymentSection({
             /> */}
             <div>
               <p className="text-xs font-bold text-green-400">
-                Submission Deadline: March 5th, 2026 - 3.00PM
+                Submission Deadline: March 5th, 2026 - 12:00PM
               </p>
               <p className="text-xs text-[var(--text-muted)] mt-1">
                 Please complete your payment before sending your works to the

@@ -10,7 +10,7 @@ import { GENERAL_DEADLINE } from "../../data/events";
 
 // GUSTO 2026 event date — March 6, 2026
 const TARGET_DATE = new Date(GENERAL_DEADLINE);
-const REG_CLOSE_TEXT = "Registration closes on 5th March 2026";
+const REG_CLOSE_TEXT = "Registration closes on 5th March 2026 12.00 PM";
 
 interface TimeLeft {
   days: number;
@@ -134,7 +134,10 @@ export function DesktopWidgets() {
           animate={{ opacity: 0.6 }}
           transition={{ duration: 1, delay: 1 }}
         >
-          {timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0
+          {timeLeft.days === 0 &&
+          timeLeft.hours === 0 &&
+          timeLeft.minutes === 0 &&
+          timeLeft.seconds === 0
             ? "REGISTRATION CLOSED"
             : REG_CLOSE_TEXT}
         </motion.p>

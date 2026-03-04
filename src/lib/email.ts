@@ -124,7 +124,7 @@ export async function sendRegistrationEmail(data: RegistrationEmailData) {
       submissionReminder += `
             <div style="background:#fff3cd;border:1px solid #ffc107;padding:12px;border-radius:6px;margin-top:16px;">
                 <strong>⚠️ Online Events Submission Reminder</strong>
-                <p>Submit before <strong>March 5th, 2026 3:00 PM</strong>:</p>
+                <p>Submit before <strong>March 5th, 2026 12:00 PM</strong>:</p>
                 <ul>${items}</ul>
             </div>`;
     }

@@ -32,7 +32,7 @@ export const REGISTRATION_PRICE = 250;
 
 // Deadlines
 export const ABSTRACT_DEADLINE = "2026-03-04T23:59:59+05:30";
-export const GENERAL_DEADLINE = "2026-03-05T15:00:00+05:30";
+export const GENERAL_DEADLINE = "2026-03-05T12:00:00+05:30";
 
 export const EVENTS: Event[] = [
   // ── Technical Events (ABSTRACT) ──
@@ -163,7 +163,7 @@ export const EVENTS: Event[] = [
     rules: [
       "Original photos only (no AI or plagiarism).",
       "Aspect ratio 3:4; minimal editing permitted.",
-      "Submit via email before 5th March 2026 - 3.00PM.",
+      "Submit via email before 5th March 2026 - 12.00PM.",
       "Mention details (name, dept, college) in mail.",
     ],
     track: "C",
@@ -185,7 +185,7 @@ export const EVENTS: Event[] = [
     rules: [
       "Themes: AI tech, College life, Job vs Entrepreneurship.",
       "Must be original and college-friendly.",
-      "Submit via email before 5th March 2026 - 3.00PM.",
+      "Submit via email before 5th March 2026 - 12.00PM.",
       "Mention details (name, dept, college) in mail.",
     ],
     track: "C",
@@ -207,7 +207,7 @@ export const EVENTS: Event[] = [
     rules: [
       "Length: 20-30 minutes; MP4 (min 1080p).",
       "English subtitles compulsory if not in English.",
-      "Submit Google Drive link before 5th March 2026 - 3.00PM.",
+      "Submit Google Drive link before 5th March 2026 - 12.00PM.",
       "Only copyright-free music allowed.",
     ],
     track: "C",

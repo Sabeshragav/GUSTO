@@ -38,8 +38,9 @@ export function EventCard({
 
   return (
     <div
-      className={`border-2 border-[var(--border-color)] bg-[var(--surface-primary)] transition-all duration-200 flex flex-col ${!isMobile ? "hover:scale-[1.01] hover:shadow-md" : "active:scale-[0.99]"
-        }`}
+      className={`border-2 border-[var(--border-color)] bg-[var(--surface-primary)] transition-all duration-200 flex flex-col ${
+        !isMobile ? "hover:scale-[1.01] hover:shadow-md" : "active:scale-[0.99]"
+      }`}
       style={{ borderRadius: "6px" }}
     >
       {/* Image Banner (if available) */}
@@ -62,11 +63,12 @@ export function EventCard({
             >
               {isTechnical ? "Tech" : "Non-Tech"}
             </span>
-            {event.registrationDeadline && new Date() > new Date(event.registrationDeadline) && (
-              <span className="flex-shrink-0 inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-red-500/20 text-red-400 border border-red-500/30">
-                Reg Closed
-              </span>
-            )}
+            {event.registrationDeadline &&
+              new Date() > new Date(event.registrationDeadline) && (
+                <span className="flex-shrink-0 inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-red-500/20 text-red-400 border border-red-500/30">
+                  Reg Closed
+                </span>
+              )}
           </div>
         </div>
 
@@ -82,8 +84,9 @@ export function EventCard({
 
         {/* Description */}
         <p
-          className={`text-sm text-[var(--text-secondary)] leading-relaxed mb-4 flex-1 ${isExpanded ? "" : "line-clamp-3"
-            }`}
+          className={`text-sm text-[var(--text-secondary)] leading-relaxed mb-4 flex-1 ${
+            isExpanded ? "" : "line-clamp-3"
+          }`}
         >
           {event.description}
         </p>
@@ -116,12 +119,13 @@ export function EventCard({
                 {["B", "I", "U"].map((btn) => (
                   <span
                     key={btn}
-                    className={`w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] hover:bg-[var(--surface-primary)] transition-colors cursor-default ${btn === "B"
+                    className={`w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] hover:bg-[var(--surface-primary)] transition-colors cursor-default ${
+                      btn === "B"
                         ? "font-bold"
                         : btn === "I"
                           ? "italic"
                           : "underline"
-                      }`}
+                    }`}
                   >
                     {btn}
                   </span>
@@ -178,7 +182,10 @@ export function EventCard({
                 Coordinators
               </h4>
               <div className="grid grid-cols-1 gap-2">
-                {[event.coordinator1, event.coordinator2, event.coordinator3]
+                {Object.keys(event)
+                  .filter((key) => /^coordinator\d+$/.test(key))
+                  .sort()
+                  .map((key) => event[key])
                   .filter(Boolean)
                   .map((coord: any, idx) => (
                     <div
