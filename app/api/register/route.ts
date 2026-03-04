@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
         // ── Event selection validation ──
         const validation = validateEventSelection(selectedEvents as typeof EVENTS);
         if (!validation.valid) {
+            console.error("[Register] Event selection validation failed:", validation.error);
             return NextResponse.json({ error: validation.error }, { status: 400 });
         }
 
@@ -93,6 +94,7 @@ export async function POST(req: NextRequest) {
         for (const ae of abstractEvents) {
             const fallbackId = fallbackSelections[ae.id];
             if (!fallbackId) {
+                console.error(`[Register] Missing fallback for abstract event "${ae.title}" (${ae.id})`);
                 return NextResponse.json(
                     { error: `Fallback event required for "${ae.title}"` },
                     { status: 400 },
@@ -100,6 +102,7 @@ export async function POST(req: NextRequest) {
             }
             const fallbackEvent = EVENTS.find((e) => e.id === fallbackId);
             if (!fallbackEvent || fallbackEvent.eventType === "ABSTRACT") {
+                console.error(`[Register] Invalid fallback "${fallbackId}" for abstract event "${ae.title}"`);
                 return NextResponse.json(
                     { error: `Invalid fallback event for "${ae.title}"` },
                     { status: 400 },
@@ -117,10 +120,11 @@ export async function POST(req: NextRequest) {
 
             // Check email/mobile uniqueness
             const existing = await client.query(
-                "SELECT id FROM users WHERE email = $1 OR mobile = $2",
+                "SELECT id, email, mobile FROM users WHERE email = $1 OR mobile = $2",
                 [email, mobile],
             );
             if (existing.rows.length > 0) {
+                console.error("[Register] Duplicate detected — user input:", { email, mobile }, "| conflicting DB rows:", JSON.stringify(existing.rows));
                 await client.query("ROLLBACK");
                 return NextResponse.json(
                     { error: "Email or mobile already registered" },
@@ -132,7 +136,7 @@ export async function POST(req: NextRequest) {
             const userId = randomUUID();
             const uniqueCode = generateUniqueCode();
 
-            // 🔥 Upload to Vercel Blob first to get the URL
+            //  Upload to Vercel Blob first to get the URL
             const screenshotUrl = await uploadToBlob(
                 screenshotBuffer,
                 screenshot.name,
@@ -228,13 +232,16 @@ export async function POST(req: NextRequest) {
                 hasSubmissionEvents: allNeedSubmission.length > 0,
             });
         } catch (txErr) {
+            console.error("[Register] ❌ Transaction error, rolling back:", txErr);
             await client.query("ROLLBACK");
             throw txErr;
         } finally {
             client.release();
         }
     } catch (err: any) {
-        console.error("Registration error:", err);
+        console.error("[Register] ❌ Top-level registration error:", err?.message || err);
+        console.error("[Register] Error stack:", err?.stack);
+        console.error("[Register] Error code:", err?.code);
 
         // Build a verbose error response
         const errorMessage = err?.message || "Unknown error";

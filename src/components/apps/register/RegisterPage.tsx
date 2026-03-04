@@ -5,12 +5,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  AlertCircle,
+  X,
+} from "lucide-react";
 import { useEffect } from "react";
 
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useEventValidation } from "../../../hooks/useEventValidation";
-import { EVENTS, REGISTRATION_PRICE, type Event } from "../../../data/events";
+import { EVENTS, type Event } from "../../../data/events";
 import {
   getAbstractEvents,
   getSubmissionEvents,
@@ -55,7 +61,7 @@ const registrationSchema = z.object({
     .string()
     .min(1, "Transaction ID is required")
     .min(4, "Enter a valid transaction ID"),
-    
+
   // Food Preference
   foodPreference: z.enum(["VEG", "NON_VEG"], {
     message: "Please choose Veg or Non-Veg properly",
@@ -89,7 +95,11 @@ export function RegisterPage({ data }: RegisterPageProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (posthog && typeof window !== 'undefined' && !hasTrackedRegistrationVisit) {
+    if (
+      posthog &&
+      typeof window !== "undefined" &&
+      !hasTrackedRegistrationVisit
+    ) {
       hasTrackedRegistrationVisit = true;
       console.log("[PostHog] visited registration page");
       posthog.capture("visited registration page");
@@ -100,6 +110,24 @@ export function RegisterPage({ data }: RegisterPageProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [toastError, setToastError] = useState<string | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-dismiss toast after 5 seconds
+  useEffect(() => {
+    if (toastError) {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = setTimeout(() => setToastError(null), 5000);
+    }
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, [toastError]);
+
+  const showError = (msg: string) => {
+    setSubmitError(msg);
+    setToastError(msg);
+  };
   const [isSuccess, setIsSuccess] = useState(false);
   const [registrationId, setRegistrationId] = useState("");
 
@@ -230,7 +258,7 @@ export function RegisterPage({ data }: RegisterPageProps) {
     if (!valid) return;
     if (currentStep < TOTAL_STEPS) {
       // Track step completions
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         if (currentStep === 1) {
           console.log("[PostHog] filled the details screen");
           posthog.capture("filled the details screen");
@@ -261,18 +289,18 @@ export function RegisterPage({ data }: RegisterPageProps) {
   const onSubmit = useCallback(
     async (formData: RegistrationFormData) => {
       if (selectedEvents.length === 0) {
-        setSubmitError("Events are required");
+        showError("Events are required");
         return;
       }
 
       if (!screenshotFile) {
-        setSubmitError("Payment screenshot is required");
+        showError("Payment screenshot is required");
         return;
       }
 
       const txId = formData.transactionId.trim();
       if (!txId) {
-        setSubmitError("Transaction ID is required");
+        showError("Transaction ID is required");
         return;
       }
 
@@ -316,7 +344,7 @@ export function RegisterPage({ data }: RegisterPageProps) {
 
         setRegistrationId(result.uniqueCode || "SUBMITTED");
         setIsSuccess(true);
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
           console.log("[PostHog] done payment screen");
           posthog.capture("done payment screen");
         }
@@ -327,11 +355,11 @@ export function RegisterPage({ data }: RegisterPageProps) {
           }),
         );
       } catch (err) {
-        setSubmitError(
+        const msg =
           err instanceof Error
             ? err.message
-            : "Something went wrong. Please try again.",
-        );
+            : "Something went wrong. Please try again.";
+        showError(msg);
       } finally {
         setIsSubmitting(false);
       }
@@ -350,7 +378,7 @@ export function RegisterPage({ data }: RegisterPageProps) {
 
   /* ─── Render ─── */
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-[var(--surface-primary)]">
+    <div className="h-full flex flex-col overflow-hidden bg-[var(--surface-primary)] relative">
       {/* Step Indicator */}
       <div className="flex-shrink-0 border-b border-[var(--border-color)] bg-[var(--surface-primary)]">
         <StepIndicator
@@ -501,6 +529,45 @@ export function RegisterPage({ data }: RegisterPageProps) {
           )}
         </div>
       </div>
+
+      {/* ─── Error toast (top-center within registration window) ─── */}
+      <AnimatePresence>
+        {toastError && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            style={{
+              position: "absolute",
+              top: "0.75rem",
+              left: 0,
+              right: 0,
+              zIndex: 99999,
+              display: "flex",
+              justifyContent: "center",
+              pointerEvents: "none",
+            }}
+          >
+            <div
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/15 border border-red-500/30 backdrop-blur-md shadow-lg shadow-red-500/10"
+              style={{ maxWidth: "28rem", width: "90%", pointerEvents: "auto" }}
+            >
+              <AlertCircle size={16} className="text-red-400 flex-shrink-0" />
+              <p className="flex-1 text-xs text-red-300 font-medium leading-snug">
+                {toastError}
+              </p>
+              <button
+                type="button"
+                onClick={() => setToastError(null)}
+                className="p-1 rounded-md hover:bg-red-500/20 transition-colors flex-shrink-0"
+              >
+                <X size={14} className="text-red-400" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
