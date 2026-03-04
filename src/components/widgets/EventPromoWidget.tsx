@@ -48,7 +48,7 @@ const SLIDES: Slide[] = [
     lines: [
       "Available for select events only on March 6th.",
       "Check each event's details to see eligibility.",
-      "You must reach the registration desk before 10:00 AM — late arrivals will not be accepted.",
+      "You must reach the registration desk before 10:00 AM, late arrivals will not be accepted.",
     ],
     duration: 20000,
   },
