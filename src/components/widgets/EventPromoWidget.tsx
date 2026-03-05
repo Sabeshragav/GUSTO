@@ -19,8 +19,8 @@ interface EventPromoWidgetProps {
 
 // Select a few diverse events to feature
 const FEATURED_EVENT_IDS = [
-  "paper-presentation",
-  "project-presentation",
+  // "paper-presentation",
+  // "project-presentation",
   "tech-quiz",
   "hunt-mods",
   "code-debugging",
@@ -48,15 +48,15 @@ const SLIDES: Slide[] = [
     lines: [
       "Available for select events only on March 6th.",
       "Check each event's details to see eligibility.",
-      "You must reach the registration desk before 10:00 AM, late arrivals will not be accepted.",
+      "You must reach the registration desk before 9:00 AM, late arrivals will not be accepted.",
     ],
     duration: 30000,
   },
-  ...FEATURED_EVENTS.map((event) => ({
-    type: "event" as const,
-    event,
-    duration: 1000,
-  })),
+  // ...FEATURED_EVENTS.map((event) => ({
+  //   type: "event" as const,
+  //   event,
+  //   duration: 1000,
+  // })),
 ];
 
 export function EventPromoWidget({
@@ -230,7 +230,7 @@ export function EventPromoWidget({
         </div>
 
         {/* Navigation arrows (desktop only) */}
-        {isDesktop && (
+        {/* {isDesktop && (
           <div className="flex items-center justify-center gap-3 mt-3">
             <button
               onClick={goPrev}
@@ -247,7 +247,7 @@ export function EventPromoWidget({
               <ChevronRight size={14} className="text-white/70" />
             </button>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
