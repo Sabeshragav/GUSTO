@@ -296,7 +296,7 @@ export const eventDetails = {
             },
             "coordinator2": {
                 "name": "GAJIN S",
-                "phone": "8610802480"
+                "phone": "9025732774"
             },
             "time": "Online Event",
             "submission_name": "Photography Submission Email",
