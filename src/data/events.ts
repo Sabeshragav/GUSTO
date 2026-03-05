@@ -37,10 +37,10 @@ export const GENERAL_DEADLINE = "2026-03-05T12:00:00+05:30";
 // ── Feature Flag: Slots Full ──
 // Add event IDs (from events.ts) and their titles (for event_data.ts) here.
 export const SLOTS_FULL_EVENT_IDS: Set<string> = new Set([
-  "paper-presentation",
+  // "paper-presentation",
 ]);
 const SLOTS_FULL_TITLES: Set<string> = new Set([
-  "Paper Presentation",
+  // "Paper Presentation",
 ]);
 
 export function isSlotsFull(eventIdOrTitle: string): boolean {
@@ -49,7 +49,7 @@ export function isSlotsFull(eventIdOrTitle: string): boolean {
 
 // ── Feature Flag: On-Spot Registration ──
 // Set to true to enable the "Add" button in the admin panel for on-spot registrations.
-export const ONSPOT_REGISTRATION_ENABLED = false;
+export const ONSPOT_REGISTRATION_ENABLED = true;
 
 export const EVENTS: Event[] = [
   // ── Technical Events (ABSTRACT) ──
