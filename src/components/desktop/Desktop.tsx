@@ -18,6 +18,7 @@ import type { DesktopItem } from "../../types";
 
 import { fileSystem } from "../../data/filesystem";
 import { getAllMacIconUrls } from "../../data/macIcons";
+import { GENERAL_DEADLINE } from "../../data/events";
 
 export function Desktop() {
   const {
@@ -48,26 +49,33 @@ export function Desktop() {
 
   const desktopItems = useMemo<DesktopItem[]>(() => {
     if (!fileSystem.children) return [];
-    return fileSystem.children.map((child, index) => ({
-      id: child.id,
-      name: child.name,
-      icon:
-        child.type === "app"
-          ? child.icon || "file"
-          : child.type === "folder"
-            ? "folder"
-            : "file",
-      type:
-        child.type === "app"
-          ? "app"
-          : child.type === "folder"
-            ? "folder"
-            : "file",
-      x: 20,
-      y: 20 + index * 100,
-      fileId: child.type === "app" ? undefined : child.id,
-      appId: child.type === "app" ? child.name.toLowerCase() : undefined,
-    }));
+    return fileSystem.children
+      .filter((child) => {
+        if (child.id === "register-app") {
+          return new Date() <= new Date(GENERAL_DEADLINE);
+        }
+        return true;
+      })
+      .map((child, index) => ({
+        id: child.id,
+        name: child.name,
+        icon:
+          child.type === "app"
+            ? child.icon || "file"
+            : child.type === "folder"
+              ? "folder"
+              : "file",
+        type:
+          child.type === "app"
+            ? "app"
+            : child.type === "folder"
+              ? "folder"
+              : "file",
+        x: 20,
+        y: 20 + index * 100,
+        fileId: child.type === "app" ? undefined : child.id,
+        appId: child.type === "app" ? child.name.toLowerCase() : undefined,
+      }));
   }, []);
 
   const wallpaperStyle = useMemo((): React.CSSProperties => {
@@ -202,9 +210,9 @@ export function Desktop() {
               try {
                 const el = document.documentElement;
                 if (!document.fullscreenElement && el.requestFullscreen) {
-                  el.requestFullscreen().catch(() => {});
+                  el.requestFullscreen().catch(() => { });
                 }
-              } catch {}
+              } catch { }
             }}
           />
         )}

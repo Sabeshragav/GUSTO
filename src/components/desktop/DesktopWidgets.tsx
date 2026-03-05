@@ -62,6 +62,12 @@ export function DesktopWidgets() {
   const shadowClass = isDarkWallpaper ? "drop-shadow-md" : "drop-shadow-sm";
   const labelColor = isDarkWallpaper ? "text-[#F54E00]" : "text-[#D64000]";
 
+  const isClosed =
+    timeLeft.days === 0 &&
+    timeLeft.hours === 0 &&
+    timeLeft.minutes === 0 &&
+    timeLeft.seconds === 0;
+
   if (!mounted) return null;
 
   const units: { label: string; value: string }[] = [
@@ -86,61 +92,73 @@ export function DesktopWidgets() {
           The clock is ticking away !
         </motion.p>
 
-        {/* Labels row */}
-        <motion.div
-          className={`flex ${isMobile ? "gap-6" : "gap-10"} justify-center mb-1`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
-          {units.map((u) => (
-            <span
-              key={u.label}
-              className={`${labelColor} font-bold uppercase tracking-widest ${isMobile ? "text-[8px] w-8" : "text-[10px] w-14"} text-center`}
+        {isClosed ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={`mt-4 px-8 py-4 bg-black/40 border border-white/10 rounded-2xl backdrop-blur-md shadow-2xl ${isMobile ? "text-center" : "text-right"}`}
+          >
+            <p className="text-[#FF6B35] font-black tracking-[0.2em] text-2xl drop-shadow-lg">
+              REGISTRATION CLOSED
+            </p>
+            <p className={`${textColor} text-sm mt-1 font-medium opacity-80`}>
+              Hope to see you at GUSTO &apos;26!
+            </p>
+          </motion.div>
+        ) : (
+          <>
+            {/* Labels row */}
+            <motion.div
+              className={`flex ${isMobile ? "gap-6" : "gap-10"} justify-center mb-1`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
             >
-              {u.label}
-            </span>
-          ))}
-        </motion.div>
-
-        {/* Numbers row */}
-        <motion.div
-          className="flex items-baseline"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.4 }}
-        >
-          {units.map((u, i) => (
-            <span key={u.label} className="flex items-baseline">
-              <span
-                className={`font-black font-mono tabular-nums leading-none ${isMobile ? "text-3xl" : "text-7xl"}`}
-              >
-                {u.value}
-              </span>
-              {i < units.length - 1 && (
+              {units.map((u) => (
                 <span
-                  className={`font-bold mx-1 ${isMobile ? "text-xl" : "text-5xl"} opacity-60`}
+                  key={u.label}
+                  className={`${labelColor} font-bold uppercase tracking-widest ${isMobile ? "text-[8px] w-8" : "text-[10px] w-14"} text-center`}
                 >
-                  :
+                  {u.label}
                 </span>
-              )}
-            </span>
-          ))}
-        </motion.div>
+              ))}
+            </motion.div>
 
-        <motion.p
-          className={`mt-2 font-medium opacity-60 ${isMobile ? "text-[10px]" : "text-sm"}`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.6 }}
-          transition={{ duration: 1, delay: 1 }}
-        >
-          {timeLeft.days === 0 &&
-          timeLeft.hours === 0 &&
-          timeLeft.minutes === 0 &&
-          timeLeft.seconds === 0
-            ? "REGISTRATION CLOSED"
-            : REG_CLOSE_TEXT}
-        </motion.p>
+            {/* Numbers row */}
+            <motion.div
+              className="flex items-baseline"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.4 }}
+            >
+              {units.map((u, i) => (
+                <span key={u.label} className="flex items-baseline">
+                  <span
+                    className={`font-black font-mono tabular-nums leading-none ${isMobile ? "text-3xl" : "text-7xl"}`}
+                  >
+                    {u.value}
+                  </span>
+                  {i < units.length - 1 && (
+                    <span
+                      className={`font-bold mx-1 ${isMobile ? "text-xl" : "text-5xl"} opacity-60`}
+                    >
+                      :
+                    </span>
+                  )}
+                </span>
+              ))}
+            </motion.div>
+
+            <motion.p
+              className={`mt-2 font-medium opacity-60 ${isMobile ? "text-[10px]" : "text-sm"}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              transition={{ duration: 1, delay: 1 }}
+            >
+              {REG_CLOSE_TEXT}
+            </motion.p>
+          </>
+        )}
       </div>
 
       {/* Branding - Top Center (Desktop) */}

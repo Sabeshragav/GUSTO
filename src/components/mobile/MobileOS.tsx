@@ -254,6 +254,18 @@ function MobileOSContent() {
   const containerRef = useRef<HTMLDivElement>(null);
   const allowExitRef = useRef(false);
   const backTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const filteredPage1Apps = useMemo(() => {
+    return PAGE_1_APPS.filter((app) => {
+      if (app.id === "register") {
+        return Date.now() <= TARGET_DATE.getTime();
+      }
+      return true;
+    });
+  }, []);
+
+  const HOME_PAGES = [filteredPage1Apps, PAGE_2_APPS];
+  const ALL_APPS = [...filteredPage1Apps, ...PAGE_2_APPS, ...DOCK_APPS];
+
   const [navMode, setNavMode] = useState<"buttons" | "gesture">("gesture");
   const [isBooting, setIsBooting] = useState(true);
   const [showDrawer, setShowDrawer] = useState(false);
@@ -597,31 +609,42 @@ function MobileOSContent() {
                         </h3>
                       </div>
                       {/* Countdown */}
-                      <div className="bg-black/30 backdrop-blur-md rounded-[16px] border border-white/10 px-3 py-2 shadow-lg flex items-center justify-between scale-95 origin-center">
-                        <div className="flex flex-col">
-                          <span className="text-[#FF6B35] text-[8px] font-bold uppercase tracking-wider mb-0.5">
-                            Countdown
+                      {Date.now() > TARGET_DATE.getTime() ? (
+                        <div className="bg-black/30 backdrop-blur-md rounded-[16px] border border-white/10 px-4 py-3 shadow-lg flex flex-col items-center justify-center scale-95 origin-center">
+                          <span className="text-[#FF6B35] text-sm font-black uppercase tracking-widest">
+                            REGISTRATION CLOSED
                           </span>
-                          <span className="text-white/60 text-[9px] font-medium leading-tight">
-                            {Date.now() > TARGET_DATE.getTime() ? "REGISTRATION CLOSED" : "Registration Ends Soon"}
+                          <span className="text-white/60 text-[10px] font-medium mt-1">
+                            Let&apos;s meet on March 6th!
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {units.map((u) => (
-                            <div
-                              key={u.label}
-                              className="flex flex-col items-center"
-                            >
-                              <span className="text-white text-base font-bold font-mono leading-none tracking-tight">
-                                {u.value}
-                              </span>
-                              <span className="text-[7px] text-white/50 font-bold uppercase tracking-wider mt-0.5">
-                                {u.label}
-                              </span>
-                            </div>
-                          ))}
+                      ) : (
+                        <div className="bg-black/30 backdrop-blur-md rounded-[16px] border border-white/10 px-3 py-2 shadow-lg flex items-center justify-between scale-95 origin-center">
+                          <div className="flex flex-col">
+                            <span className="text-[#FF6B35] text-[8px] font-bold uppercase tracking-wider mb-0.5">
+                              Countdown
+                            </span>
+                            <span className="text-white/60 text-[9px] font-medium leading-tight">
+                              Registration Ends Soon
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {units.map((u) => (
+                              <div
+                                key={u.label}
+                                className="flex flex-col items-center"
+                              >
+                                <span className="text-white text-base font-bold font-mono leading-none tracking-tight">
+                                  {u.value}
+                                </span>
+                                <span className="text-[7px] text-white/50 font-bold uppercase tracking-wider mt-0.5">
+                                  {u.label}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Event Promo Widget - Reduced Size */}
                       <div className="transform scale-90 origin-top">

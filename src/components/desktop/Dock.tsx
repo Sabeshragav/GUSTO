@@ -184,15 +184,22 @@ export function Dock() {
           borderRadius: "16px",
         }}
       >
-        {dockItems.map((item) => (
-          <DockIcon
-            key={item.id}
-            item={item}
-            mouseX={mouseX}
-            isOpen={state.windows.some((w) => w.appId === item.appId)}
-            onClick={() => handleAppClick(item.appId)}
-          />
-        ))}
+        {dockItems
+          .filter((item) => {
+            if (item.appId === "register") {
+              return new Date() <= new Date(GENERAL_DEADLINE);
+            }
+            return true;
+          })
+          .map((item) => (
+            <DockIcon
+              key={item.id}
+              item={item}
+              mouseX={mouseX}
+              isOpen={state.windows.some((w) => w.appId === item.appId)}
+              onClick={() => handleAppClick(item.appId)}
+            />
+          ))}
 
         {/* Divider */}
         <div

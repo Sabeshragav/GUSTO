@@ -1,6 +1,6 @@
 "use client";
 
-import { Phone, Mail } from "lucide-react";
+import { Phone, Mail, Lock } from "lucide-react";
 import posthog from "posthog-js";
 import { useEffect } from "react";
 import { isSlotsFull } from "../../../data/events";
@@ -39,9 +39,8 @@ export function EventCard({
 
   return (
     <div
-      className={`border-2 border-[var(--border-color)] bg-[var(--surface-primary)] transition-all duration-200 flex flex-col ${
-        !isMobile ? "hover:scale-[1.01] hover:shadow-md" : "active:scale-[0.99]"
-      }`}
+      className={`border-2 border-[var(--border-color)] bg-[var(--surface-primary)] transition-all duration-200 flex flex-col ${!isMobile ? "hover:scale-[1.01] hover:shadow-md" : "active:scale-[0.99]"
+        }`}
       style={{ borderRadius: "6px" }}
     >
       {/* Image Banner (if available) */}
@@ -67,7 +66,7 @@ export function EventCard({
             {event.registrationDeadline &&
               new Date() > new Date(event.registrationDeadline) && (
                 <span className="flex-shrink-0 inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-red-500/20 text-red-400 border border-red-500/30">
-                  Reg Closed
+                  Registation Closed
                 </span>
               )}
           </div>
@@ -85,9 +84,8 @@ export function EventCard({
 
         {/* Description */}
         <p
-          className={`text-sm text-[var(--text-secondary)] leading-relaxed mb-4 flex-1 ${
-            isExpanded ? "" : "line-clamp-3"
-          }`}
+          className={`text-sm text-[var(--text-secondary)] leading-relaxed mb-4 flex-1 ${isExpanded ? "" : "line-clamp-3"
+            }`}
         >
           {event.description}
         </p>
@@ -120,13 +118,12 @@ export function EventCard({
                 {["B", "I", "U"].map((btn) => (
                   <span
                     key={btn}
-                    className={`w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] hover:bg-[var(--surface-primary)] transition-colors cursor-default ${
-                      btn === "B"
-                        ? "font-bold"
-                        : btn === "I"
-                          ? "italic"
-                          : "underline"
-                    }`}
+                    className={`w-5 h-5 flex items-center justify-center rounded text-[10px] text-[var(--text-muted)] hover:bg-[var(--surface-primary)] transition-colors cursor-default ${btn === "B"
+                      ? "font-bold"
+                      : btn === "I"
+                        ? "italic"
+                        : "underline"
+                      }`}
                   >
                     {btn}
                   </span>
@@ -234,14 +231,26 @@ export function EventCard({
                   </div>
                 ))}
               {event.registrationLink && event.registrationLink !== "#" && (
-                <a
-                  href={event.registrationLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 text-center block w-full bg-[var(--accent-color)] text-white text-xs font-bold py-2 rounded shadow-sm hover:bg-[var(--accent-hover)] transition-colors"
-                >
-                  Register for Event
-                </a>
+                (() => {
+                  const isEnded = event.registrationDeadline && new Date() > new Date(event.registrationDeadline);
+                  if (isEnded) {
+                    return (
+                      <div className="mt-2 text-center block w-full bg-gray-500/20 text-gray-500 text-xs font-bold py-2 rounded border border-gray-500/30 flex items-center justify-center gap-1.5 opacity-60">
+                        Registration Ended <Lock size={12} />
+                      </div>
+                    );
+                  }
+                  return (
+                    <a
+                      href={event.registrationLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 text-center block w-full bg-[var(--accent-color)] text-white text-xs font-bold py-2 rounded shadow-sm hover:bg-[var(--accent-hover)] transition-colors"
+                    >
+                      Register for Event
+                    </a>
+                  );
+                })()
               )}
             </div>
           )}

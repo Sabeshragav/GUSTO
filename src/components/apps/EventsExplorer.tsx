@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
+import { Lock } from "lucide-react";
 import { eventDetails } from "../../data/details/event_data";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useDesktop } from "../../contexts/DesktopContext";
 import { EventCard } from "./events/EventCard";
 import { useMobileAppPersistence } from "../../hooks/useMobileAppPersistence";
+import { GENERAL_DEADLINE } from "../../data/events";
 
 // Flatten and categorize events from the detailed data source
 const EVENTS = [
@@ -116,15 +118,30 @@ export function EventsExplorer({
           </div>
 
           {/* Register Button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleRegister();
-            }}
-            className="flex-shrink-0 px-4 py-1.5 text-xs font-bold border border-[var(--accent-color)] bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)] transition-all duration-200 active:translate-y-[1px] rounded-full shadow-md hover:shadow-lg"
-          >
-            Register Now →
-          </button>
+          {(() => {
+            const isClosed = new Date() > new Date(GENERAL_DEADLINE);
+            return (
+              <button
+                disabled={isClosed}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRegister();
+                }}
+                className={`flex-shrink-0 px-4 py-1.5 text-xs font-bold border transition-all duration-200 active:translate-y-[1px] rounded-full shadow-md hover:shadow-lg flex items-center gap-1.5 ${isClosed
+                  ? "bg-gray-500/20 text-gray-500 border-gray-500/30 cursor-not-allowed"
+                  : "border-[var(--accent-color)] bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)]"
+                  }`}
+              >
+                {isClosed ? (
+                  <>
+                    Registration Closed <Lock size={12} />
+                  </>
+                ) : (
+                  "Register Now →"
+                )}
+              </button>
+            );
+          })()}
         </div>
       </div>
 
