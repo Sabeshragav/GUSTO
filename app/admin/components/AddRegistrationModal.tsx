@@ -2,16 +2,16 @@
 
 import React, { useState, useRef } from "react";
 
-// Events available for on-spot registration (exclude paper & project presentation)
+// Events available for on-spot registration
 const TECH_EVENTS = [
   { id: "think-like-a-compiler", title: "Think Like a Compiler" },
   { id: "code-chaos", title: "Code Chaos" },
   { id: "promptx", title: "PROMPTX" },
+  { id: "paper-presentation", title: "Paper Presentation" },
+  { id: "project-presentation", title: "Project Presentation" },
 ];
 const NON_TECH_EVENTS = [{ id: "icon-iq", title: "Icon IQ" }];
-const TECH_IDS = new Set(TECH_EVENTS.map((e) => e.id));
-const MAX_TECH = 2;
-const MAX_NON_TECH = 1;
+const MAX_EVENTS = 2;
 
 const YEAR_OPTIONS = ["I", "II", "III", "IV", "V"];
 
@@ -192,12 +192,7 @@ export default function AddRegistrationModal({
       if (prev.includes(eventId)) {
         return prev.filter((id) => id !== eventId);
       }
-      // Enforce category limits
-      const isTech = TECH_IDS.has(eventId);
-      const techCount = prev.filter((id) => TECH_IDS.has(id)).length;
-      const nonTechCount = prev.filter((id) => !TECH_IDS.has(id)).length;
-      if (isTech && techCount >= MAX_TECH) return prev;
-      if (!isTech && nonTechCount >= MAX_NON_TECH) return prev;
+      if (prev.length >= MAX_EVENTS) return prev;
       return [...prev, eventId];
     });
   };
@@ -410,7 +405,7 @@ export default function AddRegistrationModal({
         {/* Events */}
         <div style={s.field}>
           <label style={s.label}>
-            Events ({selectedEvents.length} selected — max 3)
+            Events ({selectedEvents.length} selected — max {MAX_EVENTS})
           </label>
 
           {/* Technical Events */}
@@ -422,7 +417,7 @@ export default function AddRegistrationModal({
               marginBottom: "6px",
             }}
           >
-            Technical (max {MAX_TECH})
+            Technical
           </div>
           <div
             style={{
@@ -434,10 +429,7 @@ export default function AddRegistrationModal({
           >
             {TECH_EVENTS.map((ev) => {
               const active = selectedEvents.includes(ev.id);
-              const techCount = selectedEvents.filter((id) =>
-                TECH_IDS.has(id),
-              ).length;
-              const isDisabled = !active && techCount >= MAX_TECH;
+              const isDisabled = !active && selectedEvents.length >= MAX_EVENTS;
               return (
                 <div
                   key={ev.id}
@@ -484,7 +476,7 @@ export default function AddRegistrationModal({
               marginBottom: "6px",
             }}
           >
-            Non-Technical (max {MAX_NON_TECH})
+            Non-Technical
           </div>
           <div
             style={{
@@ -495,10 +487,7 @@ export default function AddRegistrationModal({
           >
             {NON_TECH_EVENTS.map((ev) => {
               const active = selectedEvents.includes(ev.id);
-              const nonTechCount = selectedEvents.filter(
-                (id) => !TECH_IDS.has(id),
-              ).length;
-              const isDisabled = !active && nonTechCount >= MAX_NON_TECH;
+              const isDisabled = !active && selectedEvents.length >= MAX_EVENTS;
               return (
                 <div
                   key={ev.id}
