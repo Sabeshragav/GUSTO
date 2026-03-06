@@ -65,10 +65,8 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // ── Validate event IDs (exclude abstract events) ──
-        const validEventIds = EVENTS
-            .filter((e) => e.id !== 'paper-presentation' && e.id !== 'project-presentation')
-            .map((e) => e.id);
+        // ── Validate event IDs ──
+        const validEventIds = EVENTS.map((e) => e.id);
 
         for (const id of selectedEventIds) {
             if (!validEventIds.includes(id)) {
