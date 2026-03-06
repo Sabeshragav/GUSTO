@@ -1350,6 +1350,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     checkedIn: "",
     abstractStatus: "",
     registrationType: "",
+    attendanceStatus: "",
   });
 
   const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
@@ -1495,6 +1496,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         params.set("abstractStatus", exportFilter.abstractStatus);
       if (exportFilter.registrationType)
         params.set("registrationType", exportFilter.registrationType);
+      if (exportFilter.attendanceStatus)
+        params.set("attendanceStatus", exportFilter.attendanceStatus);
       params.set("page", "1");
       params.set("limit", "10000");
 
@@ -1507,9 +1510,36 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         return;
       }
 
+      // Collect all distinct event IDs across all registrations for column headers
+      const allEventIds = Array.from(
+        new Set(allRegs.flatMap((reg) => reg.events.map((e) => e.event_id)))
+      );
+      // Build a map of event_id -> event_title for column headers
+      const eventTitleMap: Record<string, string> = {};
+      allRegs.forEach((reg) =>
+        reg.events.forEach((e) => {
+          eventTitleMap[e.event_id] = e.event_title;
+        })
+      );
+
       const data = allRegs.map((reg) => {
         const payment = reg.payment?.[0];
-        const eventNames = reg.events.map((e) => e.event_title).join(", ");
+
+        // Build attendance lookup for this user: event_id -> attendance_status
+        const attendanceLookup: Record<string, string> = {};
+        reg.events.forEach((e) => {
+          attendanceLookup[e.event_id] = e.attendance_status || "PENDING";
+        });
+
+        // Per-event attendance columns
+        const eventAttendanceCols: Record<string, string> = {};
+        allEventIds.forEach((evId) => {
+          const colName = `${eventTitleMap[evId] || evId} - Attendance`;
+          const rawStatus = attendanceLookup[evId];
+          eventAttendanceCols[colName] = rawStatus
+            ? rawStatus.charAt(0) + rawStatus.slice(1).toLowerCase()
+            : "-";
+        });
 
         return {
           "Unique Code": reg.unique_code,
@@ -1531,7 +1561,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           "Payment Status": payment?.status || "N/A",
           Amount: payment?.amount || 0,
           "Transaction ID": payment?.transaction_id || "",
-          Events: eventNames,
+          "Events Registered": reg.events.map((e) => e.event_title).join(", "),
+          ...eventAttendanceCols,
           "Registration Type":
             reg.registration_type === "ONSPOT" ? "On-Spot" : "Online",
           "Registered At": new Date(reg.created_at).toLocaleString(),
@@ -1725,7 +1756,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           <button
             className="toolbar-btn"
             onClick={() => {
-              setExportFilter({ ...filter });
+              setExportFilter({ ...filter, attendanceStatus: "" });
               setExportDialogOpen(true);
             }}
             disabled={exporting}
@@ -1957,6 +1988,35 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                   </div>
                 )}
               </div>
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "11px",
+                  color: "#71717a",
+                  marginBottom: "4px",
+                  fontWeight: 600,
+                }}
+              >
+                ATTENDANCE STATUS
+              </label>
+              <select
+                value={exportFilter.attendanceStatus}
+                onChange={(e) =>
+                  setExportFilter((f) => ({
+                    ...f,
+                    attendanceStatus: e.target.value,
+                  }))
+                }
+                style={styles.input}
+              >
+                <option value="">All</option>
+                <option value="PRESENT">Present</option>
+                <option value="ABSENT">Absent</option>
+                <option value="PENDING">Pending</option>
+              </select>
             </div>
 
             <div>
